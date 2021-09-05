@@ -316,9 +316,16 @@ func GetCollectVideo(ctx *gin.Context) {
 func GetRecommendVideo(ctx *gin.Context) {
 	//因为视频比较少，就直接按播放量排名
 	DB := common.GetDB()
-	var videos []dto.SearchVideoDto
+	var videos []dto.RecommendVideo
 	DB = DB.Limit(8)
-	DB.Model(&model.Video{}).Select("id,title,cover").Order("clicks desc").Where("review = 1").Scan(&videos)
+	Redis := common.RedisClient
+	const sql = "select videos.id,title,cover,name as author,clicks from users,videos where users.id=videos.uid and review=1 and videos.deleted_at is null order by clicks desc"
+	DB.Raw(sql).Scan(&videos)
+	length := len(videos)
+	//获取到播放量
+	for i := 0; i < length; i++ {
+		videos[i].Clicks = dto.GetClicksFromRedis(Redis, int(videos[i].ID), videos[i].Clicks)
+	}
 	response.Success(ctx, gin.H{"videos": videos}, "ok")
 }
 

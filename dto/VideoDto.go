@@ -6,6 +6,8 @@ import (
 	"wzm/danmu3.0/common"
 	"wzm/danmu3.0/model"
 	"wzm/danmu3.0/util"
+
+	"github.com/go-redis/redis"
 )
 
 //视频数据
@@ -19,7 +21,7 @@ type UploadVideoDto struct {
 	Title     string    `json:"title"`
 	Cover     string    `json:"cover"`
 	Review    bool      `json:"review"`
-	Clicks    int       `json:"clicks"`
+	Clicks    string    `json:"clicks"`
 	CreateAt  time.Time `json:"create_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
@@ -49,8 +51,17 @@ type SearchVideoDto struct {
 	Cover string `json:"cover"`
 }
 
+type RecommendVideo struct {
+	ID     uint   `json:"vid"`
+	Title  string `json:"title"`
+	Cover  string `json:"cover"`
+	Author string `json:"author"`
+	Clicks string `json:"clicks"`
+}
+
 func ToUploadVideoDto(videos []model.Video) []UploadVideoDto {
 	length := len(videos)
+	Redis := common.RedisClient
 	newVideos := make([]UploadVideoDto, length)
 	for i := 0; i < length; i++ {
 		newVideos[i].ID = videos[i].ID
@@ -59,17 +70,7 @@ func ToUploadVideoDto(videos []model.Video) []UploadVideoDto {
 		newVideos[i].Review = videos[i].Review
 		newVideos[i].CreateAt = videos[i].CreatedAt
 		newVideos[i].UpdatedAt = videos[i].UpdatedAt
-		newVideos[i].Clicks = videos[i].Clicks
-		//从redis中拉取数据
-		strClicks, _ := common.RedisClient.Get(util.VideoClicksKey(int(videos[i].ID))).Result()
-		if strClicks == "" {
-			//将视频ID存入点击量列表
-			common.RedisClient.RPush(util.ClicksVideoList, videos[i].ID)
-			//将点击量存入redis并设置25小时，防止数据当天过期
-			common.RedisClient.Set(util.VideoClicksKey(int(videos[i].ID)), videos[i].Clicks, time.Hour*25)
-		} else {
-			newVideos[i].Clicks, _ = strconv.Atoi(strClicks)
-		}
+		newVideos[i].Clicks = GetClicksFromRedis(Redis, int(videos[i].ID), strconv.Itoa(videos[i].Clicks))
 	}
 	return newVideos
 }
@@ -110,4 +111,21 @@ func ToCollectVideoDto(videos []model.Interactive) []CollectVideoDto {
 		}
 	}
 	return newVideos
+}
+
+/*********************************************************
+** 函数功能: 从Redis获取点击量
+** 日    期:2021/8/23
+** 参    数:Redis,视频id,数据库中的播放量
+**********************************************************/
+func GetClicksFromRedis(redis *redis.Client, vid int, dbClicks string) string {
+	strClicks, _ := redis.Get(util.VideoClicksKey(vid)).Result()
+	if len(strClicks) == 0 {
+		//将视频ID存入点击量列表
+		redis.RPush(util.ClicksVideoList, vid)
+		//将点击量存入redis并设置25小时，防止数据当天过期
+		redis.Set(util.VideoClicksKey(vid), dbClicks, time.Hour*25)
+		return dbClicks
+	}
+	return strClicks
 }

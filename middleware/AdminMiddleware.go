@@ -1,11 +1,12 @@
 package middleware
 
 import (
-	"github.com/gin-gonic/gin"
 	"net/http"
 	"strings"
 	"wzm/danmu3.0/common"
 	"wzm/danmu3.0/model"
+
+	"github.com/gin-gonic/gin"
 )
 
 /*********************************************************
@@ -34,9 +35,9 @@ func AdminMiddleware(authority int) gin.HandlerFunc {
 
 		//通过token获取管理员
 		adminID := claims.AdminID
-		if adminID == 0{
+		if adminID == 0 {
 			ctx.Next()
-		}else {
+		} else {
 			DB := common.GetDB()
 			var admin model.Admin
 			DB.First(&admin, adminID)
@@ -48,7 +49,7 @@ func AdminMiddleware(authority int) gin.HandlerFunc {
 				return
 			}
 			//如果用户存在，比对目标权限
-			if admin.Authority < authority{
+			if admin.Authority < authority {
 				ctx.JSON(http.StatusUnauthorized, gin.H{"code": 401, "msg": "权限不足"})
 				//抛弃请求
 				ctx.Abort()

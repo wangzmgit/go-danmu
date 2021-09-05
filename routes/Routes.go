@@ -117,32 +117,32 @@ func CollectRoute(r *gin.Engine) *gin.Engine {
 			superAdminAuth := admin.Group("")
 			superAdminAuth.Use(middleware.AdminMiddleware(controller.SuperAdmin))
 			{
-				admin.POST("/add", controller.AddAdmin) //添加管理员
-				admin.GET("/list", controller.GetAdminList)
-				admin.POST("/delete", controller.DeleteAdmin)
-				admin.POST("/user/delete", controller.AdminDeleteUser)
+				superAdminAuth.POST("/add", controller.AddAdmin) //添加管理员
+				superAdminAuth.GET("/list", controller.GetAdminList)
+				superAdminAuth.POST("/delete", controller.DeleteAdmin)
+				superAdminAuth.POST("/user/delete", controller.AdminDeleteUser)
 			}
 			adminAuth := admin.Group("")
 			adminAuth.Use(middleware.AdminMiddleware(controller.Admin))
 			{
-				admin.GET("/user/list", controller.GetUserList)
-				admin.POST("/user/modify", controller.AdminModifyUser)
-				admin.GET("/video/list", controller.AdminGetVideoList)
-				admin.POST("/video/delete", controller.AdminDeleteVideo)
-				admin.POST("/announce/add", controller.AddAnnounce)
-				admin.POST("/announce/delete", controller.DeleteAnnounce)
-				admin.POST("/carousel/upload/img", controller.UploadCarousel)
-				admin.POST("/carousel/upload/info", controller.UploadCarouselInfo)
-				admin.POST("/carousel/delete", controller.DeleteCarousel)
+				adminAuth.GET("/user/list", controller.GetUserList)
+				adminAuth.POST("/user/modify", controller.AdminModifyUser)
+				adminAuth.GET("/video/list", controller.AdminGetVideoList)
+				adminAuth.POST("/video/delete", controller.AdminDeleteVideo)
+				adminAuth.POST("/announce/add", controller.AddAnnounce)
+				adminAuth.POST("/announce/delete", controller.DeleteAnnounce)
+				adminAuth.POST("/carousel/upload/img", controller.UploadCarousel)
+				adminAuth.POST("/carousel/upload/info", controller.UploadCarouselInfo)
+				adminAuth.POST("/carousel/delete", controller.DeleteCarousel)
 			}
 
 			auditorAuth := admin.Group("")
 			auditorAuth.Use(middleware.AdminMiddleware(controller.Auditor))
 			{
-				admin.GET("/review/list", controller.GetReviewVideoList)
-				admin.POST("/review", controller.ReviewVideo)
-				admin.GET("/announce/list", controller.AdminGetAnnounce)
-				admin.GET("/carousel", controller.AdminGetCarousel)
+				auditorAuth.GET("/review/list", controller.GetReviewVideoList)
+				auditorAuth.POST("/review", controller.ReviewVideo)
+				auditorAuth.GET("/announce/list", controller.AdminGetAnnounce)
+				auditorAuth.GET("/carousel", controller.AdminGetCarousel)
 			}
 		}
 	}
