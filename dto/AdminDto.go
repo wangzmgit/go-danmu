@@ -17,6 +17,7 @@ type AdminVideoDto struct {
 	Title        string    `json:"title"`
 	Cover        string    `json:"cover"`
 	Video        string    `json:"video"`
+	VideoType    string    `json:"video_type"`
 	Introduction string    `json:"introduction"`
 	CreateAt     time.Time `json:"create_at"`
 	Original     bool      `json:"original"`
@@ -46,6 +47,7 @@ func ToAdminVideoDto(videos []model.Video) []AdminVideoDto {
 		newVideos[i].Title = videos[i].Title
 		newVideos[i].Cover = videos[i].Cover
 		newVideos[i].Video = videos[i].Video
+		newVideos[i].VideoType = videos[i].VideoType
 		newVideos[i].Introduction = videos[i].Introduction
 		newVideos[i].CreateAt = videos[i].CreatedAt
 		newVideos[i].Original = videos[i].Original

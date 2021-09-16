@@ -31,6 +31,7 @@ type VideoDto struct {
 	Title        string    `json:"title"`
 	Cover        string    `json:"cover"`
 	Video        string    `json:"video"`
+	VideoType    string    `json:"video_type"`
 	Introduction string    `json:"introduction"`
 	CreateAt     time.Time `json:"create_at"`
 	Original     bool      `json:"original"`
@@ -84,6 +85,7 @@ func ToVideoDto(video model.Video, data VideoData) VideoDto {
 		Title:        video.Title,
 		Cover:        video.Cover,
 		Video:        video.Video,
+		VideoType:    video.VideoType,
 		Introduction: video.Introduction,
 		CreateAt:     video.CreatedAt,
 		Original:     video.Original,

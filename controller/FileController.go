@@ -11,6 +11,7 @@ import (
 	"wzm/danmu3.0/util"
 
 	"github.com/gin-gonic/gin"
+	"github.com/spf13/viper"
 )
 
 /*********************************************************
@@ -127,33 +128,47 @@ func UploadVideo(ctx *gin.Context) {
 	// 拼接上传图片的路径信息
 	localFileName := "./file/video/" + video.Filename
 	objectName := "video/" + video.Filename
-	success, url := util.UploadOSS(localFileName, objectName)
-	if success {
-		uid, _ := ctx.Get("id")
-		var video model.Video
-		DB := common.GetDB()
-		DB.Where("id = ?", vid).Last(&video)
-		if video.ID == 0 || video.Uid != uid {
-			response.Fail(ctx, nil, "视频不存在")
-			return
-		}
-		//开始事务
-		tx := DB.Begin()
-		if err := tx.Model(&video).Update("video", url).Error; err != nil {
-			util.Logfile("[Error]", " upload video error "+err.Error())
-			tx.Rollback()
-			response.Fail(ctx, nil, "上传失败")
-			return
-		}
-		//创建新的审核状态
-		if err := tx.Model(&model.Review{}).Where("vid = ?", vid).Updates(map[string]interface{}{"status": 1000}).Error; err != nil {
-			tx.Rollback()
-			response.Fail(ctx, nil, "上传失败")
-			return
-		}
-		tx.Commit()
-		response.Success(ctx, nil, "ok")
+	//启用hls
+
+	var url string
+	if viper.GetString("server.coding") == "hls" {
+		url = util.Transcoding(video.Filename, vid, CompleteUpload)
 	} else {
-		response.Fail(ctx, nil, "上传失败")
+		go util.UploadVideoToOSS(localFileName, objectName, vid, CompleteUpload)
+		url = "http://" + viper.GetString("aliyunoss.bucket") + "." + viper.GetString("aliyunoss.endpoint") + "/" + objectName
 	}
+
+	uid, _ := ctx.Get("id")
+	var videoInfo model.Video
+	DB := common.GetDB()
+	DB.Where("id = ?", vid).First(&videoInfo)
+	if videoInfo.ID == 0 || videoInfo.Uid != uid {
+		response.Fail(ctx, nil, "视频不存在")
+		return
+	}
+	//开始事务
+	tx := DB.Begin()
+	if err := tx.Model(&videoInfo).Update("video", url).Error; err != nil {
+		util.Logfile("[Error]", " upload video error "+err.Error())
+		tx.Rollback()
+		response.Fail(ctx, nil, "上传失败")
+		return
+	}
+	//创建新的审核状态
+	if err := tx.Model(&model.Review{}).Where("vid = ?", vid).Updates(map[string]interface{}{"status": 800}).Error; err != nil {
+		tx.Rollback()
+		response.Fail(ctx, nil, "上传失败")
+		return
+	}
+	tx.Commit()
+	response.Success(ctx, nil, "ok")
+}
+
+/*********************************************************
+** 函数功能: 完成视频上传
+** 日    期:2021/9/16
+**********************************************************/
+func CompleteUpload(vid int) {
+	DB := common.GetDB()
+	DB.Model(&model.Review{}).Where("vid = ?", vid).Updates(map[string]interface{}{"status": 1000})
 }

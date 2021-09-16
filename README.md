@@ -6,7 +6,8 @@
 ``` 
 server:
   port: 端口号
-  version: 版本
+  version: 3.1
+  coding: 视频类型(hls或mp4,hls需要预先安装FFmpeg)
   jwtSecret: jwt的秘钥
   adminJwtSecret: 管理员jwt的秘钥
 datasource:

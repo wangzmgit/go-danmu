@@ -10,6 +10,7 @@ import (
 	"wzm/danmu3.0/util"
 
 	"github.com/jinzhu/gorm"
+	"github.com/spf13/viper"
 
 	"github.com/gin-gonic/gin"
 )
@@ -64,6 +65,7 @@ func UploadVideoInfo(ctx *gin.Context) {
 		Introduction: introduction,
 		Uid:          uid.(uint),
 		Original:     original,
+		VideoType:    viper.GetString("server.coding"),
 	}
 	DB := common.GetDB()
 	tx := DB.Begin()

@@ -7,6 +7,7 @@ type Video struct {
 	Title        string  `gorm:"type:varchar(50);not null;index"`
 	Cover        string  `gorm:"size:255;not null"`
 	Video        string  `gorm:"size:255"`
+	VideoType    string  `gorm:"varchar(5)"`
 	Introduction string  `gorm:"varchar(100);default:'什么也没有'"` //视频简介
 	Uid          uint    `gorm:"not null;index"`
 	Author       User    `gorm:"ForeignKey:id;AssociationForeignKey:uid"`
