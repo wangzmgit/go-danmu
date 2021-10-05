@@ -145,6 +145,13 @@ func CollectRoute(r *gin.Engine) *gin.Engine {
 				auditorAuth.GET("/carousel", controller.AdminGetCarousel)
 			}
 		}
+
+		v2 := r.Group("/api/v2")
+		{
+			//评论回复
+			v2.GET("/comment/get", controller.GetCommentsV2)
+			v2.GET("/comment/reply", controller.GetReplyDetailsV2)
+		}
 	}
 	return r
 }

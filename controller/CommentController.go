@@ -39,6 +39,56 @@ func GetComments(ctx *gin.Context) {
 }
 
 /*********************************************************
+** 函数功能: 获取评论列表v2
+** 日    期:2021/10/5
+**********************************************************/
+func GetCommentsV2(ctx *gin.Context) {
+	var comments []dto.CommentDto
+	var count int
+	//获取分页信息
+	page, _ := strconv.Atoi(ctx.Query("page"))
+	pageSize, _ := strconv.Atoi(ctx.Query("page_size"))
+	vid, _ := strconv.Atoi(ctx.Query("vid"))
+	sqlComment := "select comments.id,comments.created_at,content,uid,users.name,users.avatar,reply_count from comments,users where comments.deleted_at is null and comments.uid = users.id and vid = ? limit ? offset ?"
+	sqlReply := "select content,users.name,reply_uid,reply_name from replies,users where replies.deleted_at is null and replies.uid = users.id and cid = ? limit 2"
+	DB := common.GetDB()
+	if !IsVideoExist(DB, uint(vid)) {
+		response.Fail(ctx, nil, "视频不存在")
+		return
+	}
+	if page > 0 && pageSize > 0 {
+		DB.Model(&model.Comment{}).Where("vid = ?", vid).Count(&count)
+		DB.Raw(sqlComment, vid, pageSize, (page-1)*pageSize).Scan(&comments)
+		for i := 0; i < len(comments); i++ {
+			//查询回复
+			DB.Raw(sqlReply, comments[i].ID).Scan(&comments[i].Reply)
+		}
+		response.Success(ctx, gin.H{"count": count, "comments": comments}, "ok")
+	} else {
+		response.Fail(ctx, nil, "获取失败")
+	}
+}
+
+/*********************************************************
+** 函数功能: 获取回复详情v2
+** 日    期:2021/10/5
+**********************************************************/
+func GetReplyDetailsV2(ctx *gin.Context) {
+	var replies []dto.ReplyDto
+	//获取分页信息
+	cid, _ := strconv.Atoi(ctx.Query("cid"))
+	sql := "select replies.id,replies.created_at,content,uid,users.name,users.avatar,reply_uid,reply_name from replies,users where replies.deleted_at is null and replies.uid = users.id and cid = ?"
+	DB := common.GetDB()
+	if !IsCommentExist(DB, uint(cid)) {
+		response.Fail(ctx, nil, "评论不存在")
+		return
+	}
+	DB.Model(&model.Reply{}).Where("cid = ?", cid)
+	DB.Raw(sql, cid).Scan(&replies)
+	response.Success(ctx, gin.H{"replies": replies}, "ok")
+}
+
+/*********************************************************
 ** 函数功能: 删除评论
 ** 日    期:2021/7/27
 **********************************************************/
@@ -133,6 +183,8 @@ func Reply(ctx *gin.Context) {
 		ReplyName: replyName,
 	}
 	DB.Create(&newReply)
+	//回复数+1,用于评论v2接口
+	DB.Model(&model.Comment{}).Where("id = ?", cid).UpdateColumn("reply_count", gorm.Expr("reply_count + ?", 1))
 	response.Success(ctx, nil, "ok")
 }
 

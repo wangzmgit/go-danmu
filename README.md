@@ -3,10 +3,13 @@
 #### 配置文件
 在当前目录下创建文件夹config，在config文件夹内创建application.yml文件
 
+#### 文档地址 
+[弹幕网站文档](https://www.showdoc.com.cn/danmu3/7242809630371197)
+[演示视频](https://www.bilibili.com/video/BV1TA411F7xz)
 ``` 
 server:
   port: 端口号
-  version: 3.1
+  version: 3.2
   coding: 视频类型(hls或mp4,hls需要预先安装FFmpeg)
   jwtSecret: jwt的秘钥
   adminJwtSecret: 管理员jwt的秘钥
