@@ -2,6 +2,7 @@ package routes
 
 import (
 	"wzm/danmu3.0/controller"
+	admin_controller "wzm/danmu3.0/controller/admin"
 	"wzm/danmu3.0/middleware"
 
 	"github.com/gin-gonic/gin"
@@ -113,36 +114,37 @@ func CollectRoute(r *gin.Engine) *gin.Engine {
 		//管理员接口
 		admin := v1.Group("/admin")
 		{
-			admin.POST("/login", controller.AdminLogin)
+			admin.POST("/login", admin_controller.AdminLogin)
 			superAdminAuth := admin.Group("")
-			superAdminAuth.Use(middleware.AdminMiddleware(controller.SuperAdmin))
+			superAdminAuth.Use(middleware.AdminMiddleware(admin_controller.SuperAdmin))
 			{
-				superAdminAuth.POST("/add", controller.AddAdmin) //添加管理员
-				superAdminAuth.GET("/list", controller.GetAdminList)
-				superAdminAuth.POST("/delete", controller.DeleteAdmin)
-				superAdminAuth.POST("/user/delete", controller.AdminDeleteUser)
+				superAdminAuth.POST("/add", admin_controller.AddAdmin) //添加管理员
+				superAdminAuth.GET("/list", admin_controller.GetAdminList)
+				superAdminAuth.POST("/delete", admin_controller.DeleteAdmin)
+				superAdminAuth.POST("/user/delete", admin_controller.AdminDeleteUser)
 			}
 			adminAuth := admin.Group("")
-			adminAuth.Use(middleware.AdminMiddleware(controller.Admin))
+			adminAuth.Use(middleware.AdminMiddleware(admin_controller.Admin))
 			{
-				adminAuth.GET("/user/list", controller.GetUserList)
-				adminAuth.POST("/user/modify", controller.AdminModifyUser)
-				adminAuth.GET("/video/list", controller.AdminGetVideoList)
-				adminAuth.POST("/video/delete", controller.AdminDeleteVideo)
-				adminAuth.POST("/announce/add", controller.AddAnnounce)
-				adminAuth.POST("/announce/delete", controller.DeleteAnnounce)
-				adminAuth.POST("/carousel/upload/img", controller.UploadCarousel)
-				adminAuth.POST("/carousel/upload/info", controller.UploadCarouselInfo)
-				adminAuth.POST("/carousel/delete", controller.DeleteCarousel)
+				adminAuth.GET("/user/list", admin_controller.GetUserList)
+				adminAuth.POST("/user/modify", admin_controller.AdminModifyUser)
+				adminAuth.GET("/video/list", admin_controller.AdminGetVideoList)
+				adminAuth.POST("/video/add", admin_controller.ImportVideo)
+				adminAuth.POST("/video/delete", admin_controller.AdminDeleteVideo)
+				adminAuth.POST("/announce/add", admin_controller.AddAnnounce)
+				adminAuth.POST("/announce/delete", admin_controller.DeleteAnnounce)
+				adminAuth.POST("/carousel/upload/img", admin_controller.UploadCarousel)
+				adminAuth.POST("/carousel/upload/info", admin_controller.UploadCarouselInfo)
+				adminAuth.POST("/carousel/delete", admin_controller.DeleteCarousel)
 			}
 
 			auditorAuth := admin.Group("")
-			auditorAuth.Use(middleware.AdminMiddleware(controller.Auditor))
+			auditorAuth.Use(middleware.AdminMiddleware(admin_controller.Auditor))
 			{
-				auditorAuth.GET("/review/list", controller.GetReviewVideoList)
-				auditorAuth.POST("/review", controller.ReviewVideo)
-				auditorAuth.GET("/announce/list", controller.AdminGetAnnounce)
-				auditorAuth.GET("/carousel", controller.AdminGetCarousel)
+				auditorAuth.GET("/review/list", admin_controller.GetReviewVideoList)
+				auditorAuth.POST("/review", admin_controller.ReviewVideo)
+				auditorAuth.GET("/announce/list", admin_controller.AdminGetAnnounce)
+				auditorAuth.GET("/carousel", admin_controller.AdminGetCarousel)
 			}
 		}
 
