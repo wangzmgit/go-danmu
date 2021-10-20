@@ -21,7 +21,11 @@ func Transcoding(name string, vid int, callback Callback) string {
 	dir = strings.TrimSuffix(name, path.Ext(name)) //文件夹名
 	os.Mkdir("./file/output/"+dir, os.ModePerm)
 	//生成url
-	url = "http://" + viper.GetString("aliyunoss.bucket") + "." + viper.GetString("aliyunoss.endpoint") + "/video/" + dir + "/"
+	if len(viper.GetString("aliyunoss.domain")) == 0 {
+		url = "http://" + viper.GetString("aliyunoss.bucket") + "." + viper.GetString("aliyunoss.endpoint") + "/video/" + dir + "/"
+	} else {
+		url = "http://" + viper.GetString("aliyunoss.domain") + "/video/" + dir + "/"
+	}
 	//判断当前系统
 	sysType := runtime.GOOS
 	if sysType == "linux" {
@@ -39,6 +43,7 @@ func Transcoding(name string, vid int, callback Callback) string {
 	return url + "index.m3u8"
 }
 
+//转码hls
 func ToHls(url string, input string, output string, dir string, vid int, callback Callback) {
 	cmd := exec.Command("ffmpeg", "-i", input, "-c:v", "libx264", "-c:a", "aac", "-strict", "-2", "-f", "hls", "-hls_list_size", "0", "-hls_time", "15", output)
 	// 执行命令，返回命令是否执行成功
@@ -53,9 +58,9 @@ func ToHls(url string, input string, output string, dir string, vid int, callbac
 	}
 	fmt.Println("Result: " + out.String())
 	RewriteM3U8(url, output, dir, vid, callback)
-
 }
 
+//重写m3u8文件
 func RewriteM3U8(url string, path string, dir string, vid int, callback Callback) {
 	file, err := os.OpenFile(path, os.O_RDONLY, 0666)
 	if err != nil {

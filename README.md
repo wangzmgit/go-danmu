@@ -9,7 +9,7 @@
 ``` 
 server:
   port: 端口号
-  version: 3.2
+  version: 3.2.1
   coding: 视频类型(hls或mp4,hls需要预先安装FFmpeg)
   jwtSecret: jwt的秘钥
   adminJwtSecret: 管理员jwt的秘钥
@@ -31,6 +31,7 @@ aliyunoss:
   accesskey: 阿里云oss的accesskey
   endpoint: oss-cn-beijing.aliyuncs.com
   bucket: 阿里云oss的bucket
+  domain: 自定义域名（没有则不填）
 redis:
   address: redis地址（127.0.0.1:6379）
   password: redis密码（没有密码则不填）

@@ -135,7 +135,11 @@ func UploadVideo(ctx *gin.Context) {
 		url = util.Transcoding(video.Filename, vid, CompleteUpload)
 	} else {
 		go util.UploadVideoToOSS(localFileName, objectName, vid, CompleteUpload)
-		url = "http://" + viper.GetString("aliyunoss.bucket") + "." + viper.GetString("aliyunoss.endpoint") + "/" + objectName
+		if len(viper.GetString("aliyunoss.domain")) == 0 {
+			url = "http://" + viper.GetString("aliyunoss.bucket") + "." + viper.GetString("aliyunoss.endpoint") + "/" + objectName
+		} else {
+			url = "http://" + viper.GetString("aliyunoss.domain") + "/" + objectName
+		}
 	}
 
 	uid, _ := ctx.Get("id")

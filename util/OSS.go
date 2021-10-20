@@ -31,7 +31,13 @@ func UploadOSS(localFileName string, objectName string) (bool, string) {
 		Logfile("[Error]", " OSS上传失败 "+err.Error())
 		return false, ""
 	}
-	url := "http://" + viper.GetString("aliyunoss.bucket") + "." + viper.GetString("aliyunoss.endpoint") + "/" + objectName
+	//如果自定义域名长度为0使用默认地址
+	var url string
+	if len(viper.GetString("aliyunoss.domain")) == 0 {
+		url = "http://" + viper.GetString("aliyunoss.bucket") + "." + viper.GetString("aliyunoss.endpoint") + "/" + objectName
+	} else {
+		url = "http://" + viper.GetString("aliyunoss.domain") + "/" + objectName
+	}
 	return true, url
 }
 
