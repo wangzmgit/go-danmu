@@ -45,8 +45,9 @@ func UploadAvatar(ctx *gin.Context) {
 	localFileName := "./file/avatar/" + avatar.Filename
 	objectName := "avatar/" + avatar.Filename
 	success, url := util.UploadOSS(localFileName, objectName)
+	id, _ := ctx.Get("id")
+	util.Logfile("[Info]", " User "+strconv.Itoa(int(id.(uint)))+" | "+ctx.ClientIP()+" | "+objectName)
 	if success {
-		id, _ := ctx.Get("id")
 		DB := common.GetDB()
 		DB.Model(model.User{}).Where("id = ?", id).Update("avatar", url)
 		response.Success(ctx, nil, "ok")
@@ -86,6 +87,8 @@ func UploadCover(ctx *gin.Context) {
 	localFileName := "./file/cover/" + cover.Filename
 	objectName := "cover/" + cover.Filename
 	success, url := util.UploadOSS(localFileName, objectName)
+	id, _ := ctx.Get("id")
+	util.Logfile("[Info]", " User "+strconv.Itoa(int(id.(uint)))+" | "+ctx.ClientIP()+" | "+objectName)
 	if success {
 		response.Success(ctx, gin.H{"url": url}, "ok")
 	} else {
@@ -129,7 +132,6 @@ func UploadVideo(ctx *gin.Context) {
 	localFileName := "./file/video/" + video.Filename
 	objectName := "video/" + video.Filename
 	//启用hls
-
 	var url string
 	if viper.GetString("server.coding") == "hls" {
 		url = util.Transcoding(video.Filename, vid, CompleteUpload)
@@ -143,6 +145,7 @@ func UploadVideo(ctx *gin.Context) {
 	}
 
 	uid, _ := ctx.Get("id")
+	util.Logfile("[Info]", " User "+strconv.Itoa(int(uid.(uint)))+" | "+ctx.ClientIP()+" | "+objectName)
 	var videoInfo model.Video
 	DB := common.GetDB()
 	DB.Where("id = ?", vid).First(&videoInfo)

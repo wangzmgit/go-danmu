@@ -3,10 +3,12 @@ package dto
 import (
 	"time"
 	"wzm/danmu3.0/model"
+	"wzm/danmu3.0/util"
 )
 
 type UserDto struct {
-	ID      uint      `json:"uid"`
+	ID       uint      `json:"uid"`
+	Email    string    `json:"email"`
 	Name     string    `json:"name"`
 	Sign     string    `json:"sign"`
 	Avatar   string    `json:"avatar"`
@@ -14,19 +16,11 @@ type UserDto struct {
 	Birthday time.Time `json:"birthday"`
 }
 
-type AdminUserDto struct {
-	ID      uint      `json:"uid"`
-	Name     string    `json:"name"`
-	Email    string    `json:"email"`
-	Sign     string    `json:"sign"`
-	Avatar   string    `json:"avatar"`
-	Gender   int       `json:"gender"`
-}
-
 func ToUserDto(user model.User) UserDto {
 	return UserDto{
-		ID:      user.ID,
+		ID:       user.ID,
 		Name:     user.Name,
+		Email:    util.HideEmail(user.Email),
 		Sign:     user.Sign,
 		Avatar:   user.Avatar,
 		Gender:   user.Gender,

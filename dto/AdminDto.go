@@ -12,6 +12,16 @@ type AdminListDto struct {
 	Authority int    `json:"authority"`
 }
 
+type AdminUserDto struct {
+	ID        uint      `json:"uid"`
+	Name      string    `json:"name"`
+	Email     string    `json:"email"`
+	Sign      string    `json:"sign"`
+	Avatar    string    `json:"avatar"`
+	Gender    int       `json:"gender"`
+	CreatedAt time.Time `json:"created_at"`
+}
+
 type AdminVideoDto struct {
 	ID           uint      `json:"vid"`
 	Title        string    `json:"title"`

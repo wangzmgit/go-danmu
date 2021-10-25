@@ -24,12 +24,14 @@ func CollectRoute(r *gin.Engine) *gin.Engine {
 			{
 				userAuth.GET("/info/get", controller.UserInfo) //用户获取个人信息
 				userAuth.POST("/info/modify", controller.ModifyInfo)
+				userAuth.POST("/password/modify", controller.ModifyPassword)
 			}
 		}
 
 		code := v1.Group("/code")
 		{
 			code.POST("/send", controller.SendCode)
+			code.POST("/send/myself", middleware.AuthMiddleware(), controller.SendCodeToMyself)
 		}
 
 		//video 信息的增删改查接口

@@ -12,7 +12,7 @@ type Video struct {
 	Uid          uint    `gorm:"not null;index"`
 	Author       User    `gorm:"ForeignKey:id;AssociationForeignKey:uid"`
 	Original     bool    `gorm:"not null"`      //是否为原创
-	Weights      float32 `gorm:"default:0"`     //视频权重
+	Weights      float32 `gorm:"default:0"`     //视频权重(目前还没使用)
 	Clicks       int     `gorm:"default:0"`     //点击量
 	Review       bool    `gorm:"default:false"` //是否审查通过
 }

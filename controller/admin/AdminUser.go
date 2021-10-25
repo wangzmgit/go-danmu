@@ -26,7 +26,7 @@ func GetUserList(ctx *gin.Context) {
 		var total int
 		DB = DB.Limit(pageSize).Offset((page - 1) * pageSize)
 		//评论
-		DB.Model(&model.User{}).Select("id,name,email,avatar,sign,gender").Scan(&users).Count(&total)
+		DB.Model(&model.User{}).Select("id,name,created_at,email,avatar,sign,gender").Scan(&users).Count(&total)
 		response.Success(ctx, gin.H{"count": total, "users": users}, "ok")
 	} else {
 		response.Fail(ctx, nil, "获取数量有误")

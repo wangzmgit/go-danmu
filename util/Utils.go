@@ -80,3 +80,13 @@ func ExistSQLInject(sql string) bool {
 	}
 	return false
 }
+
+/*********************************************************
+** 函数功能: 隐藏邮箱
+** 日    期:2021/10/21
+**********************************************************/
+func HideEmail(email string) string {
+	pattern := `(\w?)(\w+)(\w)(@\w+\.[a-z]+(\.[a-z]+)?)`
+	reg := regexp.MustCompile(pattern)
+	return reg.ReplaceAllString(email, "$1****$3$4")
+}

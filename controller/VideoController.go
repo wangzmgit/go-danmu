@@ -394,7 +394,7 @@ func IsVideoExist(db *gorm.DB, vid uint) bool {
 ** 日    期:2021/7/22
 **********************************************************/
 func ClicksStoreInDB() {
-	util.Logfile("[info]", " Clicks are stored in the database")
+	util.Logfile("[Info]", " Clicks are stored in the database")
 	var vid int          //视频id
 	var key string       //redis的key
 	var clicks int       //点击量数字
@@ -414,5 +414,5 @@ func ClicksStoreInDB() {
 	}
 	//删除list
 	Redis.Del(util.ClicksVideoList)
-	util.Logfile("[info]", " Click volume storage completed")
+	util.Logfile("[Info]", " Click volume storage completed")
 }
