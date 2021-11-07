@@ -34,17 +34,22 @@ func SendCode(ctx *gin.Context) {
 		return
 	}
 	//存储code到redis
-	code, _ := common.RedisClient.Get(util.CodeKey(email)).Result()
+	Redis := common.RedisClient
+	if Redis == nil {
+		response.ServerError(ctx, nil, "系统故障")
+		return
+	}
+	code, _ := Redis.Get(util.CodeKey(email)).Result()
 	if code != "" {
 		//如果时间小于一分钟则不能重新发送
-		duration, _ := common.RedisClient.TTL(util.CodeKey(email)).Result()
+		duration, _ := Redis.TTL(util.CodeKey(email)).Result()
 		if duration >= 240000000000 {
 			response.Fail(ctx, nil, "操作过于频繁")
 			return
 		}
 	}
 	randomCode := util.RandomCode(6)
-	err = common.RedisClient.Set(util.CodeKey(email), randomCode, time.Second*300).Err()
+	err = Redis.Set(util.CodeKey(email), randomCode, time.Second*300).Err()
 	if err != nil {
 		response.ServerError(ctx, nil, "发送失败")
 		return
@@ -53,7 +58,7 @@ func SendCode(ctx *gin.Context) {
 	if send {
 		response.Success(ctx, nil, "发送成功")
 	} else {
-		common.RedisClient.Del(util.CodeKey(email))
+		Redis.Del(util.CodeKey(email))
 		response.Fail(ctx, nil, "发送失败")
 	}
 }
@@ -63,7 +68,12 @@ func SendCode(ctx *gin.Context) {
 ** 日    期:2021/7/24
 **********************************************************/
 func VerificationCode(email string, code string) bool {
-	dbCode, _ := common.RedisClient.Get(util.CodeKey(email)).Result()
+	Redis := common.RedisClient
+	if Redis == nil {
+		util.Logfile("[Error]", "Verification code redis error")
+		return false
+	}
+	dbCode, _ := Redis.Get(util.CodeKey(email)).Result()
 	if dbCode == "" || dbCode != code {
 		return false
 	}
@@ -97,17 +107,22 @@ func SendCodeToMyself(ctx *gin.Context) {
 		return
 	}
 	//存储code到redis
-	code, _ := common.RedisClient.Get(util.CodeKey(email)).Result()
+	Redis := common.RedisClient
+	if Redis == nil {
+		response.ServerError(ctx, nil, "系统故障")
+		return
+	}
+	code, _ := Redis.Get(util.CodeKey(email)).Result()
 	if code != "" {
 		//如果时间小于一分钟则不能重新发送
-		duration, _ := common.RedisClient.TTL(util.CodeKey(email)).Result()
+		duration, _ := Redis.TTL(util.CodeKey(email)).Result()
 		if duration >= 240000000000 {
 			response.Fail(ctx, nil, "操作过于频繁")
 			return
 		}
 	}
 	randomCode := util.RandomCode(6)
-	err = common.RedisClient.Set(util.CodeKey(email), randomCode, time.Second*300).Err()
+	err = Redis.Set(util.CodeKey(email), randomCode, time.Second*300).Err()
 	if err != nil {
 		response.ServerError(ctx, nil, "发送失败")
 		return
@@ -116,7 +131,7 @@ func SendCodeToMyself(ctx *gin.Context) {
 	if send {
 		response.Success(ctx, nil, "ok")
 	} else {
-		common.RedisClient.Del(util.CodeKey(email))
+		Redis.Del(util.CodeKey(email))
 		response.Fail(ctx, nil, "发送失败")
 	}
 }

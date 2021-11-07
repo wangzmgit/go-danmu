@@ -47,6 +47,7 @@ func CollectRoute(r *gin.Engine) *gin.Engine {
 				videoAuth.GET("/status", controller.GetVideoStatus)
 				videoAuth.GET("/collect/get", controller.GetCollectVideo)
 				videoAuth.GET("/upload/get", controller.GetMyUploadVideo)
+				videoAuth.GET("/upload/sub/get", controller.GetSubVideoListByVideoID)
 				videoAuth.POST("/update/request", controller.UpdateRequest)
 				videoAuth.POST("/update", controller.ModifyVideoInfo) //只更新视频信息
 				videoAuth.POST("/delete", controller.DeleteVideo)

@@ -57,9 +57,12 @@ func Collect(ctx *gin.Context) {
 		DB.Model(&model.Interactive{}).Where("uid = ? AND vid = ?", uid, vid).Update("collect", true)
 	}
 	intVid := int(vid)
-	strCollect, _ := common.RedisClient.Get(util.VideoCollectKey(intVid)).Result()
-	if strCollect != "" {
-		common.RedisClient.Incr(util.VideoCollectKey(intVid))
+	Redis := common.RedisClient
+	if Redis != nil {
+		strCollect, _ := Redis.Get(util.VideoCollectKey(intVid)).Result()
+		if strCollect != "" {
+			Redis.Incr(util.VideoCollectKey(intVid))
+		}
 	}
 	response.Success(ctx, nil, "ok")
 }
@@ -85,9 +88,12 @@ func CancelCollect(ctx *gin.Context) {
 	} else {
 		DB.Model(&model.Interactive{}).Where("uid = ? AND vid = ?", uid, vid).Update("collect", false)
 		intVid := int(vid)
-		strCollect, _ := common.RedisClient.Get(util.VideoCollectKey(intVid)).Result()
-		if strCollect != "" {
-			common.RedisClient.Decr(util.VideoCollectKey(intVid))
+		Redis := common.RedisClient
+		if Redis != nil {
+			strCollect, _ := Redis.Get(util.VideoCollectKey(intVid)).Result()
+			if strCollect != "" {
+				Redis.Decr(util.VideoCollectKey(intVid))
+			}
 		}
 		response.Success(ctx, nil, "ok")
 	}
@@ -134,9 +140,12 @@ func Like(ctx *gin.Context) {
 		DB.Model(&model.Interactive{}).Where("uid = ? AND vid = ?", uid, vid).Update("like", true)
 	}
 	intVid := int(vid)
-	strLike, _ := common.RedisClient.Get(util.VideoLikeKey(intVid)).Result()
-	if strLike != "" {
-		common.RedisClient.Incr(util.VideoLikeKey(intVid))
+	Redis := common.RedisClient
+	if Redis != nil {
+		strLike, _ := Redis.Get(util.VideoLikeKey(intVid)).Result()
+		if strLike != "" {
+			Redis.Incr(util.VideoLikeKey(intVid))
+		}
 	}
 	response.Success(ctx, nil, "ok")
 }
@@ -160,9 +169,12 @@ func Dislike(ctx *gin.Context) {
 	if status == 0 {
 		DB.Model(&model.Interactive{}).Where("uid = ? AND vid = ?", uid, vid).Update("like", false)
 		intVid := int(vid)
-		strLike, _ := common.RedisClient.Get(util.VideoLikeKey(intVid)).Result()
-		if strLike != "" {
-			common.RedisClient.Decr(util.VideoLikeKey(intVid))
+		Redis := common.RedisClient
+		if Redis != nil {
+			strLike, _ := Redis.Get(util.VideoLikeKey(intVid)).Result()
+			if strLike != "" {
+				Redis.Decr(util.VideoLikeKey(intVid))
+			}
 		}
 		response.Success(ctx, nil, "ok")
 	} else {
@@ -221,20 +233,27 @@ func IsCollectAndLike(db *gorm.DB, uid uint, vid uint) (bool, bool) {
 ** 函数功能: 点赞和收藏数据
 ** 日    期:2021/7/22
 ** 返 回 值:点赞数，收藏数
+** 修改时间: 2021/11/6
+** 版    本: 3.3.0
+** 修改内容: 如果redis出现问题,返回的点赞和收藏数都为0
 **********************************************************/
 func CollectAndLikeCount(db *gorm.DB, vid uint) (int, int) {
 	var like int
 	var collect int
 	intVid := int(vid)
-	strLike, _ := common.RedisClient.Get(util.VideoLikeKey(intVid)).Result()
-	strCollect, _ := common.RedisClient.Get(util.VideoCollectKey(intVid)).Result()
+	Redis := common.RedisClient
+	if Redis == nil {
+		return 0, 0
+	}
+	strLike, _ := Redis.Get(util.VideoLikeKey(intVid)).Result()
+	strCollect, _ := Redis.Get(util.VideoCollectKey(intVid)).Result()
 	if strLike == "" || strCollect == "" {
 		//like和SQL的关键词冲突了，需要写成`like`
 		db.Model(&model.Interactive{}).Where("vid = ? and `like` = 1", vid).Count(&like)
 		db.Model(&model.Interactive{}).Where("vid = ? and collect = 1", vid).Count(&collect)
 		//写入redis，设置6小时过期
-		common.RedisClient.Set(util.VideoLikeKey(intVid), like, time.Hour*6)
-		common.RedisClient.Set(util.VideoCollectKey(intVid), collect, time.Hour*6)
+		Redis.Set(util.VideoLikeKey(intVid), like, time.Hour*6)
+		Redis.Set(util.VideoCollectKey(intVid), collect, time.Hour*6)
 		return like, collect
 	}
 	like, _ = strconv.Atoi(strLike)

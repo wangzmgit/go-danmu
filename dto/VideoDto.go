@@ -26,18 +26,25 @@ type UploadVideoDto struct {
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
+type SubVideoDto struct {
+	ID    uint   `json:"vid"`
+	Title string `json:"title"`
+	Video string `json:"video"`
+}
+
 type VideoDto struct {
-	ID           uint      `json:"vid"`
-	Title        string    `json:"title"`
-	Cover        string    `json:"cover"`
-	Video        string    `json:"video"`
-	VideoType    string    `json:"video_type"`
-	Introduction string    `json:"introduction"`
-	CreateAt     time.Time `json:"create_at"`
-	Original     bool      `json:"original"`
-	Author       UserDto   `json:"author"`
-	Data         VideoData `json:"data"`
-	Clicks       string    `json:"clicks"`
+	ID           uint          `json:"vid"`
+	Title        string        `json:"title"`
+	Cover        string        `json:"cover"`
+	Video        string        `json:"video"`
+	VideoType    string        `json:"video_type"`
+	Introduction string        `json:"introduction"`
+	CreateAt     time.Time     `json:"create_at"`
+	Original     bool          `json:"original"`
+	Author       UserDto       `json:"author"`
+	Data         VideoData     `json:"data"`
+	Clicks       string        `json:"clicks"`
+	SubVideo     []SubVideoDto `json:"sub_video"`
 }
 
 type CollectVideoDto struct {
@@ -71,15 +78,20 @@ func ToUploadVideoDto(videos []model.Video) []UploadVideoDto {
 		newVideos[i].Review = videos[i].Review
 		newVideos[i].CreateAt = videos[i].CreatedAt
 		newVideos[i].UpdatedAt = videos[i].UpdatedAt
-		newVideos[i].Clicks = GetClicksFromRedis(Redis, int(videos[i].ID), strconv.Itoa(videos[i].Clicks))
+		if Redis != nil {
+			newVideos[i].Clicks = GetClicksFromRedis(Redis, int(videos[i].ID), strconv.Itoa(videos[i].Clicks))
+		}
 	}
 	return newVideos
 }
 
-func ToVideoDto(video model.Video, data VideoData) VideoDto {
+func ToVideoDto(video model.Video, data VideoData, subVideo []SubVideoDto) VideoDto {
 	//通过ID获取视频
-	//因为先增加播放量，所以这时的播放量一定存在
-	clicks, _ := common.RedisClient.Get(util.VideoClicksKey(int(video.ID))).Result()
+	//如果redis可以使用，因为先增加播放量，所以这时的播放量一定存在
+	var clicks string
+	if common.RedisClient != nil {
+		clicks, _ = common.RedisClient.Get(util.VideoClicksKey(int(video.ID))).Result()
+	}
 	return VideoDto{
 		ID:           video.ID,
 		Title:        video.Title,
@@ -95,8 +107,9 @@ func ToVideoDto(video model.Video, data VideoData) VideoDto {
 			Sign:   video.Author.Sign,
 			Avatar: video.Author.Avatar,
 		},
-		Data:   data,
-		Clicks: clicks,
+		Data:     data,
+		Clicks:   clicks,
+		SubVideo: subVideo, //3.3.0新增数据
 	}
 }
 

@@ -33,12 +33,24 @@ type SelectUID struct {
 	UID uint
 }
 
+type UploadVideoRequest struct {
+	ID           uint
+	Title        string
+	Cover        string
+	Introduction string
+	Original     bool
+	Parent       uint
+}
+
 /*********************************************************
 ** 函数功能: 上传视频信息
 ** 日    期:2021/7/16
+** 修改时间: 2021/10/31
+** 版    本: 3.3.0
+** 修改内容: 可以上传子视频信息
 **********************************************************/
 func UploadVideoInfo(ctx *gin.Context) {
-	var video = model.Video{}
+	var video = UploadVideoRequest{}
 	err := ctx.Bind(&video)
 	if err != nil {
 		response.Fail(ctx, nil, "请求错误")
@@ -48,26 +60,33 @@ func UploadVideoInfo(ctx *gin.Context) {
 	cover := video.Cover
 	introduction := video.Introduction
 	original := video.Original
+	parent := video.Parent
 	//验证数据
 	if len(title) == 0 {
 		response.CheckFail(ctx, nil, "标题不能为空")
 		return
 	}
-	if len(cover) == 0 {
-		response.CheckFail(ctx, nil, "封面图不能为空")
+	DB := common.GetDB()
+	uid, _ := ctx.Get("id")
+	var newVideo model.Video
+	if video.Parent == 0 {
+		if len(cover) == 0 {
+			response.CheckFail(ctx, nil, "封面图不能为空")
+			return
+		}
+		newVideo.Cover = cover
+		newVideo.Introduction = introduction
+		newVideo.Original = original
+	} else if !IsUserOwnsVideo(DB, parent, uid.(uint)) {
+		//验证所属视频信息
+		response.CheckFail(ctx, nil, "所属视频不存在")
 		return
 	}
-
-	uid, _ := ctx.Get("id")
-	newVideo := model.Video{
-		Title:        title,
-		Cover:        cover,
-		Introduction: introduction,
-		Uid:          uid.(uint),
-		Original:     original,
-		VideoType:    viper.GetString("server.coding"),
-	}
-	DB := common.GetDB()
+	//通用数据赋值
+	newVideo.Title = title
+	newVideo.Uid = uid.(uint)
+	newVideo.VideoType = viper.GetString("server.coding")
+	newVideo.ParentID = parent
 	tx := DB.Begin()
 	if err := tx.Create(&newVideo).Error; err != nil {
 		tx.Rollback()
@@ -169,7 +188,11 @@ func DeleteVideo(ctx *gin.Context) {
 	DB := common.GetDB()
 	DB.Where("id = ? and uid = ?", id, uid).Delete(model.Video{})
 	//删除播放量数据
-	common.RedisClient.Del(util.VideoClicksKey(int(id)))
+	Redis := common.RedisClient
+	if Redis != nil {
+		Redis.Del(util.VideoClicksKey(int(id)))
+	}
+
 	response.Success(ctx, nil, "ok")
 }
 
@@ -189,7 +212,7 @@ func GetMyUploadVideo(ctx *gin.Context) {
 		uid, _ := ctx.Get("id")
 		DB := common.GetDB()
 		DB = DB.Limit(pageSize).Offset((page - 1) * pageSize)
-		DB.Where("uid = ?", uid).Find(&videos).Count(&totalSize)
+		DB.Where("uid = ? and parent_id = 0", uid).Find(&videos).Count(&totalSize)
 		response.Success(ctx, gin.H{"count": totalSize, "data": dto.ToUploadVideoDto(videos)}, "ok")
 	} else {
 		response.Fail(ctx, nil, "获取失败")
@@ -234,7 +257,10 @@ func UpdateRequest(ctx *gin.Context) {
 
 /*********************************************************
 ** 函数功能: 通过ID获取视频
-** 日    期:2021/7/19
+** 日    期: 2021/7/19
+** 修改时间: 2021/10/31
+** 版    本: 3.3.0
+** 修改内容: 获取子视频列表
 **********************************************************/
 func GetVideoByID(ctx *gin.Context) {
 	var video model.Video
@@ -244,25 +270,32 @@ func GetVideoByID(ctx *gin.Context) {
 		return
 	}
 	DB := common.GetDB()
-	DB.Model(&model.Video{}).Preload("Author").Where("id = ? and review = true", vid).First(&video)
+	DB.Model(&model.Video{}).Preload("Author").Where("id = ? and review = true and parent_id = 0", vid).First(&video)
 	if video.ID == 0 {
 		response.CheckFail(ctx, nil, "视频不见了")
 	} else {
+		//查询合集子视频
+		var subVideo []dto.SubVideoDto
+		DB.Raw("select id,title,video from videos where review = 1 and parent_id = ? and deleted_at is null", vid).Scan(&subVideo)
+		//DB.Model(&model.Video{}).Where("review = true and parent_id = ?", vid).Find(&subVideo)
 		//视频数据
 		like, collect := CollectAndLikeCount(DB, uint(vid))
 		//增加播放量
-		strClicks, _ := common.RedisClient.Get(util.VideoClicksKey(vid)).Result()
-		if strClicks == "" {
-			common.RedisClient.RPush(util.ClicksVideoList, vid)
-			//25小时防止数据当天过期
-			common.RedisClient.Set(util.VideoClicksKey(vid), video.Clicks, time.Hour*25)
+		Redis := common.RedisClient
+		if Redis != nil {
+			strClicks, _ := Redis.Get(util.VideoClicksKey(vid)).Result()
+			if strClicks == "" {
+				Redis.RPush(util.ClicksVideoList, vid)
+				//25小时防止数据当天过期
+				Redis.Set(util.VideoClicksKey(vid), video.Clicks, time.Hour*25)
+			}
+			Redis.Incr(util.VideoClicksKey(vid))
 		}
-		common.RedisClient.Incr(util.VideoClicksKey(vid))
 		var data = dto.VideoData{
 			LikeCount:    like,
 			CollectCount: collect,
 		}
-		response.Success(ctx, gin.H{"video": dto.ToVideoDto(video, data)}, "ok")
+		response.Success(ctx, gin.H{"video": dto.ToVideoDto(video, data, subVideo)}, "ok")
 	}
 }
 
@@ -314,6 +347,9 @@ func GetCollectVideo(ctx *gin.Context) {
 /*********************************************************
 ** 函数功能: 获取推荐视频
 ** 日    期:2021/8/1
+** 修改时间: 2021/10/26
+** 版    本: 3.3.0
+** 修改内容: 获取合集所属的视频，不获取合集子视频
 **********************************************************/
 func GetRecommendVideo(ctx *gin.Context) {
 	//因为视频比较少，就直接按播放量排名
@@ -321,12 +357,14 @@ func GetRecommendVideo(ctx *gin.Context) {
 	var videos []dto.RecommendVideo
 	DB = DB.Limit(8)
 	Redis := common.RedisClient
-	const sql = "select videos.id,title,cover,name as author,clicks from users,videos where users.id=videos.uid and review=1 and videos.deleted_at is null order by clicks desc"
+	const sql = "select videos.id,title,cover,name as author,clicks from users,videos where users.id=videos.uid and review=1 and parent_id = 0 and videos.deleted_at is null order by clicks desc"
 	DB.Raw(sql).Scan(&videos)
 	length := len(videos)
 	//获取到播放量
-	for i := 0; i < length; i++ {
-		videos[i].Clicks = dto.GetClicksFromRedis(Redis, int(videos[i].ID), videos[i].Clicks)
+	if Redis != nil {
+		for i := 0; i < length; i++ {
+			videos[i].Clicks = dto.GetClicksFromRedis(Redis, int(videos[i].ID), videos[i].Clicks)
+		}
 	}
 	response.Success(ctx, gin.H{"videos": videos}, "ok")
 }
@@ -334,6 +372,9 @@ func GetRecommendVideo(ctx *gin.Context) {
 /*********************************************************
 ** 函数功能: 获取视频列表
 ** 日    期:2021/8/1
+** 修改时间: 2021/10/26
+** 版    本: 3.3.0
+** 修改内容: 获取合集所属的视频，不获取合集子视频
 **********************************************************/
 func GetVideoList(ctx *gin.Context) {
 	DB := common.GetDB()
@@ -344,7 +385,8 @@ func GetVideoList(ctx *gin.Context) {
 		//记录总数
 		var total int
 		DB = DB.Limit(pageSize).Offset((page - 1) * pageSize)
-		DB.Model(&model.Video{}).Select("id,title,cover").Where("review = 1").Scan(&videos).Count(&total)
+		//查询的条件为已经通过审核review,并且不是合集视频的子视频(每个合集中有一个主视频和n个子视频)
+		DB.Model(&model.Video{}).Select("id,title,cover").Where("review = 1 and parent_id = 0").Scan(&videos).Count(&total)
 		response.Success(ctx, gin.H{"count": total, "videos": videos}, "ok")
 	} else {
 		response.Fail(ctx, nil, "获取数量有误")
@@ -354,6 +396,9 @@ func GetVideoList(ctx *gin.Context) {
 /*********************************************************
 ** 函数功能: 通过用户ID获取视频列表
 ** 日    期:2021/8/4
+** 修改时间: 2021/10/26
+** 版    本: 3.3.0
+** 修改内容: 获取合集所属的视频，不获取合集子视频
 **********************************************************/
 func GetVideoListByUserID(ctx *gin.Context) {
 	DB := common.GetDB()
@@ -369,10 +414,34 @@ func GetVideoListByUserID(ctx *gin.Context) {
 		//记录总数
 		var total int
 		DB = DB.Limit(pageSize).Offset((page - 1) * pageSize)
-		DB.Model(&model.Video{}).Select("id,title,cover").Where("review = 1 and uid = ?", uid).Scan(&videos).Count(&total)
+		DB.Model(&model.Video{}).Select("id,title,cover").Where("review = 1 and uid = ? and parent_id = 0", uid).Scan(&videos).Count(&total)
 		response.Success(ctx, gin.H{"count": total, "videos": videos}, "ok")
 	} else {
 		response.Fail(ctx, nil, "获取数量有误")
+	}
+}
+
+/*********************************************************
+** 函数功能: 通过视频ID获取子视频列表
+** 日    期:2021/11/6
+**********************************************************/
+func GetSubVideoListByVideoID(ctx *gin.Context) {
+	//获取分页信息
+	page, _ := strconv.Atoi(ctx.Query("page"))
+	pageSize, _ := strconv.Atoi(ctx.Query("page_size"))
+	parentId, _ := strconv.Atoi(ctx.Query("parent_id"))
+	if page > 0 && pageSize > 0 && parentId > 0 {
+		//记录总数
+		var totalSize int
+		//分页查询
+		var videos []model.Video
+		uid, _ := ctx.Get("id")
+		DB := common.GetDB()
+		DB = DB.Limit(pageSize).Offset((page - 1) * pageSize)
+		DB.Where("uid = ? and parent_id = ?", uid, parentId).Find(&videos).Count(&totalSize)
+		response.Success(ctx, gin.H{"count": totalSize, "data": dto.ToUploadVideoDto(videos)}, "ok")
+	} else {
+		response.Fail(ctx, nil, "获取失败")
 	}
 }
 
@@ -383,6 +452,19 @@ func GetVideoListByUserID(ctx *gin.Context) {
 func IsVideoExist(db *gorm.DB, vid uint) bool {
 	var video model.Video
 	db.Where("id = ?", vid).First(&video)
+	if video.ID != 0 {
+		return true
+	}
+	return false
+}
+
+/*********************************************************
+** 函数功能: 视频是否属于自己
+** 日    期:2021/11/6
+**********************************************************/
+func IsUserOwnsVideo(db *gorm.DB, vid uint, uid uint) bool {
+	var video model.Video
+	db.Where("id = ? and uid = ?", vid, uid).First(&video)
 	if video.ID != 0 {
 		return true
 	}
@@ -401,6 +483,10 @@ func ClicksStoreInDB() {
 	var strClicks string //字符串格式
 	DB := common.GetDB()
 	Redis := common.RedisClient
+	if Redis == nil {
+		util.Logfile("[Error]", " Clicks save failed")
+		return
+	}
 	videos := Redis.LRange(util.ClicksVideoList, 0, -1).Val()
 	for _, i := range videos {
 		vid, _ = strconv.Atoi(i)
