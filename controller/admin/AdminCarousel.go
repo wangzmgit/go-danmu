@@ -5,10 +5,9 @@ import (
 	"path"
 	"strconv"
 	"time"
-	"wzm/danmu3.0/common"
 	"wzm/danmu3.0/dto"
-	"wzm/danmu3.0/model"
 	"wzm/danmu3.0/response"
+	"wzm/danmu3.0/service"
 	"wzm/danmu3.0/util"
 
 	"github.com/gin-gonic/gin"
@@ -16,7 +15,7 @@ import (
 
 /*********************************************************
 ** 函数功能: 上传轮播图
-** 日    期:2021/8/4
+** 日    期: 2021/8/4
 **********************************************************/
 func UploadCarousel(ctx *gin.Context) {
 	carousel, err := ctx.FormFile("carousel")
@@ -44,21 +43,18 @@ func UploadCarousel(ctx *gin.Context) {
 	// 拼接上传图片的路径信息
 	localFileName := "./file/carousel/" + carousel.Filename
 	objectName := "carousel/" + carousel.Filename
-	success, url := util.UploadOSS(localFileName, objectName)
-	if success {
-		response.Success(ctx, gin.H{"url": url}, "ok")
-	} else {
-		response.Fail(ctx, nil, "上传失败")
-	}
+
+	res := service.UploadCarouselService(localFileName, objectName)
+	response.HandleResponse(ctx, res)
 }
 
 /*********************************************************
 ** 函数功能: 上传轮播图信息
-** 日    期:2021/8/4
+** 日    期: 2021/8/4
 **********************************************************/
 func UploadCarouselInfo(ctx *gin.Context) {
-	DB := common.GetDB()
-	var carousel model.Carousel
+	//获取参数
+	var carousel dto.CarouselRequest
 	err := ctx.Bind(&carousel)
 	if err != nil {
 		response.Fail(ctx, nil, "请求错误")
@@ -66,42 +62,44 @@ func UploadCarouselInfo(ctx *gin.Context) {
 	}
 	img := carousel.Img
 	url := carousel.Url
+
 	//验证数据
 	if len(img) == 0 {
 		response.CheckFail(ctx, nil, "图片不能为空")
 		return
 	}
-	newCarousel := model.Carousel{
-		Img: img,
-		Url: url,
-	}
-	DB.Create(&newCarousel)
-	response.Success(ctx, nil, "ok")
+
+	res := service.UploadCarouselInfoService(img, url)
+	response.HandleResponse(ctx, res)
 }
 
 /*********************************************************
 ** 函数功能: 获取轮播图
-** 日    期:2021/8/4
+** 日    期: 2021/8/4
 **********************************************************/
 func AdminGetCarousel(ctx *gin.Context) {
-	DB := common.GetDB()
-	var carousels []dto.AdminCarouselDto
-	DB.Model(&model.Carousel{}).Select("id,img,url,created_at").Scan(&carousels)
-	response.Success(ctx, gin.H{"carousels": carousels}, "ok")
+	res := service.AdminGetCarouselService()
+	response.HandleResponse(ctx, res)
 }
 
 /*********************************************************
 ** 函数功能: 删除轮播图
-** 日    期:2021/8/4
+** 日    期: 2021/8/4
 **********************************************************/
 func DeleteCarousel(ctx *gin.Context) {
-	DB := common.GetDB()
-	var request = AdminIDRequest{}
+	//获取参数
+	var request dto.AdminIDRequest
 	if err := ctx.Bind(&request); err != nil {
 		response.Fail(ctx, nil, "请求错误")
 		return
 	}
 	id := request.ID
-	DB.Where("id = ?", id).Delete(model.Carousel{})
-	response.Success(ctx, nil, "ok")
+
+	if id == 0 {
+		response.CheckFail(ctx, nil, "轮播图不存在")
+		return
+	}
+
+	res := service.DeleteCarouselService(id)
+	response.HandleResponse(ctx, res)
 }

@@ -1,4 +1,4 @@
-package util
+package service
 
 import (
 	"bufio"
@@ -16,7 +16,7 @@ import (
 )
 
 ///转码hls
-func Transcoding(name string, vid int, callback Callback) string {
+func Transcoding(name string, vid int) string {
 	var input, output, dir, url string
 	dir = strings.TrimSuffix(name, path.Ext(name)) //文件夹名
 	os.Mkdir("./file/output/"+dir, os.ModePerm)
@@ -39,12 +39,12 @@ func Transcoding(name string, vid int, callback Callback) string {
 		output = currentPath + "\\file\\output\\" + dir + "\\" + dir + ".m3u8"
 	}
 	//转到hls
-	go ToHls(url, input, output, dir, vid, callback)
+	go ToHls(url, input, output, dir, vid)
 	return url + "index.m3u8"
 }
 
 //转码hls
-func ToHls(url string, input string, output string, dir string, vid int, callback Callback) {
+func ToHls(url string, input string, output string, dir string, vid int) {
 	cmd := exec.Command("ffmpeg", "-i", input, "-c:v", "libx264", "-c:a", "aac", "-strict", "-2", "-f", "hls", "-hls_list_size", "0", "-hls_time", "15", output)
 	// 执行命令，返回命令是否执行成功
 	var out bytes.Buffer
@@ -57,11 +57,11 @@ func ToHls(url string, input string, output string, dir string, vid int, callbac
 		return
 	}
 	fmt.Println("Result: " + out.String())
-	RewriteM3U8(url, output, dir, vid, callback)
+	RewriteM3U8(url, output, dir, vid)
 }
 
 //重写m3u8文件
-func RewriteM3U8(url string, path string, dir string, vid int, callback Callback) {
+func RewriteM3U8(url string, path string, dir string, vid int) {
 	file, err := os.OpenFile(path, os.O_RDONLY, 0666)
 	if err != nil {
 		fmt.Println("open file filed.", err)
@@ -101,6 +101,7 @@ func RewriteM3U8(url string, path string, dir string, vid int, callback Callback
 	success := UploadFolderToOSS(dir, fileList)
 	if success {
 		//完成上传
-		ProcessingComplete(vid, callback)
+		//ProcessingComplete(vid, callback)
+		CompleteUpload(vid)
 	}
 }

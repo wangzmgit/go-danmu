@@ -1,17 +1,17 @@
 package controller
 
 import (
-	"wzm/danmu3.0/common"
-	"wzm/danmu3.0/dto"
-	"wzm/danmu3.0/model"
 	"wzm/danmu3.0/response"
+	"wzm/danmu3.0/service"
 
 	"github.com/gin-gonic/gin"
 )
 
+/*********************************************************
+** 函数功能: 获取轮播图
+** 日    期:
+**********************************************************/
 func GetCarousel(ctx *gin.Context) {
-	DB := common.GetDB()
-	var carousels []dto.CarouselDto
-	DB.Model(&model.Carousel{}).Select("img,url").Scan(&carousels)
-	response.Success(ctx, gin.H{"carousels": carousels}, "ok")
+	res := service.GetCarouselService()
+	response.HandleResponse(ctx, res)
 }

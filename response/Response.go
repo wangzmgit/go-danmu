@@ -25,3 +25,11 @@ func CheckFail(ctx *gin.Context, data gin.H, msg string) {
 func ServerError(ctx *gin.Context, data gin.H, msg string) {
 	Response(ctx, http.StatusInternalServerError, 5000, data, msg)
 }
+
+/*********************************************************
+** 函数功能: 处理返回信息
+** 日    期:2021/11/8
+**********************************************************/
+func HandleResponse(ctx *gin.Context, res ResponseStruct) {
+	ctx.JSON(res.HttpStatus, gin.H{"code": res.Code, "data": res.Data, "msg": res.Msg})
+}

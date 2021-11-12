@@ -4,8 +4,9 @@ import (
 	"net/http"
 	"time"
 	"wzm/danmu3.0/common"
-	"wzm/danmu3.0/model"
+	"wzm/danmu3.0/dto"
 	"wzm/danmu3.0/response"
+	"wzm/danmu3.0/service"
 	"wzm/danmu3.0/util"
 
 	"github.com/gin-gonic/gin"
@@ -16,20 +17,21 @@ import (
 ** 日    期:2021/7/23
 **********************************************************/
 func SendCode(ctx *gin.Context) {
-	var requestUser = model.User{}
+	var requestUser dto.SendCodeRequest
 	err := ctx.Bind(&requestUser)
 	if err != nil {
 		response.Response(ctx, http.StatusBadRequest, 4000, nil, "请求错误")
 		return
 	}
 	email := requestUser.Email
+
+	//数据验证
 	if !util.VerifyEmailFormat(email) {
 		response.CheckFail(ctx, nil, "邮箱格式有误")
 		return
 	}
 	//邮箱是否存在
-	DB := common.GetDB()
-	if IsEmailExist(DB, email) {
+	if service.IsEmailRegistered(email) {
 		response.CheckFail(ctx, nil, "该邮箱已经被注册了")
 		return
 	}
@@ -86,7 +88,7 @@ func VerificationCode(email string, code string) bool {
 ** 日    期:2021/10/25
 **********************************************************/
 func SendCodeToMyself(ctx *gin.Context) {
-	var requestUser = model.User{}
+	var requestUser dto.SendCodeRequest
 	err := ctx.Bind(&requestUser)
 	if err != nil {
 		response.Response(ctx, http.StatusBadRequest, 4000, nil, "请求错误")
@@ -98,11 +100,8 @@ func SendCodeToMyself(ctx *gin.Context) {
 		return
 	}
 	//邮箱是否属于当前用户
-	var user model.User
-	DB := common.GetDB()
 	uid, _ := ctx.Get("id")
-	DB.First(&user, uid)
-	if user.Email != email {
+	if !service.IsEmailBelongsToCurrentUser(email, uid) {
 		response.CheckFail(ctx, nil, "邮箱验证失败")
 		return
 	}

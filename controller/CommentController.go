@@ -2,40 +2,33 @@ package controller
 
 import (
 	"strconv"
-	"wzm/danmu3.0/common"
 	"wzm/danmu3.0/dto"
-	"wzm/danmu3.0/model"
 	"wzm/danmu3.0/response"
+	"wzm/danmu3.0/service"
 
 	"github.com/gin-gonic/gin"
-	"github.com/jinzhu/gorm"
 )
 
+/*********************************************************
+** 函数功能: 获取评论列表
+** 日    期:
+**********************************************************/
 func GetComments(ctx *gin.Context) {
-	var comments []dto.CommentDto
-	var count int
 	//获取分页信息
 	page, _ := strconv.Atoi(ctx.Query("page"))
 	pageSize, _ := strconv.Atoi(ctx.Query("page_size"))
 	vid, _ := strconv.Atoi(ctx.Query("vid"))
-	sqlComment := "select comments.id,comments.created_at,content,uid,users.name,users.avatar from comments,users where comments.deleted_at is null and comments.uid = users.id and vid = ? limit ? offset ?"
-	sqlReply := "select replies.id,replies.created_at,content,uid,users.name,users.avatar,reply_uid,reply_name from replies,users where replies.deleted_at is null and replies.uid = users.id and cid = ?"
-	DB := common.GetDB()
-	if !IsVideoExist(DB, uint(vid)) {
-		response.Fail(ctx, nil, "视频不存在")
+	if page <= 0 || pageSize <= 0 {
+		response.CheckFail(ctx, nil, "页码或数量有误")
 		return
 	}
-	if page > 0 && pageSize > 0 {
-		DB.Model(&model.Comment{}).Where("vid = ?", vid).Count(&count)
-		DB.Raw(sqlComment, vid, pageSize, (page-1)*pageSize).Scan(&comments)
-		for i := 0; i < len(comments); i++ {
-			//查询回复
-			DB.Raw(sqlReply, comments[i].ID).Scan(&comments[i].Reply)
-		}
-		response.Success(ctx, gin.H{"count": count, "comments": comments}, "ok")
-	} else {
-		response.Fail(ctx, nil, "获取失败")
+	if vid <= 0 {
+		response.CheckFail(ctx, nil, "视频不存在")
+		return
 	}
+
+	res := service.GetCommentsService(page, pageSize, vid)
+	response.HandleResponse(ctx, res)
 }
 
 /*********************************************************
@@ -43,30 +36,18 @@ func GetComments(ctx *gin.Context) {
 ** 日    期:2021/10/5
 **********************************************************/
 func GetCommentsV2(ctx *gin.Context) {
-	var comments []dto.CommentDto
-	var count int
+
 	//获取分页信息
 	page, _ := strconv.Atoi(ctx.Query("page"))
 	pageSize, _ := strconv.Atoi(ctx.Query("page_size"))
 	vid, _ := strconv.Atoi(ctx.Query("vid"))
-	sqlComment := "select comments.id,comments.created_at,content,uid,users.name,users.avatar,reply_count from comments,users where comments.deleted_at is null and comments.uid = users.id and vid = ? limit ? offset ?"
-	sqlReply := "select content,users.name,reply_uid,reply_name from replies,users where replies.deleted_at is null and replies.uid = users.id and cid = ? limit 2"
-	DB := common.GetDB()
-	if !IsVideoExist(DB, uint(vid)) {
-		response.Fail(ctx, nil, "视频不存在")
+
+	if page <= 0 || pageSize <= 0 {
+		response.CheckFail(ctx, nil, "页码或数量有误")
 		return
 	}
-	if page > 0 && pageSize > 0 {
-		DB.Model(&model.Comment{}).Where("vid = ?", vid).Count(&count)
-		DB.Raw(sqlComment, vid, pageSize, (page-1)*pageSize).Scan(&comments)
-		for i := 0; i < len(comments); i++ {
-			//查询回复
-			DB.Raw(sqlReply, comments[i].ID).Scan(&comments[i].Reply)
-		}
-		response.Success(ctx, gin.H{"count": count, "comments": comments}, "ok")
-	} else {
-		response.Fail(ctx, nil, "获取失败")
-	}
+	res := service.GetCommentsV2Service(page, pageSize, vid)
+	response.HandleResponse(ctx, res)
 }
 
 /*********************************************************
@@ -74,18 +55,14 @@ func GetCommentsV2(ctx *gin.Context) {
 ** 日    期:2021/10/5
 **********************************************************/
 func GetReplyDetailsV2(ctx *gin.Context) {
-	var replies []dto.ReplyDto
 	//获取分页信息
 	cid, _ := strconv.Atoi(ctx.Query("cid"))
-	sql := "select replies.id,replies.created_at,content,uid,users.name,users.avatar,reply_uid,reply_name from replies,users where replies.deleted_at is null and replies.uid = users.id and cid = ?"
-	DB := common.GetDB()
-	if !IsCommentExist(DB, uint(cid)) {
-		response.Fail(ctx, nil, "评论不存在")
+	if cid <= 0 {
+		response.CheckFail(ctx, nil, "参数有误")
 		return
 	}
-	DB.Model(&model.Reply{}).Where("cid = ?", cid)
-	DB.Raw(sql, cid).Scan(&replies)
-	response.Success(ctx, gin.H{"replies": replies}, "ok")
+	res := service.GetReplyDetailsV2Service(cid)
+	response.HandleResponse(ctx, res)
 }
 
 /*********************************************************
@@ -94,16 +71,16 @@ func GetReplyDetailsV2(ctx *gin.Context) {
 **********************************************************/
 func DeleteComment(ctx *gin.Context) {
 	//获取参数
-	var request = IDRequest{}
+	var request dto.CommentDeleteRequest
 	if err := ctx.Bind(&request); err != nil {
 		response.Fail(ctx, nil, "请求错误")
 		return
 	}
 	id := request.ID
 	uid, _ := ctx.Get("id")
-	DB := common.GetDB()
-	DB.Where("id = ? and uid = ?", id, uid).Delete(model.Comment{})
-	response.Success(ctx, nil, "ok")
+
+	res := service.DeleteCommentService(id, uid)
+	response.HandleResponse(ctx, res)
 }
 
 /*********************************************************
@@ -111,16 +88,16 @@ func DeleteComment(ctx *gin.Context) {
 ** 日    期:2021/7/27
 **********************************************************/
 func DeleteReply(ctx *gin.Context) {
-	var request = IDRequest{}
+	var request dto.CommentDeleteRequest
 	if err := ctx.Bind(&request); err != nil {
 		response.Fail(ctx, nil, "请求错误")
 		return
 	}
 	id := request.ID
 	uid, _ := ctx.Get("id")
-	DB := common.GetDB()
-	DB.Where("id = ? and uid = ?", id, uid).Delete(model.Reply{})
-	response.Success(ctx, nil, "ok")
+
+	res := service.DeleteReplyService(id, uid)
+	response.HandleResponse(ctx, res)
 }
 
 /*********************************************************
@@ -128,26 +105,22 @@ func DeleteReply(ctx *gin.Context) {
 ** 日    期:2021/7/27
 **********************************************************/
 func Comment(ctx *gin.Context) {
-	var comment = model.Comment{}
+	var comment dto.CommentRequest
 	err := ctx.Bind(&comment)
 	if err != nil {
 		response.Fail(ctx, nil, "请求错误")
 		return
 	}
 	content := comment.Content
-	vid := comment.Vid
 	uid, _ := ctx.Get("id")
-	DB := common.GetDB()
-	if !IsVideoExist(DB, vid) {
-		response.CheckFail(ctx, nil, "视频不存在")
-		return
-	}
+
 	if len(content) == 0 {
 		response.CheckFail(ctx, nil, "评论不能为空")
 		return
 	}
-	DB.Create(&model.Comment{Vid: vid, Content: content, Uid: uid.(uint)})
-	response.Success(ctx, nil, "ok")
+
+	res := service.CommentService(comment, uid)
+	response.HandleResponse(ctx, res)
 }
 
 /*********************************************************
@@ -155,7 +128,7 @@ func Comment(ctx *gin.Context) {
 ** 日    期:2021/7/27
 **********************************************************/
 func Reply(ctx *gin.Context) {
-	var reply = model.Reply{}
+	var reply dto.ReplyRequest
 	err := ctx.Bind(&reply)
 	if err != nil {
 		response.Fail(ctx, nil, "请求错误")
@@ -163,11 +136,9 @@ func Reply(ctx *gin.Context) {
 	}
 	cid := reply.Cid
 	content := reply.Content
-	replyUid := reply.ReplyUid
-	replyName := reply.ReplyName
 	uid, _ := ctx.Get("id")
-	DB := common.GetDB()
-	if cid == 0 || !IsCommentExist(DB, cid) {
+
+	if cid == 0 {
 		response.CheckFail(ctx, nil, "评论不存在")
 		return
 	}
@@ -175,28 +146,7 @@ func Reply(ctx *gin.Context) {
 		response.CheckFail(ctx, nil, "回复不能为空")
 		return
 	}
-	newReply := model.Reply{
-		Cid:       cid,
-		Content:   content,
-		Uid:       uid.(uint),
-		ReplyUid:  replyUid,
-		ReplyName: replyName,
-	}
-	DB.Create(&newReply)
-	//回复数+1,用于评论v2接口
-	DB.Model(&model.Comment{}).Where("id = ?", cid).UpdateColumn("reply_count", gorm.Expr("reply_count + ?", 1))
-	response.Success(ctx, nil, "ok")
-}
 
-/*********************************************************
-** 函数功能: 评论是否存在
-** 日    期:2021/7/27
-**********************************************************/
-func IsCommentExist(db *gorm.DB, cid uint) bool {
-	var comment model.Comment
-	db.Where("id = ?", cid).First(&comment)
-	if comment.ID != 0 {
-		return true
-	}
-	return false
+	res := service.ReplyService(reply, uid)
+	response.HandleResponse(ctx, res)
 }

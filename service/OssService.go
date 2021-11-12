@@ -1,10 +1,9 @@
-package util
+package service
 
 import (
 	"container/list"
-	"fmt"
-	"strconv"
-	"unsafe"
+
+	"wzm/danmu3.0/util"
 
 	"github.com/aliyun/aliyun-oss-go-sdk/oss"
 	"github.com/spf13/viper"
@@ -16,19 +15,19 @@ func UploadOSS(localFileName string, objectName string) (bool, string) {
 	//储存到阿里云OSS
 	client, err := oss.New(viper.GetString("aliyunoss.endpoint"), viper.GetString("aliyunoss.accessid"), viper.GetString("aliyunoss.accesskey"))
 	if err != nil {
-		Logfile("[Error]", " OSS请求错误 "+err.Error())
+		util.Logfile("[Error]", " OSS请求错误 "+err.Error())
 		return false, ""
 	}
 	// 获取存储空间
 	bucket, err := client.Bucket(viper.GetString("aliyunoss.bucket"))
 	if err != nil {
-		Logfile("[Error]", " OSS请求错误 "+err.Error())
+		util.Logfile("[Error]", " OSS请求错误 "+err.Error())
 		return false, ""
 	}
 
 	err = bucket.PutObjectFromFile(objectName, localFileName)
 	if err != nil {
-		Logfile("[Error]", " OSS上传失败 "+err.Error())
+		util.Logfile("[Error]", " OSS上传失败 "+err.Error())
 		return false, ""
 	}
 	//如果自定义域名长度为0使用默认地址
@@ -41,27 +40,28 @@ func UploadOSS(localFileName string, objectName string) (bool, string) {
 	return true, url
 }
 
-func UploadVideoToOSS(localFileName string, objectName string, vid int, callback Callback) {
+func UploadVideoToOSS(localFileName string, objectName string, vid int) {
 	//储存到阿里云OSS
 	client, err := oss.New(viper.GetString("aliyunoss.endpoint"), viper.GetString("aliyunoss.accessid"), viper.GetString("aliyunoss.accesskey"))
 	if err != nil {
-		Logfile("[Error]", " OSS请求错误 "+err.Error())
+		util.Logfile("[Error]", " OSS请求错误 "+err.Error())
 		return
 	}
 	// 获取存储空间
 	bucket, err := client.Bucket(viper.GetString("aliyunoss.bucket"))
 	if err != nil {
-		Logfile("[Error]", " OSS请求错误 "+err.Error())
+		util.Logfile("[Error]", " OSS请求错误 "+err.Error())
 		return
 	}
 
 	err = bucket.PutObjectFromFile(objectName, localFileName)
 	if err != nil {
-		Logfile("[Error]", " OSS上传失败 "+err.Error())
+		util.Logfile("[Error]", " OSS上传失败 "+err.Error())
 		return
 	}
 	//完成上传
-	ProcessingComplete(vid, callback)
+	//ProcessingComplete(vid, callback)
+	CompleteUpload(vid)
 }
 
 func UploadFolderToOSS(dir string, files *list.List) bool {
@@ -91,17 +91,4 @@ func UploadFolderToOSS(dir string, files *list.List) bool {
 		}
 	}
 	return true
-}
-
-func ProcessingComplete(vid int, callback Callback) {
-	//pointer 转 string
-	straddress := &callback
-	strPiniter := fmt.Sprintf("%d", unsafe.Pointer(straddress))
-
-	//string 转 pointer
-	intPointer, _ := strconv.ParseInt(strPiniter, 10, 0)
-	var pointer *Callback
-	pointer = *(**Callback)(unsafe.Pointer(&intPointer))
-
-	(Callback)(*pointer)(vid)
 }

@@ -5,9 +5,8 @@ import (
 	"path"
 	"strconv"
 	"time"
-	"wzm/danmu3.0/common"
-	"wzm/danmu3.0/model"
 	"wzm/danmu3.0/response"
+	"wzm/danmu3.0/service"
 	"wzm/danmu3.0/util"
 
 	"github.com/gin-gonic/gin"
@@ -41,19 +40,17 @@ func UploadAvatar(ctx *gin.Context) {
 		response.CheckFail(ctx, nil, "图片不符合要求")
 		return
 	}
+
+	uid, _ := ctx.Get("id")
 	// 拼接上传图片的路径信息
 	localFileName := "./file/avatar/" + avatar.Filename
 	objectName := "avatar/" + avatar.Filename
-	success, url := util.UploadOSS(localFileName, objectName)
-	id, _ := ctx.Get("id")
-	util.Logfile("[Info]", " User "+strconv.Itoa(int(id.(uint)))+" | "+ctx.ClientIP()+" | "+objectName)
-	if success {
-		DB := common.GetDB()
-		DB.Model(model.User{}).Where("id = ?", id).Update("avatar", url)
-		response.Success(ctx, nil, "ok")
-	} else {
-		response.Fail(ctx, nil, "上传失败")
-	}
+
+	//记录日志
+	util.Logfile("[Info]", " User "+strconv.Itoa(int(uid.(uint)))+" | "+ctx.ClientIP()+" | "+objectName)
+
+	res := service.UploadAvatarService(localFileName, objectName, uid.(uint))
+	response.HandleResponse(ctx, res)
 }
 
 /*********************************************************
@@ -83,17 +80,17 @@ func UploadCover(ctx *gin.Context) {
 		response.CheckFail(ctx, nil, "图片不符合要求")
 		return
 	}
+
+	uid, _ := ctx.Get("id")
 	// 拼接上传图片的路径信息
 	localFileName := "./file/cover/" + cover.Filename
 	objectName := "cover/" + cover.Filename
-	success, url := util.UploadOSS(localFileName, objectName)
-	id, _ := ctx.Get("id")
-	util.Logfile("[Info]", " User "+strconv.Itoa(int(id.(uint)))+" | "+ctx.ClientIP()+" | "+objectName)
-	if success {
-		response.Success(ctx, gin.H{"url": url}, "ok")
-	} else {
-		response.Fail(ctx, nil, "上传失败")
-	}
+
+	//记录日志
+	util.Logfile("[Info]", " User "+strconv.Itoa(int(uid.(uint)))+" | "+ctx.ClientIP()+" | "+objectName)
+
+	res := service.UploadCoverService(localFileName, objectName)
+	response.HandleResponse(ctx, res)
 }
 
 /*********************************************************
@@ -128,15 +125,18 @@ func UploadVideo(ctx *gin.Context) {
 		response.CheckFail(ctx, nil, "视频大小不符合要求")
 		return
 	}
+
+	var url string
+	uid, _ := ctx.Get("id")
 	// 拼接上传图片的路径信息
 	localFileName := "./file/video/" + video.Filename
 	objectName := "video/" + video.Filename
+
 	//启用hls
-	var url string
 	if viper.GetString("server.coding") == "hls" {
-		url = util.Transcoding(video.Filename, vid, CompleteUpload)
+		url = service.Transcoding(video.Filename, vid)
 	} else {
-		go util.UploadVideoToOSS(localFileName, objectName, vid, CompleteUpload)
+		go service.UploadVideoToOSS(localFileName, objectName, vid)
 		if len(viper.GetString("aliyunoss.domain")) == 0 {
 			url = "http://" + viper.GetString("aliyunoss.bucket") + "." + viper.GetString("aliyunoss.endpoint") + "/" + objectName
 		} else {
@@ -144,38 +144,9 @@ func UploadVideo(ctx *gin.Context) {
 		}
 	}
 
-	uid, _ := ctx.Get("id")
+	//记录日志
 	util.Logfile("[Info]", " User "+strconv.Itoa(int(uid.(uint)))+" | "+ctx.ClientIP()+" | "+objectName)
-	var videoInfo model.Video
-	DB := common.GetDB()
-	DB.Where("id = ?", vid).First(&videoInfo)
-	if videoInfo.ID == 0 || videoInfo.Uid != uid {
-		response.Fail(ctx, nil, "视频不存在")
-		return
-	}
-	//开始事务
-	tx := DB.Begin()
-	if err := tx.Model(&videoInfo).Update("video", url).Error; err != nil {
-		util.Logfile("[Error]", " upload video error "+err.Error())
-		tx.Rollback()
-		response.Fail(ctx, nil, "上传失败")
-		return
-	}
-	//创建新的审核状态
-	if err := tx.Model(&model.Review{}).Where("vid = ?", vid).Updates(map[string]interface{}{"status": 800}).Error; err != nil {
-		tx.Rollback()
-		response.Fail(ctx, nil, "上传失败")
-		return
-	}
-	tx.Commit()
-	response.Success(ctx, nil, "ok")
-}
 
-/*********************************************************
-** 函数功能: 完成视频上传
-** 日    期:2021/9/16
-**********************************************************/
-func CompleteUpload(vid int) {
-	DB := common.GetDB()
-	DB.Model(&model.Review{}).Where("vid = ?", vid).Updates(map[string]interface{}{"status": 1000})
+	res := service.UploadVideoService(url, vid, uid.(uint))
+	response.HandleResponse(ctx, res)
 }

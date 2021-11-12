@@ -1,8 +1,11 @@
 package dto
 
-type DanmakuDto struct {
-	Time  uint   `json:"time"`
-	Type  int    `json:"type"`
-	Color string `json:"color"`
-	Text  string `json:"text"`
+type DanmakuRequest struct {
+	ID    uint
+	Vid   uint
+	Time  uint //时间
+	Type  int  //类型0滚动;1顶部;2底部
+	Color string
+	Text  string
+	Uid   uint
 }

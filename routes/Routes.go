@@ -4,6 +4,7 @@ import (
 	"wzm/danmu3.0/controller"
 	admin_controller "wzm/danmu3.0/controller/admin"
 	"wzm/danmu3.0/middleware"
+	"wzm/danmu3.0/util"
 
 	"github.com/gin-gonic/gin"
 )
@@ -119,7 +120,7 @@ func CollectRoute(r *gin.Engine) *gin.Engine {
 		{
 			admin.POST("/login", admin_controller.AdminLogin)
 			superAdminAuth := admin.Group("")
-			superAdminAuth.Use(middleware.AdminMiddleware(admin_controller.SuperAdmin))
+			superAdminAuth.Use(middleware.AdminMiddleware(util.SuperAdmin))
 			{
 				superAdminAuth.POST("/add", admin_controller.AddAdmin) //添加管理员
 				superAdminAuth.GET("/list", admin_controller.GetAdminList)
@@ -127,7 +128,7 @@ func CollectRoute(r *gin.Engine) *gin.Engine {
 				superAdminAuth.POST("/user/delete", admin_controller.AdminDeleteUser)
 			}
 			adminAuth := admin.Group("")
-			adminAuth.Use(middleware.AdminMiddleware(admin_controller.Admin))
+			adminAuth.Use(middleware.AdminMiddleware(util.Admin))
 			{
 				adminAuth.GET("/user/list", admin_controller.GetUserList)
 				adminAuth.POST("/user/modify", admin_controller.AdminModifyUser)
@@ -142,7 +143,7 @@ func CollectRoute(r *gin.Engine) *gin.Engine {
 			}
 
 			auditorAuth := admin.Group("")
-			auditorAuth.Use(middleware.AdminMiddleware(admin_controller.Auditor))
+			auditorAuth.Use(middleware.AdminMiddleware(util.Auditor))
 			{
 				auditorAuth.GET("/review/list", admin_controller.GetReviewVideoList)
 				auditorAuth.POST("/review", admin_controller.ReviewVideo)
