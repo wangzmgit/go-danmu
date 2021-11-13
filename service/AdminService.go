@@ -74,7 +74,7 @@ func AddAdminService(adminDto dto.AddAdminRequest) response.ResponseStruct {
 			Name:      adminDto.Name,
 			Email:     adminDto.Email,
 			Password:  string(hashedPassword),
-			Authority: admin.Authority,
+			Authority: adminDto.Authority,
 		}
 		DB.Create(&newAdmin)
 		return res

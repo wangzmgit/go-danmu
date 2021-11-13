@@ -4,9 +4,9 @@ port=9000
 #视频类型(hls或mp4,hls需要预先安装FFmpeg)
 coding=mp4
 #jwt的秘钥
-jwt_secret: jwt的秘钥
+jwt_secret=jwt的秘钥
 #管理员jwt的秘钥
-admin_jwt_secret: 管理员jwt的秘钥
+admin_jwt_secret=管理员jwt的秘钥
 #数据库host(使用docker请填写公网或内外地址)
 db_host=127.0.0.1
 #数据库名
@@ -53,7 +53,7 @@ touch ./config/application.yml
 cat > ./config/application.yml << EOF
 server:
   port: ${port}
-  version: 3.4.0
+  version: 3.4.2
   coding: ${coding}
   jwtSecret: ${jwt_secret}
   adminJwtSecret: ${admin_jwt_secret}

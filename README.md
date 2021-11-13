@@ -7,4 +7,3 @@
 #### 文档地址 
 [弹幕网站文档](https://www.showdoc.com.cn/danmu3/7242809630371197)
 [演示视频](https://www.bilibili.com/video/BV1TA411F7xz)
-``` 
