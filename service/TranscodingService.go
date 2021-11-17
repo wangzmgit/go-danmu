@@ -101,7 +101,6 @@ func RewriteM3U8(url string, path string, dir string, vid int) {
 	success := UploadFolderToOSS(dir, fileList)
 	if success {
 		//完成上传
-		//ProcessingComplete(vid, callback)
 		CompleteUpload(vid)
 	}
 }

@@ -29,30 +29,23 @@ type UploadVideoVo struct {
 }
 
 type VideoVo struct {
-	ID           uint         `json:"vid"`
-	Title        string       `json:"title"`
-	Cover        string       `json:"cover"`
-	Video        string       `json:"video"`
-	VideoType    string       `json:"video_type"`
-	Introduction string       `json:"introduction"`
-	CreateAt     time.Time    `json:"create_at"`
-	Original     bool         `json:"original"`
-	Author       UserVo       `json:"author"`
-	Data         VideoData    `json:"data"`
-	Clicks       string       `json:"clicks"`
-	SubVideo     []SubVideoVo `json:"sub_video"`
+	ID           uint      `json:"vid"`
+	Title        string    `json:"title"`
+	Cover        string    `json:"cover"`
+	Video        string    `json:"video"`
+	VideoType    string    `json:"video_type"`
+	Introduction string    `json:"introduction"`
+	CreateAt     time.Time `json:"create_at"`
+	Original     bool      `json:"original"`
+	Author       UserVo    `json:"author"`
+	Data         VideoData `json:"data"`
+	Clicks       string    `json:"clicks"`
 }
 
 //视频数据
 type VideoData struct {
 	LikeCount    int `json:"like_count"`
 	CollectCount int `json:"collect_count"`
-}
-
-type SubVideoVo struct {
-	ID    uint   `json:"vid"`
-	Title string `json:"title"`
-	Video string `json:"video"`
 }
 
 //收藏的视频
@@ -115,7 +108,7 @@ func ToUploadVideoVo(videos []model.Video) []UploadVideoVo {
 	return newVideos
 }
 
-func ToVideoVo(video model.Video, data VideoData, subVideo []SubVideoVo) VideoVo {
+func ToVideoVo(video model.Video, data VideoData) VideoVo {
 	//通过ID获取视频
 	//如果redis可以使用，因为先增加播放量，所以这时的播放量一定存在
 	var clicks string
@@ -137,9 +130,8 @@ func ToVideoVo(video model.Video, data VideoData, subVideo []SubVideoVo) VideoVo
 			Sign:   video.Author.Sign,
 			Avatar: video.Author.Avatar,
 		},
-		Data:     data,
-		Clicks:   clicks,
-		SubVideo: subVideo, //3.3.0新增数据
+		Data:   data,
+		Clicks: clicks,
 	}
 }
 

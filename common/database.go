@@ -43,6 +43,7 @@ func InitDB() *gorm.DB {
 	db.AutoMigrate(&model.Danmaku{})
 	db.AutoMigrate(&model.Carousel{})
 	db.AutoMigrate(&model.Admin{})
+	db.AutoMigrate(&model.Collection{})
 	DB = db
 	return db
 }

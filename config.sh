@@ -53,7 +53,7 @@ touch ./config/application.yml
 cat > ./config/application.yml << EOF
 server:
   port: ${port}
-  version: 3.4.2
+  version: 3.5.0
   coding: ${coding}
   jwtSecret: ${jwt_secret}
   adminJwtSecret: ${admin_jwt_secret}

@@ -27,7 +27,6 @@ func UploadVideoInfo(ctx *gin.Context) {
 	}
 	title := video.Title
 	cover := video.Cover
-	parent := video.Parent
 	uid, _ := ctx.Get("id")
 
 	//验证数据
@@ -35,7 +34,7 @@ func UploadVideoInfo(ctx *gin.Context) {
 		response.CheckFail(ctx, nil, "标题不能为空")
 		return
 	}
-	if parent == 0 && len(cover) == 0 {
+	if len(cover) == 0 {
 		response.CheckFail(ctx, nil, "封面图不能为空")
 		return
 	}
@@ -160,6 +159,8 @@ func UpdateRequest(ctx *gin.Context) {
 ** 修改时间: 2021/10/31
 ** 版    本: 3.3.0
 ** 修改内容: 获取子视频列表
+** 版    本: 3.5.0
+** 修改内容: 移除子视频
 **********************************************************/
 func GetVideoByID(ctx *gin.Context) {
 	vid, _ := strconv.Atoi(ctx.Query("vid"))
@@ -260,24 +261,5 @@ func GetVideoListByUserID(ctx *gin.Context) {
 	}
 
 	res := service.GetVideoListByUserIDService(uid, page, pageSize)
-	response.HandleResponse(ctx, res)
-}
-
-/*********************************************************
-** 函数功能: 通过视频ID获取子视频列表
-** 日    期:2021/11/6
-**********************************************************/
-func GetSubVideoListByVideoID(ctx *gin.Context) {
-	//获取参数
-	uid, _ := ctx.Get("id")
-	page, _ := strconv.Atoi(ctx.Query("page"))
-	pageSize, _ := strconv.Atoi(ctx.Query("page_size"))
-	parentId, _ := strconv.Atoi(ctx.Query("parent_id"))
-	if page <= 0 || pageSize <= 0 || parentId <= 0 {
-		response.Fail(ctx, nil, "请求参数有误")
-		return
-	}
-
-	res := service.GetSubVideoListByVideoIDService(uid, page, pageSize, parentId)
 	response.HandleResponse(ctx, res)
 }

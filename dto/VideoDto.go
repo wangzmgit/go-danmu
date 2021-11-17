@@ -6,7 +6,6 @@ type UploadVideoRequest struct {
 	Cover        string
 	Introduction string
 	Original     bool
-	Parent       uint
 }
 
 type VideoModifyRequest struct {

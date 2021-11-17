@@ -19,6 +19,9 @@ import (
 /*********************************************************
 ** 函数功能: 上传视频信息
 ** 日    期:2021/11/10
+** 修改时间: 2021年11月17日12:55:08
+** 版    本: 3.5.0
+** 修改内容: 移除子视频
 **********************************************************/
 func UploadVideoInfoService(video dto.UploadVideoRequest, uid interface{}) response.ResponseStruct {
 	res := response.ResponseStruct{
@@ -27,26 +30,17 @@ func UploadVideoInfoService(video dto.UploadVideoRequest, uid interface{}) respo
 		Data:       nil,
 		Msg:        "ok",
 	}
+
 	var newVideo model.Video
-
 	DB := common.GetDB()
-	if video.Parent == 0 {
 
-		newVideo.Cover = video.Cover
-		newVideo.Introduction = video.Introduction
-		newVideo.Original = video.Original
-	} else if !IsUserOwnsVideo(DB, video.Parent, uid.(uint)) {
-		//验证所属视频信息
-		res.HttpStatus = http.StatusUnprocessableEntity
-		res.Code = response.CheckFailCode
-		res.Msg = "所属视频不存在"
-		return res
-	}
-	//通用数据赋值
 	newVideo.Title = video.Title
+	newVideo.Cover = video.Cover
+	newVideo.Introduction = video.Introduction
+	newVideo.Original = video.Original
 	newVideo.Uid = uid.(uint)
 	newVideo.VideoType = viper.GetString("server.coding")
-	newVideo.ParentID = video.Parent
+
 	tx := DB.Begin()
 	if err := tx.Create(&newVideo).Error; err != nil {
 		tx.Rollback()
@@ -70,7 +64,7 @@ func UploadVideoInfoService(video dto.UploadVideoRequest, uid interface{}) respo
 
 /*********************************************************
 ** 函数功能: 获取视频状态
-** 日    期:2021/11/10
+** 日    期: 2021/11/10
 **********************************************************/
 func GetVideoStatusService(vid int, uid interface{}) response.ResponseStruct {
 	res := response.ResponseStruct{
@@ -158,7 +152,10 @@ func DeleteVideoService(vid uint, uid interface{}) response.ResponseStruct {
 
 /*********************************************************
 ** 函数功能: 获取自己上传的视频
-** 日    期:2021/11/10
+** 日    期: 2021/11/10
+** 修改时间: 2021年11月17日12:59:09
+** 版    本: 3.5.0
+** 修改内容: 移除子视频
 **********************************************************/
 func GetMyUploadVideoService(page int, pageSize int, uid interface{}) response.ResponseStruct {
 	DB := common.GetDB()
@@ -167,7 +164,7 @@ func GetMyUploadVideoService(page int, pageSize int, uid interface{}) response.R
 	//分页查询
 	var videos []model.Video
 	DB = DB.Limit(pageSize).Offset((page - 1) * pageSize)
-	DB.Where("uid = ? and parent_id = 0", uid).Find(&videos).Count(&totalSize)
+	DB.Where("uid = ?", uid).Find(&videos).Count(&totalSize)
 	return response.ResponseStruct{
 		HttpStatus: http.StatusOK,
 		Code:       response.SuccessCode,
@@ -178,7 +175,7 @@ func GetMyUploadVideoService(page int, pageSize int, uid interface{}) response.R
 
 /*********************************************************
 ** 函数功能: 视频信息修改请求
-** 日    期:2021/11/10
+** 日    期: 2021/11/10
 **********************************************************/
 func UpdateRequestService(review dto.UpdateVideoReviewRequest, uid interface{}) response.ResponseStruct {
 	res := response.ResponseStruct{
@@ -219,7 +216,10 @@ func UpdateRequestService(review dto.UpdateVideoReviewRequest, uid interface{}) 
 
 /*********************************************************
 ** 函数功能: 通过视频ID获取视频
-** 日    期:2021/11/10
+** 日    期: 2021/11/10
+** 修改时间: 2021年11月17日12:59:45
+** 版    本: 3.5.0
+** 修改内容: 移除子视频
 **********************************************************/
 func GetVideoByIDService(vid int) response.ResponseStruct {
 	res := response.ResponseStruct{
@@ -238,9 +238,7 @@ func GetVideoByIDService(vid int) response.ResponseStruct {
 		res.Msg = "视频不见了"
 		return res
 	}
-	//查询合集子视频
-	var subVideo []vo.SubVideoVo
-	DB.Raw("select id,title,video from videos where review = 1 and parent_id = ? and deleted_at is null", vid).Scan(&subVideo)
+
 	//视频数据
 	like, collect := CollectAndLikeCount(DB, uint(vid))
 	//增加播放量
@@ -258,7 +256,7 @@ func GetVideoByIDService(vid int) response.ResponseStruct {
 		LikeCount:    like,
 		CollectCount: collect,
 	}
-	res.Data = gin.H{"video": vo.ToVideoVo(video, data, subVideo)}
+	res.Data = gin.H{"video": vo.ToVideoVo(video, data)}
 	return res
 }
 
@@ -309,14 +307,17 @@ func GetCollectVideoService(uid interface{}, page int, pageSize int) response.Re
 
 /*********************************************************
 ** 函数功能: 获取推荐视频
-** 日    期:2021/11/11
+** 日    期: 2021/11/11
+** 修改时间: 2021年11月17日13:00:01
+** 版    本: 3.5.0
+** 修改内容: 移除子视频
 **********************************************************/
 func GetRecommendVideoService() response.ResponseStruct {
 	var videos []vo.RecommendVideoVo
 	DB := common.GetDB()
 	DB = DB.Limit(8)
 	Redis := common.RedisClient
-	const sql = "select videos.id,title,cover,name as author,clicks from users,videos where users.id=videos.uid and review=1 and parent_id = 0 and videos.deleted_at is null order by clicks desc"
+	const sql = "select videos.id,title,cover,name as author,clicks from users,videos where users.id=videos.uid and review=1 and videos.deleted_at is null order by clicks desc"
 
 	DB.Raw(sql).Scan(&videos)
 	length := len(videos)
@@ -337,7 +338,10 @@ func GetRecommendVideoService() response.ResponseStruct {
 
 /*********************************************************
 ** 函数功能: 获取视频列表
-** 日    期:2021/11/11
+** 日    期: 2021/11/11
+** 修改时间: 2021年11月17日13:00:26
+** 版    本: 3.5.0
+** 修改内容: 移除子视频
 **********************************************************/
 func GetVideoListService(page int, pageSize int) response.ResponseStruct {
 	DB := common.GetDB()
@@ -346,7 +350,7 @@ func GetVideoListService(page int, pageSize int) response.ResponseStruct {
 	var total int
 	DB = DB.Limit(pageSize).Offset((page - 1) * pageSize)
 	//查询的条件为已经通过审核review,并且不是合集视频的子视频(每个合集中有一个主视频和n个子视频)
-	DB.Model(&model.Video{}).Select("id,title,cover").Where("review = 1 and parent_id = 0").Scan(&videos).Count(&total)
+	DB.Model(&model.Video{}).Select("id,title,cover").Where("review = 1").Scan(&videos).Count(&total)
 	return response.ResponseStruct{
 		HttpStatus: http.StatusOK,
 		Code:       response.SuccessCode,
@@ -357,7 +361,10 @@ func GetVideoListService(page int, pageSize int) response.ResponseStruct {
 
 /*********************************************************
 ** 函数功能: 通过用户ID获取视频列表
-** 日    期:2021/11/11
+** 日    期: 2021/11/11
+** 修改时间: 2021年11月17日13:00:41
+** 版    本: 3.5.0
+** 修改内容: 移除子视频
 **********************************************************/
 func GetVideoListByUserIDService(uid int, page int, pageSize int) response.ResponseStruct {
 	res := response.ResponseStruct{
@@ -378,7 +385,7 @@ func GetVideoListByUserIDService(uid int, page int, pageSize int) response.Respo
 	//记录总数
 	var total int
 	DB = DB.Limit(pageSize).Offset((page - 1) * pageSize)
-	DB.Model(&model.Video{}).Select("id,title,cover").Where("review = 1 and uid = ? and parent_id = 0", uid).Scan(&videos).Count(&total)
+	DB.Model(&model.Video{}).Select("id,title,cover").Where("review = 1 and uid = ?", uid).Scan(&videos).Count(&total)
 	res.Data = gin.H{"count": total, "videos": videos}
 	return res
 }
@@ -386,6 +393,9 @@ func GetVideoListByUserIDService(uid int, page int, pageSize int) response.Respo
 /*********************************************************
 ** 函数功能: 通过视频ID获取子视频列表
 ** 日    期: 2021/11/11
+** 修改时间: 2021年11月17日13:00:52
+** 版    本: 3.5.0
+** 修改内容: 移除子视频
 **********************************************************/
 func GetSubVideoListByVideoIDService(uid interface{}, page int, pageSize int, parentId int) response.ResponseStruct {
 	//记录总数
@@ -394,7 +404,7 @@ func GetSubVideoListByVideoIDService(uid interface{}, page int, pageSize int, pa
 	var videos []model.Video
 	DB := common.GetDB()
 	DB = DB.Limit(pageSize).Offset((page - 1) * pageSize)
-	DB.Where("uid = ? and parent_id = ?", uid, parentId).Find(&videos).Count(&totalSize)
+	DB.Where("uid = ?", uid, parentId).Find(&videos).Count(&totalSize)
 
 	return response.ResponseStruct{
 		HttpStatus: http.StatusOK,

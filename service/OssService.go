@@ -60,7 +60,6 @@ func UploadVideoToOSS(localFileName string, objectName string, vid int) {
 		return
 	}
 	//完成上传
-	//ProcessingComplete(vid, callback)
 	CompleteUpload(vid)
 }
 
