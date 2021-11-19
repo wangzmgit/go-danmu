@@ -31,15 +31,15 @@ func UploadVideoInfoService(video dto.UploadVideoRequest, uid interface{}) respo
 		Msg:        "ok",
 	}
 
-	var newVideo model.Video
 	DB := common.GetDB()
-
-	newVideo.Title = video.Title
-	newVideo.Cover = video.Cover
-	newVideo.Introduction = video.Introduction
-	newVideo.Original = video.Original
-	newVideo.Uid = uid.(uint)
-	newVideo.VideoType = viper.GetString("server.coding")
+	newVideo := model.Video{
+		Title:        video.Title,
+		Cover:        video.Cover,
+		Introduction: video.Introduction,
+		Original:     video.Original,
+		Uid:          uid.(uint),
+		VideoType:    viper.GetString("server.coding"),
+	}
 
 	tx := DB.Begin()
 	if err := tx.Create(&newVideo).Error; err != nil {
@@ -231,7 +231,7 @@ func GetVideoByIDService(vid int) response.ResponseStruct {
 
 	var video model.Video
 	DB := common.GetDB()
-	DB.Model(&model.Video{}).Preload("Author").Where("id = ? and review = true and parent_id = 0", vid).First(&video)
+	DB.Model(&model.Video{}).Preload("Author").Where("id = ? and review = true", vid).First(&video)
 	if video.ID == 0 {
 		res.HttpStatus = http.StatusBadRequest
 		res.Code = response.CheckFailCode
