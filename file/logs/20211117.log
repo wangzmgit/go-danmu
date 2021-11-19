@@ -1,2 +1,0 @@
-[Error]2021-11-17 13:19:13 redis error dial tcp 127.0.0.1:6379: connectex: No connection could be made because the target machine actively refused it.
-[Info]2021-11-17 13:25:07 Token issued successfully uid 1 | ::1
