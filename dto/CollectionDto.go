@@ -6,6 +6,13 @@ type CreateCollectionDto struct {
 	Desc  string
 }
 
+type ModifyCollectionDto struct {
+	ID    uint
+	Title string
+	Cover string
+	Desc  string
+}
+
 type DeleteCollectionDto struct {
 	ID uint
 }

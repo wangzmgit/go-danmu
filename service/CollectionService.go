@@ -36,6 +36,39 @@ func CreateCollectionService(collection dto.CreateCollectionDto, uid interface{}
 }
 
 /*********************************************************
+** 函数功能: 修改合集信息
+** 日    期: 2021/11/21
+**********************************************************/
+func ModifyCollectionService(collection dto.ModifyCollectionDto, uid interface{}) response.ResponseStruct {
+	res := response.ResponseStruct{
+		HttpStatus: http.StatusOK,
+		Code:       response.SuccessCode,
+		Data:       nil,
+		Msg:        "ok",
+	}
+
+	DB := common.GetDB()
+
+	if !IsUserOwnsCollection(DB, collection.ID, uid.(uint)) {
+		res.HttpStatus = http.StatusUnprocessableEntity
+		res.Code = response.CheckFailCode
+		res.Msg = "合集不存在"
+		return res
+	}
+
+	err := DB.Model(model.Collection{}).Where("id = ?", collection.ID).Updates(
+		map[string]interface{}{"cover": collection.Cover, "title": collection.Title, "desc": collection.Desc},
+	).Error
+	if err != nil {
+		res.HttpStatus = http.StatusBadRequest
+		res.Code = response.FailCode
+		res.Msg = "修改失败"
+		return res
+	}
+	return res
+}
+
+/*********************************************************
 ** 函数功能: 获取合集列表
 ** 日    期: 2021/11/19
 **********************************************************/

@@ -119,6 +119,7 @@ func CollectRoute(r *gin.Engine) *gin.Engine {
 			collectionAuth := collection.Group("")
 			collectionAuth.Use(middleware.AuthMiddleware())
 			{
+				collectionAuth.POST("/modify", controller.ModifyCollection)
 				collectionAuth.POST("/delete", controller.DeleteCollection)
 				collectionAuth.POST("/create", controller.CreateCollection)
 				collectionAuth.POST("/video/add", controller.AddVideoToCollection)     //添加视频

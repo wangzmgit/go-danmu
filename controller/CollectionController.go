@@ -41,6 +41,37 @@ func CreateCollection(ctx *gin.Context) {
 }
 
 /*********************************************************
+** 函数功能: 修改合集信息
+** 日    期: 2021年11月19日14:48:29
+** 版    本: 3.6.0
+**********************************************************/
+func ModifyCollection(ctx *gin.Context) {
+	var request dto.ModifyCollectionDto
+	err := ctx.Bind(&request)
+	if err != nil {
+		response.Fail(ctx, nil, "请求错误")
+		return
+	}
+	title := request.Title
+	cover := request.Cover
+	uid, _ := ctx.Get("id")
+
+	//验证数据
+	if len(title) == 0 {
+		response.CheckFail(ctx, nil, "标题不能为空")
+		return
+	}
+
+	if len(cover) == 0 {
+		response.CheckFail(ctx, nil, "封面图不能为空")
+		return
+	}
+
+	res := service.ModifyCollectionService(request, uid)
+	response.HandleResponse(ctx, res)
+}
+
+/*********************************************************
 ** 函数功能: 获取自己创建的合集
 ** 日    期: 2021年11月19日19:58:43
 ** 版    本: 3.6.0
