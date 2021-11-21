@@ -37,3 +37,12 @@ func ToUserVo(user model.User) UserVo {
 		Birthday: user.Birthday,
 	}
 }
+
+func ToAuthorVo(user model.User) UserVo {
+	return UserVo{
+		ID:     user.ID,
+		Name:   user.Name,
+		Sign:   user.Sign,
+		Avatar: user.Avatar,
+	}
+}

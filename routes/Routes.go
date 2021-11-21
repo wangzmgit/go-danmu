@@ -108,8 +108,26 @@ func CollectRoute(r *gin.Engine) *gin.Engine {
 		danmaku := v1.Group("/danmaku")
 		{
 			danmaku.GET("/get", controller.GetDanmaku)
-			danmaku.POST("send", middleware.AuthMiddleware(), controller.SendDanmaku)
+			danmaku.POST("/send", middleware.AuthMiddleware(), controller.SendDanmaku)
 		}
+
+		collection := v1.Group("/collection")
+		{
+			collection.GET("/get", controller.GetCollectionByID)
+			collection.GET("/list/get", controller.GetCollectionList)
+			collection.GET("/video/get", controller.GetCollectionContent)
+			collectionAuth := collection.Group("")
+			collectionAuth.Use(middleware.AuthMiddleware())
+			{
+				collectionAuth.POST("/delete", controller.DeleteCollection)
+				collectionAuth.POST("/create", controller.CreateCollection)
+				collectionAuth.POST("/video/add", controller.AddVideoToCollection)     //添加视频
+				collectionAuth.POST("/video/delete", controller.DeleteCollectionVideo) //删除视频
+				collectionAuth.GET("/video/add/list", controller.GetCanAddVideo)       //可以添加的视频
+				collectionAuth.GET("/create/list", controller.GetCreateCollectionList) //创建的合集列表
+			}
+		}
+
 		//其他接口
 		v1.GET("search", controller.Search)
 		v1.GET("carousel", controller.GetCarousel)

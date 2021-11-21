@@ -45,15 +45,42 @@ admin_password=管理员密码
 #以上内容需要配置
 
 #创建config文件夹
-mkdir config
+if [ -d "config/" ];then
+  echo "config folder already exists"
+else
+  mkdir config
+  echo "create config folder"
+fi
+
 #创建config文件
-touch ./config/application.yml
+if [ -f "config/application.yml" ];then
+  #文件已存在是否覆盖掉
+  echo "application.yml file exists"
+  read -p "Whether to overwrite the application.yml file(y/n):" para
+
+  case $para in 
+	  [yY])
+		  echo "overwrite application.yml file"
+		  ;;
+	  [nN])
+		  echo "entered N"
+		  ;;
+	  *)
+		echo "Invalid input ......"
+		read -p "Please enter any key to exit" exit
+		exit 1
+  esac
+else
+  #创建application.yml文件
+  touch ./config/application.yml
+  echo "create application.yml"
+fi
 
 #写入配置文件
 cat > ./config/application.yml << EOF
 server:
   port: ${port}
-  version: 3.5.0
+  version: 3.5.5
   coding: ${coding}
   jwtSecret: ${jwt_secret}
   adminJwtSecret: ${admin_jwt_secret}
@@ -82,3 +109,6 @@ redis:
 admin:
   email: ${admin_email}
   password: ${admin_password}
+EOF
+
+echo "created application.yml"

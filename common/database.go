@@ -44,6 +44,7 @@ func InitDB() *gorm.DB {
 	db.AutoMigrate(&model.Carousel{})
 	db.AutoMigrate(&model.Admin{})
 	db.AutoMigrate(&model.Collection{})
+	db.AutoMigrate(&model.VideoCollection{})
 	DB = db
 	return db
 }
