@@ -77,6 +77,14 @@ type SearchVideoVo struct {
 	Cover string `json:"cover"`
 }
 
+type CollectionVideoVo struct {
+	ID           uint      `json:"vid"`
+	Title        string    `json:"title"`
+	Cover        string    `json:"cover"`
+	CreatedAt    time.Time `json:"created_at"`
+	Introduction string    `json:"desc"`
+}
+
 //管理员视频列表
 type AdminVideoVo struct {
 	ID           uint      `json:"vid"`

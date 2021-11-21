@@ -6,8 +6,16 @@ import (
 	"wzm/danmu3.0/dto"
 	"wzm/danmu3.0/model"
 	"wzm/danmu3.0/response"
+	"wzm/danmu3.0/vo"
+
+	"github.com/gin-gonic/gin"
+	"github.com/jinzhu/gorm"
 )
 
+/*********************************************************
+** 函数功能: 创建视频合集
+** 日    期: 2021/11/19
+**********************************************************/
 func CreateCollectionService(collection dto.CreateCollectionDto, uid interface{}) response.ResponseStruct {
 	DB := common.GetDB()
 
@@ -25,4 +33,199 @@ func CreateCollectionService(collection dto.CreateCollectionDto, uid interface{}
 		Data:       nil,
 		Msg:        "ok",
 	}
+}
+
+/*********************************************************
+** 函数功能: 获取合集列表
+** 日    期: 2021/11/19
+**********************************************************/
+func GetCreateCollectionListService(page int, pageSize int, uid interface{}) response.ResponseStruct {
+	var count int
+	var collections []vo.CollectionVo
+	DB := common.GetDB()
+	DB = DB.Limit(pageSize).Offset((page - 1) * pageSize)
+	DB.Raw("select id,title,cover,`desc`,created_at from collections where deleted_at is null and uid = ?", uid).Scan(&collections)
+	DB.Model(&model.Collection{}).Where("uid = ?", uid).Count(&count)
+	return response.ResponseStruct{
+		HttpStatus: http.StatusOK,
+		Code:       response.SuccessCode,
+		Data:       gin.H{"count": count, "collections": collections},
+		Msg:        "ok",
+	}
+}
+
+/*********************************************************
+** 函数功能: 获取合集内容
+** 日    期: 2021/11/19
+**********************************************************/
+func GetCollectionContentService(cid int, page int, pageSize int) response.ResponseStruct {
+	var count int
+	var videos []vo.CollectionVideoVo
+	DB := common.GetDB()
+	DB = DB.Limit(pageSize).Offset((page - 1) * pageSize)
+	sqlID := "(select vid from video_collections where deleted_at is null and collection_id = ?)"
+	DB.Raw("select id,title,cover,created_at,introduction from videos where deleted_at is null and review = 1 and id in "+sqlID, cid).Scan(&videos)
+	DB.Model(&model.VideoCollection{}).Where("collection_id = ?", cid).Count(&count) //获取已添加数量
+
+	return response.ResponseStruct{
+		HttpStatus: http.StatusOK,
+		Code:       response.SuccessCode,
+		Data:       gin.H{"count": count, "videos": videos},
+		Msg:        "ok",
+	}
+}
+
+/*********************************************************
+** 函数功能: 获取合集信息
+** 日    期: 2021/11/20
+**********************************************************/
+func GetCollectionByIDService(id int) response.ResponseStruct {
+	var collection model.Collection
+	DB := common.GetDB()
+
+	DB.Model(&model.Collection{}).Where("id = ?", id).First(&collection)
+
+	return response.ResponseStruct{
+		HttpStatus: http.StatusOK,
+		Code:       response.SuccessCode,
+		Data:       gin.H{"collection": vo.ToCollectionVo(collection)},
+		Msg:        "ok",
+	}
+}
+
+/*********************************************************
+** 函数功能: 删除合集
+** 日    期:2021/11/20
+**********************************************************/
+func DeleteCollectionService(id uint, uid interface{}) response.ResponseStruct {
+	DB := common.GetDB()
+	DB.Where("id = ? and uid = ?", id, uid).Delete(model.Collection{})
+	return response.ResponseStruct{
+		HttpStatus: http.StatusOK,
+		Code:       response.SuccessCode,
+		Data:       nil,
+		Msg:        "ok",
+	}
+}
+
+/*********************************************************
+** 函数功能: 获取可添加视频
+** 日    期: 2021/11/20
+**********************************************************/
+func GetCanAddVideoService(id int, uid interface{}, page int, pageSize int) response.ResponseStruct {
+	var count int
+	var addedCount int
+	var videos []vo.CollectionVideoVo
+
+	DB := common.GetDB()
+	DB = DB.Limit(pageSize).Offset((page - 1) * pageSize)
+	sql := "select id,title,cover from videos where deleted_at is null and uid = ? and review = 1 and id not in "
+	sqlVid := "(select vid from video_collections where deleted_at is null and collection_id = ?)"
+
+	DB.Raw(sql+sqlVid, uid, id).Scan(&videos)                                            //查询可添加视频列表
+	DB.Model(&model.Video{}).Where("review = 1 and uid = ?", uid).Count(&count)          //获取视频总数
+	DB.Model(&model.VideoCollection{}).Where("collection_id = ?", id).Count(&addedCount) //获取已添加数量
+
+	return response.ResponseStruct{
+		HttpStatus: http.StatusOK,
+		Code:       response.SuccessCode,
+		Data:       gin.H{"count": count - addedCount, "videos": videos},
+		Msg:        "ok",
+	}
+}
+
+/*********************************************************
+** 函数功能: 向合集内添加视频
+** 日    期: 2021/11/21
+**********************************************************/
+func AddVideoToCollectionService(vid uint, cid uint, uid interface{}) response.ResponseStruct {
+	res := response.ResponseStruct{
+		HttpStatus: http.StatusOK,
+		Code:       response.SuccessCode,
+		Data:       nil,
+		Msg:        "ok",
+	}
+
+	DB := common.GetDB()
+	if !IsUserOwnsVideo(DB, vid, uid.(uint)) {
+		res.HttpStatus = http.StatusUnprocessableEntity
+		res.Code = response.CheckFailCode
+		res.Msg = "视频不存在"
+		return res
+	}
+
+	if !IsUserOwnsCollection(DB, cid, uid.(uint)) {
+		res.HttpStatus = http.StatusUnprocessableEntity
+		res.Code = response.CheckFailCode
+		res.Msg = "合集不存在"
+		return res
+	}
+
+	//添加视频
+	newVideoCollection := model.VideoCollection{
+		Vid:          vid,
+		CollectionId: cid,
+	}
+
+	DB.Create(&newVideoCollection)
+	return response.ResponseStruct{
+		HttpStatus: http.StatusOK,
+		Code:       response.SuccessCode,
+		Data:       nil,
+		Msg:        "ok",
+	}
+}
+
+/*********************************************************
+** 函数功能: 删除合集内的视频
+** 日    期: 2021年11月21日13:33:15
+**********************************************************/
+func DeleteCollectionVideoService(vid uint, cid uint, uid interface{}) response.ResponseStruct {
+	res := response.ResponseStruct{
+		HttpStatus: http.StatusOK,
+		Code:       response.SuccessCode,
+		Data:       nil,
+		Msg:        "ok",
+	}
+
+	DB := common.GetDB()
+	if !IsUserOwnsVideo(DB, vid, uid.(uint)) {
+		res.HttpStatus = http.StatusUnprocessableEntity
+		res.Code = response.CheckFailCode
+		res.Msg = "视频不存在"
+		return res
+	}
+
+	if !IsUserOwnsCollection(DB, cid, uid.(uint)) {
+		res.HttpStatus = http.StatusUnprocessableEntity
+		res.Code = response.CheckFailCode
+		res.Msg = "合集不存在"
+		return res
+	}
+
+	if err := DB.Where("collection_id = ? and vid = ?", cid, vid).Delete(model.VideoCollection{}).Error; err != nil {
+		res.HttpStatus = http.StatusBadRequest
+		res.Code = response.FailCode
+		res.Msg = "删除失败"
+		return res
+	}
+	return response.ResponseStruct{
+		HttpStatus: http.StatusOK,
+		Code:       response.SuccessCode,
+		Data:       nil,
+		Msg:        "ok",
+	}
+}
+
+/*********************************************************
+** 函数功能: 合集是否属于用户
+** 日    期: 2021/11/21
+**********************************************************/
+func IsUserOwnsCollection(db *gorm.DB, cid uint, uid uint) bool {
+	var collection model.Collection
+	db.Where("id = ? and uid = ?", cid, uid).First(&collection)
+	if collection.ID != 0 {
+		return true
+	}
+	return false
 }
