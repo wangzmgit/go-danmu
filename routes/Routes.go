@@ -114,6 +114,7 @@ func CollectRoute(r *gin.Engine) *gin.Engine {
 		collection := v1.Group("/collection")
 		{
 			collection.GET("/get", controller.GetCollectionByID)
+			collection.GET("/list/get", controller.GetCollectionList)
 			collection.GET("/video/get", controller.GetCollectionContent)
 			collectionAuth := collection.Group("")
 			collectionAuth.Use(middleware.AuthMiddleware())

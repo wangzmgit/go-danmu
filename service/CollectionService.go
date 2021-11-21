@@ -80,15 +80,17 @@ func GetCollectionContentService(cid int, page int, pageSize int) response.Respo
 ** 日    期: 2021/11/20
 **********************************************************/
 func GetCollectionByIDService(id int) response.ResponseStruct {
+	var user model.User
 	var collection model.Collection
 	DB := common.GetDB()
 
 	DB.Model(&model.Collection{}).Where("id = ?", id).First(&collection)
+	DB.Model(&model.User{}).Where("id = ?", collection.Uid).First(&user)
 
 	return response.ResponseStruct{
 		HttpStatus: http.StatusOK,
 		Code:       response.SuccessCode,
-		Data:       gin.H{"collection": vo.ToCollectionVo(collection)},
+		Data:       gin.H{"collection": vo.ToCollectionVo(collection), "user": vo.ToAuthorVo(user)},
 		Msg:        "ok",
 	}
 }
@@ -228,4 +230,23 @@ func IsUserOwnsCollection(db *gorm.DB, cid uint, uid uint) bool {
 		return true
 	}
 	return false
+}
+
+/*********************************************************
+** 函数功能: 获取合集列表
+** 日    期: 2021/11/21
+**********************************************************/
+func GetCollectionListService(page int, pageSize int) response.ResponseStruct {
+	var count int
+	var collections []vo.CollectionVo
+	DB := common.GetDB()
+	DB = DB.Limit(pageSize).Offset((page - 1) * pageSize)
+	DB.Raw("select id,title,cover,`desc`,created_at from collections where deleted_at is null").Scan(&collections)
+	DB.Model(&model.Collection{}).Count(&count)
+	return response.ResponseStruct{
+		HttpStatus: http.StatusOK,
+		Code:       response.SuccessCode,
+		Data:       gin.H{"count": count, "collections": collections},
+		Msg:        "ok",
+	}
 }

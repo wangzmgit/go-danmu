@@ -222,3 +222,26 @@ func DeleteCollectionVideo(ctx *gin.Context) {
 	res := service.DeleteCollectionVideoService(vid, cid, uid)
 	response.HandleResponse(ctx, res)
 }
+
+/*********************************************************
+** 函数功能: 获取合集列表
+** 日    期: 2021年11月21日14:53:56
+** 版    本: 3.6.0
+**********************************************************/
+func GetCollectionList(ctx *gin.Context) {
+	page, _ := strconv.Atoi(ctx.Query("page"))
+	pageSize, _ := strconv.Atoi(ctx.Query("page_size"))
+
+	if page <= 0 || pageSize <= 0 {
+		response.CheckFail(ctx, nil, "页码或数量有误")
+		return
+	}
+
+	if pageSize >= 30 {
+		response.CheckFail(ctx, nil, "请求数量过多")
+		return
+	}
+
+	res := service.GetCollectionListService(page, pageSize)
+	response.HandleResponse(ctx, res)
+}
