@@ -20,5 +20,5 @@ func CronJob() {
 		util.Logfile("[Error]", " cornJob error  "+err.Error())
 	}
 	Cron.Start()
-	println("created cron job")
+	util.PrintLog("[Info]", " Created cron job")
 }

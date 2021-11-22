@@ -62,11 +62,7 @@ if [ -f "config/application.yml" ];then
 	  [yY])
 		  echo "overwrite application.yml file"
 		  ;;
-	  [nN])
-		  echo "entered N"
-		  ;;
 	  *)
-		echo "Invalid input ......"
 		read -p "Please enter any key to exit" exit
 		exit 1
   esac
@@ -80,7 +76,6 @@ fi
 cat > ./config/application.yml << EOF
 server:
   port: ${port}
-  version: 3.5.5
   coding: ${coding}
   jwtSecret: ${jwt_secret}
   adminJwtSecret: ${admin_jwt_secret}

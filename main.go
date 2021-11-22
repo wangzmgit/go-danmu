@@ -22,7 +22,12 @@ const (
 
 func main() {
 	InitConfig()
-	println("version:" + viper.GetString("server.version"))
+	println("     _")
+	println("  __| | __ _ _ __  _ __ ___  _   _")
+	println(" / _` |/ _` | '_ \\| '_ ` _ \\| | | |")
+	println("| (_| | (_| | | | | | | | | | |_| |")
+	print(" \\__,_|\\__,_|_| |_|_| |_| |_|\\__,_|")
+	println("\tversion:" + common.Version)
 	//初始化Redis
 	common.Redis()
 	//初始化数据库
