@@ -203,12 +203,7 @@ func AddVideoToCollectionService(vid uint, cid uint, uid interface{}) response.R
 	}
 
 	DB.Create(&newVideoCollection)
-	return response.ResponseStruct{
-		HttpStatus: http.StatusOK,
-		Code:       response.SuccessCode,
-		Data:       nil,
-		Msg:        "ok",
-	}
+	return res
 }
 
 /*********************************************************
@@ -244,12 +239,7 @@ func DeleteCollectionVideoService(vid uint, cid uint, uid interface{}) response.
 		res.Msg = "删除失败"
 		return res
 	}
-	return response.ResponseStruct{
-		HttpStatus: http.StatusOK,
-		Code:       response.SuccessCode,
-		Data:       nil,
-		Msg:        "ok",
-	}
+	return res
 }
 
 /*********************************************************

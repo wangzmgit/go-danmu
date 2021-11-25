@@ -1,8 +1,8 @@
 #配置项(以下内容需要配置)
 #端口
 port=9000
-#视频类型(hls或mp4,hls需要预先安装FFmpeg)
-coding=mp4
+#视频类型(hls或mp4,手动部署需要预先安装ffmpeg或使用mp4)
+coding=hls
 #jwt的秘钥
 jwt_secret=jwt的秘钥
 #管理员jwt的秘钥
