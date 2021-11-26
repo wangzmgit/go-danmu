@@ -140,14 +140,25 @@ func ModifyVideoInfoService(video dto.VideoModifyRequest, uid interface{}) respo
 ** 日    期:2021/11/10
 **********************************************************/
 func DeleteVideoService(vid uint, uid interface{}) response.ResponseStruct {
-	DB := common.GetDB()
-	DB.Where("id = ? and uid = ?", vid, uid).Delete(model.Video{})
-	return response.ResponseStruct{
+	res := response.ResponseStruct{
 		HttpStatus: http.StatusOK,
 		Code:       response.SuccessCode,
 		Data:       nil,
 		Msg:        "ok",
 	}
+
+	DB := common.GetDB()
+	if !IsUserOwnsVideo(DB, vid, uid.(uint)) {
+		//该视频不属于这个用户
+		res.HttpStatus = http.StatusBadRequest
+		res.Code = response.FailCode
+		res.Msg = "删除失败"
+		return res
+	}
+	DB.Where("id = ?", vid).Delete(model.Video{})
+	//删除审核状态
+	DB.Where("vid = ?", vid).Delete(model.Review{})
+	return res
 }
 
 /*********************************************************
@@ -441,7 +452,8 @@ func AdminGetVideoListService(page int, pageSize int) response.ResponseStruct {
 func AdminDeleteVideoService(id uint) response.ResponseStruct {
 	DB := common.GetDB()
 	DB.Where("id = ?", id).Delete(model.Video{})
-
+	//删除审核状态
+	DB.Where("vid = ?", id).Delete(model.Review{})
 	return response.ResponseStruct{
 		HttpStatus: http.StatusOK,
 		Code:       response.SuccessCode,
