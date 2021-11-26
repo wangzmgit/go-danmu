@@ -28,6 +28,7 @@ func AdminLoginService(email string, password string) response.ResponseStruct {
 	DB := common.GetDB()
 	DB.Where("email = ?", email).First(&admin)
 	if admin.ID != 0 {
+		var adminInfo vo.AdminVo
 		//判断密码
 		if err := bcrypt.CompareHashAndPassword([]byte(admin.Password), []byte(password)); err == nil {
 			token, err := common.ReleaseAdminToken(admin.ID)
@@ -37,7 +38,9 @@ func AdminLoginService(email string, password string) response.ResponseStruct {
 				res.Msg = "服务器出错了"
 				return res
 			}
-			res.Data = gin.H{"token": token}
+			adminInfo.Name = admin.Name
+			adminInfo.Authority = admin.Authority
+			res.Data = gin.H{"token": token, "info": adminInfo}
 			return res
 		}
 	}

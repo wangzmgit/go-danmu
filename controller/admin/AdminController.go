@@ -7,6 +7,7 @@ import (
 	"wzm/danmu3.0/response"
 	"wzm/danmu3.0/service"
 	"wzm/danmu3.0/util"
+	"wzm/danmu3.0/vo"
 
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
@@ -35,12 +36,15 @@ func AdminLogin(ctx *gin.Context) {
 	//默认管理员
 	if email == viper.GetString("admin.email") && password == viper.GetString("admin.password") {
 		//发放token
+		var adminInfo vo.AdminVo
 		token, err := common.ReleaseAdminToken(0)
 		if err != nil {
 			response.ServerError(ctx, nil, "系统异常")
 			return
 		}
-		response.Success(ctx, gin.H{"token": token}, "ok")
+		adminInfo.Name = "管理员"
+		adminInfo.Authority = util.SuperAdmin
+		response.Success(ctx, gin.H{"token": token, "info": adminInfo}, "ok")
 	} else {
 		//查询管理员表
 		res := service.AdminLoginService(email, password)
@@ -60,11 +64,16 @@ func AddAdmin(ctx *gin.Context) {
 		response.Fail(ctx, nil, "请求错误")
 		return
 	}
+	name := request.Name
 	email := request.Email
 	password := request.Password
 	authority := request.Authority
 
 	//数据验证
+	if len(name) == 0 {
+		response.CheckFail(ctx, nil, "管理员名称不能为空")
+		return
+	}
 	if !util.VerifyEmailFormat(email) {
 		response.CheckFail(ctx, nil, "邮箱格式有误")
 		return

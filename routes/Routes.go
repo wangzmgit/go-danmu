@@ -148,6 +148,8 @@ func CollectRoute(r *gin.Engine) *gin.Engine {
 			adminAuth := admin.Group("")
 			adminAuth.Use(middleware.AdminMiddleware(util.Admin))
 			{
+				adminAuth.GET("/data", admin_controller.GetRecentWebsiteData)
+				adminAuth.GET("/data/total", admin_controller.GetTotalWebsiteData)
 				adminAuth.GET("/user/list", admin_controller.GetUserList)
 				adminAuth.POST("/user/modify", admin_controller.AdminModifyUser)
 				adminAuth.GET("/video/list", admin_controller.AdminGetVideoList)
