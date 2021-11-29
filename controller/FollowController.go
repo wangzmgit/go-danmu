@@ -12,7 +12,7 @@ import (
 
 /*********************************************************
 ** 函数功能: 关注
-** 日    期:2021/7/24
+** 日    期: 2021/7/24
 **********************************************************/
 func Following(ctx *gin.Context) {
 	//获取参数
@@ -37,7 +37,7 @@ func Following(ctx *gin.Context) {
 
 /*********************************************************
 ** 函数功能: 取消关注
-** 日    期:2021/7/24
+** 日    期: 2021/7/24
 **********************************************************/
 func UnFollow(ctx *gin.Context) {
 	var follow dto.FollowRequest
@@ -56,7 +56,7 @@ func UnFollow(ctx *gin.Context) {
 
 /*********************************************************
 ** 函数功能: 获取关注状态
-** 日    期:2021/7/25
+** 日    期: 2021/7/25
 **********************************************************/
 func GetFollowStatus(ctx *gin.Context) {
 	fid, _ := strconv.Atoi(ctx.Query("fid"))
@@ -71,16 +71,32 @@ func GetFollowStatus(ctx *gin.Context) {
 
 /*********************************************************
 ** 函数功能: 通过UID获取关注列表
-** 日    期:2021/7/25
+** 日    期: 2021/7/25
+** 修改时间: 2021年11月29日14:49:48
+** 版    本: 3.6.5
+** 修改内容: 分页获取
 **********************************************************/
 func GetFollowingByID(ctx *gin.Context) {
 	uid, _ := strconv.Atoi(ctx.Query("uid"))
+	page, _ := strconv.Atoi(ctx.Query("page"))
+	pageSize, _ := strconv.Atoi(ctx.Query("page_size"))
+
 	if uid == 0 {
 		response.CheckFail(ctx, nil, "用户不存在")
 		return
 	}
 
-	res := service.GetFollowingByIDService(uid)
+	if page <= 0 || pageSize <= 0 {
+		response.CheckFail(ctx, nil, "页码或数量有误")
+		return
+	}
+
+	if pageSize >= 30 {
+		response.CheckFail(ctx, nil, "请求数量过多")
+		return
+	}
+
+	res := service.GetFollowingByIDService(uid, page, pageSize)
 	response.HandleResponse(ctx, res)
 }
 
@@ -90,12 +106,24 @@ func GetFollowingByID(ctx *gin.Context) {
 **********************************************************/
 func GetFollowersByID(ctx *gin.Context) {
 	uid, _ := strconv.Atoi(ctx.Query("uid"))
+	page, _ := strconv.Atoi(ctx.Query("page"))
+	pageSize, _ := strconv.Atoi(ctx.Query("page_size"))
+
 	if uid == 0 {
 		response.CheckFail(ctx, nil, "用户不存在")
 		return
 	}
 
-	res := service.GetFollowersByIDService(uid)
+	if page <= 0 || pageSize <= 0 {
+		response.CheckFail(ctx, nil, "页码或数量有误")
+		return
+	}
+
+	if pageSize >= 30 {
+		response.CheckFail(ctx, nil, "请求数量过多")
+		return
+	}
+	res := service.GetFollowersByIDService(uid, page, pageSize)
 	response.HandleResponse(ctx, res)
 }
 

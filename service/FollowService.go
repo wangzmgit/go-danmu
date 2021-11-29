@@ -70,9 +70,10 @@ func GetFollowStatusService(uid uint, fid uint) response.ResponseStruct {
 ** 函数功能: 通过UID获取关注列表
 ** 日    期:2021/11/11
 **********************************************************/
-func GetFollowingByIDService(uid interface{}) response.ResponseStruct {
+func GetFollowingByIDService(uid interface{}, page int, pageSize int) response.ResponseStruct {
 	var users []vo.FollowVo
 	DB := common.GetDB()
+	DB = DB.Limit(pageSize).Offset((page - 1) * pageSize)
 	DB.Raw("select id,name,sign,avatar from users where deleted_at is null and id in (select fid from follows where uid = ? and deleted_at is null)", uid).Scan(&users)
 	return response.ResponseStruct{
 		HttpStatus: http.StatusOK,
@@ -86,9 +87,10 @@ func GetFollowingByIDService(uid interface{}) response.ResponseStruct {
 ** 函数功能: 通过UID获取粉丝列表
 ** 日    期:2021/11/11
 **********************************************************/
-func GetFollowersByIDService(uid interface{}) response.ResponseStruct {
+func GetFollowersByIDService(uid interface{}, page int, pageSize int) response.ResponseStruct {
 	var users []vo.FollowVo
 	DB := common.GetDB()
+	DB = DB.Limit(pageSize).Offset((page - 1) * pageSize)
 	DB.Raw("select id,name,sign,avatar from users where deleted_at is null and id in (select uid from follows where fid = ? and deleted_at is null)", uid).Scan(&users)
 	return response.ResponseStruct{
 		HttpStatus: http.StatusOK,
