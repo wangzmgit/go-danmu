@@ -205,7 +205,7 @@ func AdminModifyUserService(newInfo dto.AdminModifyUserRequest) response.Respons
 	DB := common.GetDB()
 	//新邮箱的uid不为当前uid
 	DB.Where("email = ?", newInfo.Email).First(&user)
-	if user.ID != newInfo.ID {
+	if user.ID != 0 && user.ID != newInfo.ID {
 		res.HttpStatus = http.StatusUnprocessableEntity
 		res.Code = response.CheckFailCode
 		res.Msg = "邮箱已存在"
