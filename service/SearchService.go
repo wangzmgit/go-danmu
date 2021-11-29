@@ -3,6 +3,7 @@ package service
 import (
 	"net/http"
 	"wzm/danmu3.0/common"
+	"wzm/danmu3.0/model"
 	"wzm/danmu3.0/response"
 	"wzm/danmu3.0/vo"
 
@@ -17,9 +18,7 @@ func SearchService(keywords string) response.ResponseStruct {
 	var videos []vo.SearchVideoVo
 	DB := common.GetDB()
 	DB = DB.Limit(50)
-	sql := "select id,title,cover from videos where review = true and " + keywords
-	DB.Raw(sql).Scan(&videos)
-
+	DB.Debug().Model(model.Video{}).Select("id,title,cover").Where("title like ?", keywords).Scan(&videos)
 	return response.ResponseStruct{
 		HttpStatus: http.StatusOK,
 		Code:       response.SuccessCode,

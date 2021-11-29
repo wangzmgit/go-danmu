@@ -4,7 +4,6 @@ import (
 	"strings"
 	"wzm/danmu3.0/response"
 	"wzm/danmu3.0/service"
-	"wzm/danmu3.0/util"
 
 	"github.com/gin-gonic/gin"
 )
@@ -12,26 +11,18 @@ import (
 /*********************************************************
 ** 函数功能: 搜索
 ** 日    期:
+** 修改时间: 2021年11月27日10:55:32
+** 版    本: 3.6.4
+** 修改内容: 修改关键词处理
 **********************************************************/
 func Search(ctx *gin.Context) {
-	search := ctx.DefaultQuery("keywords", "0")
-	if search == "0" || util.ExistSQLInject(search) {
+	search := ctx.Query("keywords")
+	if len(search) == 0 {
 		response.CheckFail(ctx, nil, "请输入搜索内容")
 		return
 	}
 
-	//拆分关键词
-	keywordsList := strings.Fields(search)
-	length := len(keywordsList)
-	if length > 5 {
-		response.CheckFail(ctx, nil, "输入的关键词过多")
-		return
-	}
-	//拼接查询语句
-	keywords := "title like '%" + keywordsList[0] + "%'"
-	for i := 1; i < length; i++ {
-		keywords += "or title like '%" + keywordsList[i] + "%'"
-	}
+	keywords := "%" + strings.Replace(search, " ", "%", -1) + "%"
 
 	res := service.SearchService(keywords)
 	response.HandleResponse(ctx, res)
