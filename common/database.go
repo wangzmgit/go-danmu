@@ -11,7 +11,7 @@ import (
 var DB *gorm.DB
 
 func InitDB() *gorm.DB {
-	driverName := viper.GetString("datasource.driverName")
+	driverName := viper.GetString("datasource.driver_name")
 	host := viper.GetString("datasource.host")
 	port := viper.GetString("datasource.port")
 	database := viper.GetString("datasource.database")
@@ -45,6 +45,7 @@ func InitDB() *gorm.DB {
 	db.AutoMigrate(&model.Admin{})
 	db.AutoMigrate(&model.Collection{})
 	db.AutoMigrate(&model.VideoCollection{})
+	db.AutoMigrate(&model.Opinion{})
 	DB = db
 	return db
 }

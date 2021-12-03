@@ -132,6 +132,8 @@ func CollectRoute(r *gin.Engine) *gin.Engine {
 		//其他接口
 		v1.GET("search", controller.Search)
 		v1.GET("carousel", controller.GetCarousel)
+		v1.POST("opinion", controller.CreateOpinion)
+		v1.POST("opinion/site", middleware.AuthMiddleware(), controller.CreateOpinionOnSite)
 
 		//管理员接口
 		admin := v1.Group("/admin")
@@ -151,6 +153,7 @@ func CollectRoute(r *gin.Engine) *gin.Engine {
 				adminAuth.GET("/data", admin_controller.GetRecentWebsiteData)
 				adminAuth.GET("/data/total", admin_controller.GetTotalWebsiteData)
 				adminAuth.GET("/user/list", admin_controller.GetUserList)
+				adminAuth.GET("/opinion/list", admin_controller.GetOpinionList) //获取反馈列表
 				adminAuth.POST("/user/modify", admin_controller.AdminModifyUser)
 				adminAuth.GET("/video/list", admin_controller.AdminGetVideoList)
 				adminAuth.POST("/video/add", admin_controller.ImportVideo)

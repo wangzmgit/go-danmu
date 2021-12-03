@@ -9,7 +9,7 @@ import (
 	"github.com/dgrijalva/jwt-go"
 )
 
-var jwtKey = []byte(viper.GetString("server.jwtSecret"))
+var jwtKey = []byte(viper.GetString("server.jwt_secret"))
 
 type Claims struct {
 	UserId uint

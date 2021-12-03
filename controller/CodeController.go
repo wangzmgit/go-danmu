@@ -56,7 +56,7 @@ func SendCode(ctx *gin.Context) {
 		response.ServerError(ctx, nil, "发送失败")
 		return
 	}
-	send := util.SendEmail(email, randomCode)
+	send := util.SendEmail(email, randomCode, "注册验证码")
 	if send {
 		response.Success(ctx, nil, "发送成功")
 	} else {
@@ -126,7 +126,7 @@ func SendCodeToMyself(ctx *gin.Context) {
 		response.ServerError(ctx, nil, "发送失败")
 		return
 	}
-	send := util.SendEmail(email, randomCode)
+	send := util.SendEmail(email, randomCode, "修改密码验证")
 	if send {
 		response.Success(ctx, nil, "ok")
 	} else {

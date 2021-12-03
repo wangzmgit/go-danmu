@@ -11,18 +11,19 @@ import (
 	"github.com/spf13/viper"
 )
 
-func SendEmail(ToEmail string, code string) bool {
+//参数: 目标邮箱，验证码，主题
+func SendEmail(ToEmail string, code string, subject string) bool {
 	host := viper.GetString("email.host")
 	port, _ := strconv.Atoi(viper.GetString("email.port"))
 	email := viper.GetString("email.address")
 	password := viper.GetString("email.password")
 	toEmail := ToEmail
 	header := make(map[string]string)
-	header["From"] = "弹幕网站" + "<" + email + ">"
+	header["From"] = viper.GetString("email.name") + "<" + email + ">"
 	header["To"] = toEmail
-	header["Subject"] = "验证码"
+	header["Subject"] = subject
 	header["Content-Type"] = "text/html; charset=UTF-8"
-	body := "您好! 您的验证码是 <span style='color:red'> " + code + "</span>，五分钟内有效，祝您生活愉快！"
+	body := "<h3>尊敬的用户：</h3><p>您好! 您的验证码是 <span style='color:red'> " + code + "</span>，五分钟内有效，祝您生活愉快！</p>"
 	message := ""
 	for k, v := range header {
 		message += fmt.Sprintf("%s: %s\r\n", k, v)

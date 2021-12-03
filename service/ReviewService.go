@@ -22,7 +22,8 @@ func GetReviewVideoListService(page int, pageSize int) response.ResponseStruct {
 	DB := common.GetDB()
 	DB = DB.Limit(pageSize).Offset((page - 1) * pageSize)
 	DB.Raw("select * from videos where deleted_at is null and id in (select vid from reviews where deleted_at is null and status = 1000)").Scan(&videos)
-
+	//统计数量
+	DB.Model(&model.Review{}).Where("status = 1000").Count(&total)
 	return response.ResponseStruct{
 		HttpStatus: http.StatusOK,
 		Code:       response.SuccessCode,

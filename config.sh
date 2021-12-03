@@ -15,6 +15,8 @@ db_name=数据库名
 db_user=数据库用户
 #数据库密码
 db_password=数据库密码
+#邮箱发送者
+email_name=验证码
 #smtp端口
 email_port=465
 #smpt的host
@@ -77,10 +79,10 @@ cat > ./config/application.yml << EOF
 server:
   port: ${port}
   coding: ${coding}
-  jwtSecret: ${jwt_secret}
-  adminJwtSecret: ${admin_jwt_secret}
+  jwt_secret: ${jwt_secret}
+  admin_jwt_secret: ${admin_jwt_secret}
 datasource:
-  driverName: mysql
+  driver_name: mysql
   host: ${db_host}
   port: 3306
   database: ${db_name}
@@ -89,6 +91,7 @@ datasource:
   charset: utf8mb4
 email:
   port: ${email_port}
+  name: ${email_name}
   host: ${email_host}
   address: ${email_address}
   password: ${email_password}
