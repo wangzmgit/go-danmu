@@ -25,11 +25,11 @@ email_host=smtp.163.com
 email_address=邮箱地址
 #邮箱授权码
 email_password=邮箱授权码
-#阿里云oss的accessid
-oss_accessid=阿里云oss的accessid
-#阿里云oss的accesskey
-oss_accesskey=阿里云oss的accesskey
-#阿里云oss的accesskey
+#阿里云oss的accesskey的id
+oss_accesskey_id=阿里云oss的accesskey_id
+#阿里云oss的accesskey的secret
+oss_accesskey_secret=阿里云oss的accesskey_secret
+#阿里云oss的endpoint
 oss_endpoint=oss-cn-beijing.aliyuncs.com
 #阿里云oss的bucket
 oss_bucket=阿里云oss的bucket
@@ -96,8 +96,8 @@ email:
   address: ${email_address}
   password: ${email_password}
 aliyunoss:
-  accessid: ${oss_accessid}
-  accesskey: ${oss_accesskey}
+  accesskey_id: ${oss_accesskey_id}
+  accesskey_secret: ${oss_accesskey_secret}
   endpoint: ${oss_endpoint}
   bucket: ${oss_bucket}
   domain: ${oss_domain}

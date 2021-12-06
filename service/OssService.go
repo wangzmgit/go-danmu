@@ -13,7 +13,7 @@ type Callback func(vid int)
 
 func UploadOSS(localFileName string, objectName string) (bool, string) {
 	//储存到阿里云OSS
-	client, err := oss.New(viper.GetString("aliyunoss.endpoint"), viper.GetString("aliyunoss.accessid"), viper.GetString("aliyunoss.accesskey"))
+	client, err := oss.New(viper.GetString("aliyunoss.endpoint"), viper.GetString("aliyunoss.accesskey_id"), viper.GetString("aliyunoss.accesskey_secret"))
 	if err != nil {
 		util.Logfile("[Error]", " OSS请求错误 "+err.Error())
 		return false, ""
@@ -42,7 +42,7 @@ func UploadOSS(localFileName string, objectName string) (bool, string) {
 
 func UploadVideoToOSS(localFileName string, objectName string, vid int) {
 	//储存到阿里云OSS
-	client, err := oss.New(viper.GetString("aliyunoss.endpoint"), viper.GetString("aliyunoss.accessid"), viper.GetString("aliyunoss.accesskey"))
+	client, err := oss.New(viper.GetString("aliyunoss.endpoint"), viper.GetString("aliyunoss.accesskey_id"), viper.GetString("aliyunoss.accesskey_secret"))
 	if err != nil {
 		util.Logfile("[Error]", " OSS请求错误 "+err.Error())
 		return
@@ -65,7 +65,7 @@ func UploadVideoToOSS(localFileName string, objectName string, vid int) {
 
 func UploadFolderToOSS(dir string, files *list.List) bool {
 	//储存到阿里云OSS
-	client, err := oss.New(viper.GetString("aliyunoss.endpoint"), viper.GetString("aliyunoss.accessid"), viper.GetString("aliyunoss.accesskey"))
+	client, err := oss.New(viper.GetString("aliyunoss.endpoint"), viper.GetString("aliyunoss.accesskey_id"), viper.GetString("aliyunoss.accesskey_secret"))
 	if err != nil {
 		return false
 	}
