@@ -15,6 +15,7 @@ type ReviewVideoVo struct {
 	Title        string `json:"title"`
 	Cover        string `json:"cover"`
 	Introduction string `json:"introduction"`
+	Partition    string `json:"partition"` //分区名，3.6.8新增
 }
 
 //上传的视频

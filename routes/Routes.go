@@ -132,6 +132,8 @@ func CollectRoute(r *gin.Engine) *gin.Engine {
 		//其他接口
 		v1.GET("search", controller.Search)
 		v1.GET("carousel", controller.GetCarousel)
+		v1.GET("/partition/list", controller.GetPartitionList)
+		v1.GET("/partition/all", controller.GetAllPartition)
 		v1.POST("opinion", controller.CreateOpinion)
 		v1.POST("opinion/site", middleware.AuthMiddleware(), controller.CreateOpinionOnSite)
 
@@ -146,6 +148,8 @@ func CollectRoute(r *gin.Engine) *gin.Engine {
 				superAdminAuth.GET("/list", admin_controller.GetAdminList)
 				superAdminAuth.POST("/delete", admin_controller.DeleteAdmin)
 				superAdminAuth.POST("/user/delete", admin_controller.AdminDeleteUser)
+				superAdminAuth.POST("/partition/add", admin_controller.AddPartition)
+				superAdminAuth.POST("/partition/delete", admin_controller.DeletePartition)
 			}
 			adminAuth := admin.Group("")
 			adminAuth.Use(middleware.AdminMiddleware(util.Admin))

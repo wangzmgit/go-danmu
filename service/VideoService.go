@@ -22,6 +22,9 @@ import (
 ** 修改时间: 2021年11月17日12:55:08
 ** 版    本: 3.5.0
 ** 修改内容: 移除子视频
+** 修改时间: 2021年12月9日17:47:14
+** 版    本: 3.6.8
+** 修改内容: 分区
 **********************************************************/
 func UploadVideoInfoService(video dto.UploadVideoRequest, uid interface{}) response.ResponseStruct {
 	res := response.ResponseStruct{
@@ -39,6 +42,7 @@ func UploadVideoInfoService(video dto.UploadVideoRequest, uid interface{}) respo
 		Original:     video.Original,
 		Uid:          uid.(uint),
 		VideoType:    viper.GetString("server.coding"),
+		PartitionID:  video.Partition,
 	}
 
 	tx := DB.Begin()
@@ -82,10 +86,13 @@ func GetVideoStatusService(vid int, uid interface{}) response.ResponseStruct {
 		res.Msg = "视频不见了"
 		return res
 	}
+	//通过子分区获取父分区
+	partition := GetPartitionName(DB, review.Video.PartitionID)
 	var video = vo.ReviewVideoVo{
 		Title:        review.Video.Title,
 		Cover:        review.Video.Cover,
 		Introduction: review.Video.Introduction,
+		Partition:    partition,
 	}
 
 	res.Data = gin.H{"status": review.Status, "remarks": review.Remarks, "video": video}
@@ -94,7 +101,10 @@ func GetVideoStatusService(vid int, uid interface{}) response.ResponseStruct {
 
 /*********************************************************
 ** 函数功能: 修改视频信息
-** 日    期:2021/11/10
+** 日    期: 2021/11/10
+** 修改时间: 2021年12月9日17:50:35
+** 版    本: 3.6.8
+** 修改内容: 分区
 **********************************************************/
 func ModifyVideoInfoService(video dto.VideoModifyRequest, uid interface{}) response.ResponseStruct {
 	res := response.ResponseStruct{
@@ -111,6 +121,7 @@ func ModifyVideoInfoService(video dto.VideoModifyRequest, uid interface{}) respo
 			"cover":        video.Cover,
 			"introduction": video.Introduction,
 			"original":     video.Original,
+			"partition_id": video.Partition,
 		},
 	).Error; err != nil {
 		tx.Rollback()

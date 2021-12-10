@@ -6,6 +6,7 @@ type UploadVideoRequest struct {
 	Cover        string
 	Introduction string
 	Original     bool
+	Partition    uint //分区ID，3.6.8新增
 }
 
 type VideoModifyRequest struct {
@@ -14,6 +15,7 @@ type VideoModifyRequest struct {
 	Cover        string
 	Introduction string
 	Original     bool
+	Partition    uint //分区ID，3.6.8新增
 }
 
 type DeleteVideoRequest struct {

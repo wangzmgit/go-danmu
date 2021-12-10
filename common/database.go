@@ -46,6 +46,7 @@ func InitDB() *gorm.DB {
 	db.AutoMigrate(&model.Collection{})
 	db.AutoMigrate(&model.VideoCollection{})
 	db.AutoMigrate(&model.Opinion{})
+	db.AutoMigrate(&model.Partition{})
 	DB = db
 	return db
 }
