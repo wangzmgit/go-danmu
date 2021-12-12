@@ -8,3 +8,7 @@ type PartitionDto struct {
 type DeletePartitionDto struct {
 	ID uint
 }
+
+type SubpartitionDto struct {
+	ID uint
+}

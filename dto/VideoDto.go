@@ -39,3 +39,9 @@ type ImportVideo struct {
 	Introduction string
 	Video        string
 }
+
+type GetVideoListDto struct {
+	Page      int
+	PageSize  int
+	Partition int
+}

@@ -365,14 +365,27 @@ func GetRecommendVideoService() response.ResponseStruct {
 ** 版    本: 3.5.0
 ** 修改内容: 移除子视频
 **********************************************************/
-func GetVideoListService(page int, pageSize int) response.ResponseStruct {
+func GetVideoListService(query dto.GetVideoListDto) response.ResponseStruct {
 	DB := common.GetDB()
+	var total int //记录总数
 	var videos []vo.SearchVideoVo
-	//记录总数
-	var total int
-	DB = DB.Limit(pageSize).Offset((page - 1) * pageSize)
-	//查询的条件为已经通过审核review,并且不是合集视频的子视频(每个合集中有一个主视频和n个子视频)
-	DB.Model(&model.Video{}).Select("id,title,cover").Where("review = 1").Scan(&videos).Count(&total)
+	Pagination := DB.Limit(query.PageSize).Offset((query.Page - 1) * query.PageSize)
+
+	if query.Partition == 0 {
+		//不传分区参数默认查询全部
+		Pagination.Model(&model.Video{}).Select("id,title,cover").Where("review = 1").Scan(&videos).Count(&total)
+	} else if IsSubpartition(DB, uint(query.Partition)) {
+		//判断是否为子分区
+		Pagination.Model(&model.Video{}).Select("id,title,cover").Where(
+			map[string]interface{}{"review": 1, "partition_id": query.Partition},
+		).Scan(&videos).Count(&total)
+	} else {
+		//获取该分区下的子分区
+		list := GetSubpartitionList(DB, uint(query.Partition))
+		sql := "review = 1 and partition_id in (" + list + ")"
+		Pagination.Model(&model.Video{}).Select("id,title,cover").Where(sql).Scan(&videos).Count(&total)
+	}
+
 	return response.ResponseStruct{
 		HttpStatus: http.StatusOK,
 		Code:       response.SuccessCode,

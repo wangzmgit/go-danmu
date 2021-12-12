@@ -223,22 +223,32 @@ func GetRecommendVideo(ctx *gin.Context) {
 
 /*********************************************************
 ** 函数功能: 获取视频列表
-** 日    期:2021/8/1
+** 日    期: 2021/8/1
 ** 修改时间: 2021/10/26
 ** 版    本: 3.3.0
 ** 修改内容: 获取合集所属的视频，不获取合集子视频
+** 修改时间: 2021年12月11日17:03:06
+** 版    本: 3.6.8
+** 修改内容: 按分区获取视频列表
 **********************************************************/
 func GetVideoList(ctx *gin.Context) {
+	var request dto.GetVideoListDto
 
-	page, _ := strconv.Atoi(ctx.Query("page"))
-	pageSize, _ := strconv.Atoi(ctx.Query("page_size"))
+	request.Page, _ = strconv.Atoi(ctx.Query("page"))
+	request.PageSize, _ = strconv.Atoi(ctx.Query("page_size"))
+	request.Partition, _ = strconv.Atoi(ctx.DefaultQuery("partition", "0")) //分区
 
-	if page <= 0 || pageSize <= 0 {
+	if request.Page <= 0 || request.PageSize <= 0 {
 		response.Fail(ctx, nil, "页码或数量有误")
 		return
 	}
 
-	res := service.GetVideoListService(page, pageSize)
+	if request.PageSize >= 30 {
+		response.Fail(ctx, nil, "请求数量过多")
+		return
+	}
+
+	res := service.GetVideoListService(request)
 	response.HandleResponse(ctx, res)
 }
 

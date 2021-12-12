@@ -2,6 +2,7 @@ package service
 
 import (
 	"net/http"
+	"strconv"
 	"wzm/danmu3.0/common"
 	"wzm/danmu3.0/dto"
 	"wzm/danmu3.0/model"
@@ -106,10 +107,23 @@ func GetAllPartitionService() response.ResponseStruct {
 ** 函数功能: 所属分区是否存在
 ** 日    期: 2021年12月9日
 **********************************************************/
-func IsParentPartitionExist(db *gorm.DB, fid uint) bool {
+func IsParentPartitionExist(db *gorm.DB, id uint) bool {
 	var partition model.Partition
-	db.Where("fid = 0").First(&partition, fid)
-	if partition.ID != 0 {
+	db.First(&partition, id)
+	if partition.ID != 0 && partition.Fid == 0 {
+		return true
+	}
+	return false
+}
+
+/*********************************************************
+** 函数功能: 是否为子分区
+** 日    期: 2021年12月12日
+**********************************************************/
+func IsSubpartition(db *gorm.DB, id uint) bool {
+	var partition model.Partition
+	db.First(&partition, id)
+	if partition.ID != 0 && partition.Fid != 0 {
 		return true
 	}
 	return false
@@ -128,4 +142,23 @@ func GetPartitionName(db *gorm.DB, id uint) string {
 		return partition.Content + "/" + subpartition.Content
 	}
 	return "未分区"
+}
+
+/*********************************************************
+** 函数功能: 所有子分区ID的字符串，用于查询分区视频
+** 日    期: 2021年12月11日
+** 返    回: 子分区ID的字符串 格式 1,2,3
+**********************************************************/
+func GetSubpartitionList(db *gorm.DB, fid uint) string {
+	var partitions []dto.SubpartitionDto
+	db.Model(&model.Partition{}).Select("id").Where("fid = ?", fid).Scan(&partitions)
+	len := len(partitions)
+	if len > 0 {
+		res := strconv.Itoa(int(partitions[0].ID))
+		for i := 1; i < len; i++ {
+			res += ("," + strconv.Itoa(int(partitions[1].ID)))
+		}
+		return res
+	}
+	return ""
 }
