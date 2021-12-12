@@ -27,6 +27,7 @@ func UploadVideoInfo(ctx *gin.Context) {
 	}
 	title := video.Title
 	cover := video.Cover
+	partition := video.Partition
 	uid, _ := ctx.Get("id")
 
 	//验证数据
@@ -36,6 +37,10 @@ func UploadVideoInfo(ctx *gin.Context) {
 	}
 	if len(cover) == 0 {
 		response.CheckFail(ctx, nil, "封面图不能为空")
+		return
+	}
+	if partition == 0 {
+		response.CheckFail(ctx, nil, "未选择分区")
 		return
 	}
 

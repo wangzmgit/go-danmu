@@ -25,6 +25,9 @@ import (
 ** 修改时间: 2021年12月9日17:47:14
 ** 版    本: 3.6.8
 ** 修改内容: 分区
+** 修改时间: 2021年12月12日15:55:11
+** 版    本: 3.6.9
+** 修改内容: 分区必须为子分区
 **********************************************************/
 func UploadVideoInfoService(video dto.UploadVideoRequest, uid interface{}) response.ResponseStruct {
 	res := response.ResponseStruct{
@@ -35,6 +38,12 @@ func UploadVideoInfoService(video dto.UploadVideoRequest, uid interface{}) respo
 	}
 
 	DB := common.GetDB()
+	if !IsSubpartition(DB, video.Partition) {
+		res.HttpStatus = http.StatusUnprocessableEntity
+		res.Code = response.CheckFailCode
+		res.Msg = "分区不存在"
+		return res
+	}
 	newVideo := model.Video{
 		Title:        video.Title,
 		Cover:        video.Cover,
@@ -121,7 +130,6 @@ func ModifyVideoInfoService(video dto.VideoModifyRequest, uid interface{}) respo
 			"cover":        video.Cover,
 			"introduction": video.Introduction,
 			"original":     video.Original,
-			"partition_id": video.Partition,
 		},
 	).Error; err != nil {
 		tx.Rollback()
