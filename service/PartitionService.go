@@ -156,7 +156,7 @@ func GetSubpartitionList(db *gorm.DB, fid uint) string {
 	if len > 0 {
 		res := strconv.Itoa(int(partitions[0].ID))
 		for i := 1; i < len; i++ {
-			res += ("," + strconv.Itoa(int(partitions[1].ID)))
+			res += ("," + strconv.Itoa(int(partitions[i].ID)))
 		}
 		return res
 	}

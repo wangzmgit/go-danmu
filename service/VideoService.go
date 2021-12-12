@@ -25,9 +25,6 @@ import (
 ** 修改时间: 2021年12月9日17:47:14
 ** 版    本: 3.6.8
 ** 修改内容: 分区
-** 修改时间: 2021年12月12日15:55:11
-** 版    本: 3.6.9
-** 修改内容: 分区必须为子分区
 **********************************************************/
 func UploadVideoInfoService(video dto.UploadVideoRequest, uid interface{}) response.ResponseStruct {
 	res := response.ResponseStruct{
