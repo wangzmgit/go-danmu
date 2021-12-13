@@ -431,30 +431,6 @@ func GetVideoListByUserIDService(uid int, page int, pageSize int) response.Respo
 }
 
 /*********************************************************
-** 函数功能: 通过视频ID获取子视频列表
-** 日    期: 2021/11/11
-** 修改时间: 2021年11月17日13:00:52
-** 版    本: 3.5.0
-** 修改内容: 移除子视频
-**********************************************************/
-func GetSubVideoListByVideoIDService(uid interface{}, page int, pageSize int, parentId int) response.ResponseStruct {
-	//记录总数
-	var totalSize int
-	//分页查询
-	var videos []model.Video
-	DB := common.GetDB()
-	DB = DB.Limit(pageSize).Offset((page - 1) * pageSize)
-	DB.Where("uid = ?", uid, parentId).Find(&videos).Count(&totalSize)
-
-	return response.ResponseStruct{
-		HttpStatus: http.StatusOK,
-		Code:       response.SuccessCode,
-		Data:       gin.H{"count": totalSize, "data": vo.ToUploadVideoVo(videos)},
-		Msg:        "ok",
-	}
-}
-
-/*********************************************************
 ** 函数功能: 管理员获取视频列表
 ** 日    期: 2021年11月12日15:30:26
 **********************************************************/
