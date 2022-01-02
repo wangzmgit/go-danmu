@@ -150,6 +150,14 @@ func CollectRoute(r *gin.Engine) *gin.Engine {
 				superAdminAuth.POST("/user/delete", admin_controller.AdminDeleteUser)
 				superAdminAuth.POST("/partition/add", admin_controller.AddPartition)
 				superAdminAuth.POST("/partition/delete", admin_controller.DeletePartition)
+				config := superAdminAuth.Group("/config")
+				{
+					config.GET("/oss/get", admin_controller.GetOssConfig)
+					config.GET("/email/get", admin_controller.GetEmailConfig)
+					config.POST("/oss/set", admin_controller.SetOssConfig)
+					config.POST("/email/set", admin_controller.SetEmailConfig)
+					config.POST("/admin/set", admin_controller.SetAdminConfig)
+				}
 			}
 			adminAuth := admin.Group("")
 			adminAuth.Use(middleware.AdminMiddleware(util.Admin))

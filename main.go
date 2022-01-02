@@ -1,10 +1,13 @@
 package main
 
 import (
+	"io"
 	"os"
+	"time"
 	"wzm/danmu3.0/common"
 	"wzm/danmu3.0/cronJob"
 	"wzm/danmu3.0/routes"
+	"wzm/danmu3.0/util"
 
 	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
@@ -35,6 +38,11 @@ func main() {
 	defer db.Close()
 	//创建定时任务
 	cronJob.CronJob()
+	//创建gin日志文件
+	file := InitGinLog()
+	gin.DisableConsoleColor()
+	gin.DefaultWriter = io.MultiWriter(file)
+	//设置模式
 	gin.SetMode(ReleaseMode)
 	r := gin.Default()
 	r = routes.CollectRoute(r)
@@ -54,4 +62,14 @@ func InitConfig() {
 	if err != nil {
 		panic(err)
 	}
+}
+
+func InitGinLog() *os.File {
+	filenames := "./file/logs/gin_" + util.RandomString(3) + time.Now().Format("20060102") + ".log"
+	file, err := os.Create(filenames)
+	if err != nil {
+		return nil
+	}
+
+	return file
 }
