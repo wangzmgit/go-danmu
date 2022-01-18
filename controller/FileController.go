@@ -5,17 +5,17 @@ import (
 	"path"
 	"strconv"
 	"time"
-	"wzm/danmu3.0/response"
-	"wzm/danmu3.0/service"
-	"wzm/danmu3.0/util"
 
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
+	"kuukaa.fun/danmu-v4/response"
+	"kuukaa.fun/danmu-v4/service"
+	"kuukaa.fun/danmu-v4/util"
 )
 
 /*********************************************************
 ** 函数功能: 上传头像
-** 日    期:2021/7/13
+** 日    期: 2021/7/13
 **********************************************************/
 func UploadAvatar(ctx *gin.Context) {
 	avatar, err := ctx.FormFile("avatar")
@@ -68,6 +68,7 @@ func UploadCover(ctx *gin.Context) {
 		response.CheckFail(ctx, nil, "图片不符合要求")
 		return
 	}
+	//储存文件
 	cover.Filename = util.RandomString(3) + strconv.FormatInt(time.Now().UnixNano(), 10) + suffix
 	errSave := ctx.SaveUploadedFile(cover, "./file/cover/"+cover.Filename)
 	if errSave != nil {
@@ -82,10 +83,8 @@ func UploadCover(ctx *gin.Context) {
 	}
 
 	uid, _ := ctx.Get("id")
-	// 拼接上传图片的路径信息
 	localFileName := "./file/cover/" + cover.Filename
 	objectName := "cover/" + cover.Filename
-
 	//记录日志
 	util.Logfile("[Info]", " User "+strconv.Itoa(int(uid.(uint)))+" | "+ctx.ClientIP()+" | "+objectName)
 
@@ -98,6 +97,13 @@ func UploadCover(ctx *gin.Context) {
 ** 日    期:2021/7/14
 **********************************************************/
 func UploadVideo(ctx *gin.Context) {
+	urls := map[string]string{
+		"res360":   "",
+		"res480":   "",
+		"res720":   "",
+		"res1080":  "",
+		"original": "",
+	}
 	vid, _ := strconv.Atoi(ctx.PostForm("vid"))
 	if vid <= 0 {
 		response.Fail(ctx, nil, "VID格式有误")
@@ -113,7 +119,9 @@ func UploadVideo(ctx *gin.Context) {
 		response.CheckFail(ctx, nil, "请上传mp4格式文件")
 		return
 	}
-	video.Filename = util.RandomString(3) + strconv.FormatInt(time.Now().UnixNano(), 10) + suffix
+	//仅文件名(不含后缀)
+	videoName := util.RandomString(3) + strconv.FormatInt(time.Now().UnixNano(), 10)
+	video.Filename = videoName + suffix
 	errSave := ctx.SaveUploadedFile(video, "./file/video/"+video.Filename)
 	if errSave != nil {
 		response.Fail(ctx, nil, "视频保存失败")
@@ -126,27 +134,27 @@ func UploadVideo(ctx *gin.Context) {
 		return
 	}
 
-	var url string
 	uid, _ := ctx.Get("id")
 	// 拼接上传图片的路径信息
 	localFileName := "./file/video/" + video.Filename
 	objectName := "video/" + video.Filename
-
-	//启用hls
-	if viper.GetString("server.coding") == "hls" {
-		url = service.Transcoding(video.Filename, vid)
+	//获取url
+	if viper.GetString("transcoding.coding") == "hls" {
+		urls["original"] = service.GetUrl() + "output/" + videoName + "/" + "index.m3u8"
 	} else {
-		go service.UploadVideoToOSS(localFileName, objectName, vid)
-		if len(viper.GetString("aliyunoss.domain")) == 0 {
-			url = "http://" + viper.GetString("aliyunoss.bucket") + "." + viper.GetString("aliyunoss.endpoint") + "/" + objectName
-		} else {
-			url = "http://" + viper.GetString("aliyunoss.domain") + "/" + objectName
+		urls["original"] = service.GetUrl() + objectName
+	}
+	//记录日志
+	util.Logfile("[Info]", " User "+strconv.Itoa(int(uid.(uint)))+" | "+ctx.ClientIP()+" | "+objectName)
+	res := service.UploadVideoService(urls, vid, uid.(uint))
+	//启动转码服务或上传服务
+	if viper.GetString("transcoding.coding") == "hls" {
+		go service.Transcoding(video.Filename, vid)
+	} else {
+		if viper.GetBool("aliyunoss.storage") {
+			go service.UploadVideoToOSS(localFileName, objectName, vid)
 		}
 	}
 
-	//记录日志
-	util.Logfile("[Info]", " User "+strconv.Itoa(int(uid.(uint)))+" | "+ctx.ClientIP()+" | "+objectName)
-
-	res := service.UploadVideoService(url, vid, uid.(uint))
 	response.HandleResponse(ctx, res)
 }

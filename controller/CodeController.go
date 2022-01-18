@@ -3,13 +3,13 @@ package controller
 import (
 	"net/http"
 	"time"
-	"wzm/danmu3.0/common"
-	"wzm/danmu3.0/dto"
-	"wzm/danmu3.0/response"
-	"wzm/danmu3.0/service"
-	"wzm/danmu3.0/util"
 
 	"github.com/gin-gonic/gin"
+	"kuukaa.fun/danmu-v4/common"
+	"kuukaa.fun/danmu-v4/dto"
+	"kuukaa.fun/danmu-v4/response"
+	"kuukaa.fun/danmu-v4/service"
+	"kuukaa.fun/danmu-v4/util"
 )
 
 /*********************************************************
@@ -17,7 +17,7 @@ import (
 ** 日    期:2021/7/23
 **********************************************************/
 func SendCode(ctx *gin.Context) {
-	var requestUser dto.SendCodeRequest
+	var requestUser dto.SendCodeDto
 	err := ctx.Bind(&requestUser)
 	if err != nil {
 		response.Response(ctx, http.StatusBadRequest, 4000, nil, "请求错误")
@@ -88,7 +88,7 @@ func VerificationCode(email string, code string) bool {
 ** 日    期:2021/10/25
 **********************************************************/
 func SendCodeToMyself(ctx *gin.Context) {
-	var requestUser dto.SendCodeRequest
+	var requestUser dto.SendCodeDto
 	err := ctx.Bind(&requestUser)
 	if err != nil {
 		response.Response(ctx, http.StatusBadRequest, 4000, nil, "请求错误")

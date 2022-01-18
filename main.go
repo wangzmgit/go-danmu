@@ -4,14 +4,13 @@ import (
 	"io"
 	"os"
 	"time"
-	"wzm/danmu3.0/common"
-	"wzm/danmu3.0/cronJob"
-	"wzm/danmu3.0/routes"
-	"wzm/danmu3.0/util"
 
 	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/spf13/viper"
+	"kuukaa.fun/danmu-v4/common"
+	"kuukaa.fun/danmu-v4/routes"
+	"kuukaa.fun/danmu-v4/util"
 )
 
 const (
@@ -36,14 +35,12 @@ func main() {
 	//初始化数据库
 	db := common.InitDB()
 	defer db.Close()
-	//创建定时任务
-	cronJob.CronJob()
-	//创建gin日志文件
+	// 创建gin日志文件
 	file := InitGinLog()
 	gin.DisableConsoleColor()
 	gin.DefaultWriter = io.MultiWriter(file)
-	//设置模式
-	gin.SetMode(ReleaseMode)
+	// 设置模式
+	gin.SetMode(DebugMode)
 	r := gin.Default()
 	r = routes.CollectRoute(r)
 	port := viper.GetString("server.port")
@@ -70,6 +67,5 @@ func InitGinLog() *os.File {
 	if err != nil {
 		return nil
 	}
-
 	return file
 }

@@ -1,6 +1,6 @@
 package dto
 
-type DanmakuRequest struct {
+type DanmakuDto struct {
 	ID    uint
 	Vid   uint
 	Time  uint //时间

@@ -1,6 +1,6 @@
 package dto
 
-type SendMessageReques struct {
+type SendMessageDto struct {
 	Fid     uint
 	Content string
 }

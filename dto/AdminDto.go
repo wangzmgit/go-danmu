@@ -1,15 +1,15 @@
 package dto
 
-type AdminIDRequest struct {
+type AdminIdDto struct {
 	ID uint
 }
 
-type AdminLoginRequest struct {
+type AdminLoginDto struct {
 	Email    string
 	Password string
 }
 
-type AddAdminRequest struct {
+type AddAdminDto struct {
 	Name      string
 	Email     string
 	Password  string

@@ -2,11 +2,11 @@ package controller
 
 import (
 	"strconv"
-	"wzm/danmu3.0/dto"
-	"wzm/danmu3.0/response"
-	"wzm/danmu3.0/service"
 
 	"github.com/gin-gonic/gin"
+	"kuukaa.fun/danmu-v4/dto"
+	"kuukaa.fun/danmu-v4/response"
+	"kuukaa.fun/danmu-v4/service"
 )
 
 /*********************************************************
@@ -36,7 +36,6 @@ func GetComments(ctx *gin.Context) {
 ** 日    期:2021/10/5
 **********************************************************/
 func GetCommentsV2(ctx *gin.Context) {
-
 	//获取分页信息
 	page, _ := strconv.Atoi(ctx.Query("page"))
 	pageSize, _ := strconv.Atoi(ctx.Query("page_size"))
@@ -52,16 +51,23 @@ func GetCommentsV2(ctx *gin.Context) {
 
 /*********************************************************
 ** 函数功能: 获取回复详情v2
-** 日    期:2021/10/5
+** 日    期: 2021/10/5
 **********************************************************/
 func GetReplyDetailsV2(ctx *gin.Context) {
 	//获取分页信息
+	page, _ := strconv.Atoi(ctx.Query("page"))
+	pageSize, _ := strconv.Atoi(ctx.Query("page_size"))
 	cid, _ := strconv.Atoi(ctx.Query("cid"))
 	if cid <= 0 {
 		response.CheckFail(ctx, nil, "参数有误")
 		return
 	}
-	res := service.GetReplyDetailsV2Service(cid)
+	if page <= 0 || pageSize <= 0 {
+		response.CheckFail(ctx, nil, "页码或数量有误")
+		return
+	}
+
+	res := service.GetReplyDetailsV2Service(cid, page, pageSize)
 	response.HandleResponse(ctx, res)
 }
 
@@ -71,7 +77,7 @@ func GetReplyDetailsV2(ctx *gin.Context) {
 **********************************************************/
 func DeleteComment(ctx *gin.Context) {
 	//获取参数
-	var request dto.CommentDeleteRequest
+	var request dto.CommentIdDto
 	if err := ctx.Bind(&request); err != nil {
 		response.Fail(ctx, nil, "请求错误")
 		return
@@ -88,7 +94,7 @@ func DeleteComment(ctx *gin.Context) {
 ** 日    期:2021/7/27
 **********************************************************/
 func DeleteReply(ctx *gin.Context) {
-	var request dto.CommentDeleteRequest
+	var request dto.CommentIdDto
 	if err := ctx.Bind(&request); err != nil {
 		response.Fail(ctx, nil, "请求错误")
 		return
@@ -105,7 +111,7 @@ func DeleteReply(ctx *gin.Context) {
 ** 日    期:2021/7/27
 **********************************************************/
 func Comment(ctx *gin.Context) {
-	var comment dto.CommentRequest
+	var comment dto.CommentDto
 	err := ctx.Bind(&comment)
 	if err != nil {
 		response.Fail(ctx, nil, "请求错误")
@@ -128,7 +134,7 @@ func Comment(ctx *gin.Context) {
 ** 日    期:2021/7/27
 **********************************************************/
 func Reply(ctx *gin.Context) {
-	var reply dto.ReplyRequest
+	var reply dto.ReplyDto
 	err := ctx.Bind(&reply)
 	if err != nil {
 		response.Fail(ctx, nil, "请求错误")

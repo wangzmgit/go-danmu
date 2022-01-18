@@ -3,7 +3,6 @@ package util
 import (
 	"math/rand"
 	"regexp"
-	"strings"
 	"time"
 )
 
@@ -71,14 +70,15 @@ func RandomCode(n int) string {
 
 /*********************************************************
 ** 函数功能: 是否存在SQL注入
-** 日    期:2021/7/23
-** 返 回 值:存在‘返回true
+** 日    期: 2022/1/4
 **********************************************************/
 func ExistSQLInject(sql string) bool {
-	if find := strings.Contains(sql, "'"); find {
-		return true
+	str := `(?:')|(?:--)|(/\\*(?:.|[\\n\\r])*?\\*/)|(\b(select|update|and|or|delete|insert|trancate|char|chr|into|substr|ascii|declare|exec|count|master|into|drop|execute)\b)`
+	re, err := regexp.Compile(str)
+	if err != nil {
+		return false
 	}
-	return false
+	return re.MatchString(sql)
 }
 
 /*********************************************************

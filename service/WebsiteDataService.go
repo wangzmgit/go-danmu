@@ -5,13 +5,13 @@ import (
 	"net/http"
 	"os/exec"
 	"time"
-	"wzm/danmu3.0/common"
-	"wzm/danmu3.0/model"
-	"wzm/danmu3.0/response"
-	"wzm/danmu3.0/vo"
 
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
+	"kuukaa.fun/danmu-v4/common"
+	"kuukaa.fun/danmu-v4/model"
+	"kuukaa.fun/danmu-v4/response"
+	"kuukaa.fun/danmu-v4/vo"
 )
 
 /*********************************************************

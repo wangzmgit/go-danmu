@@ -3,11 +3,11 @@ package controller
 import (
 	"net/http"
 	"strconv"
-	"wzm/danmu3.0/dto"
-	"wzm/danmu3.0/response"
-	"wzm/danmu3.0/service"
 
 	"github.com/gin-gonic/gin"
+	"kuukaa.fun/danmu-v4/dto"
+	"kuukaa.fun/danmu-v4/response"
+	"kuukaa.fun/danmu-v4/service"
 )
 
 /*********************************************************
@@ -16,7 +16,7 @@ import (
 **********************************************************/
 func Following(ctx *gin.Context) {
 	//获取参数
-	var follow dto.FollowRequest
+	var follow dto.FollowDto
 	err := ctx.Bind(&follow)
 	if err != nil {
 		response.Response(ctx, http.StatusBadRequest, 400, nil, "请求错误")
@@ -40,7 +40,7 @@ func Following(ctx *gin.Context) {
 ** 日    期: 2021/7/24
 **********************************************************/
 func UnFollow(ctx *gin.Context) {
-	var follow dto.FollowRequest
+	var follow dto.FollowDto
 	err := ctx.Bind(&follow)
 	if err != nil {
 		response.Response(ctx, http.StatusBadRequest, 400, nil, "请求错误")

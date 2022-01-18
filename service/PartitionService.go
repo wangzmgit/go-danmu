@@ -2,15 +2,14 @@ package service
 
 import (
 	"net/http"
-	"strconv"
-	"wzm/danmu3.0/common"
-	"wzm/danmu3.0/dto"
-	"wzm/danmu3.0/model"
-	"wzm/danmu3.0/response"
-	"wzm/danmu3.0/vo"
 
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
+	"kuukaa.fun/danmu-v4/common"
+	"kuukaa.fun/danmu-v4/dto"
+	"kuukaa.fun/danmu-v4/model"
+	"kuukaa.fun/danmu-v4/response"
+	"kuukaa.fun/danmu-v4/vo"
 )
 
 /*********************************************************
@@ -147,18 +146,10 @@ func GetPartitionName(db *gorm.DB, id uint) string {
 /*********************************************************
 ** 函数功能: 所有子分区ID的字符串，用于查询分区视频
 ** 日    期: 2021年12月11日
-** 返    回: 子分区ID的字符串 格式 1,2,3
+** 返    回: 子分区ID的切片
 **********************************************************/
-func GetSubpartitionList(db *gorm.DB, fid uint) string {
-	var partitions []dto.SubpartitionDto
-	db.Model(&model.Partition{}).Select("id").Where("fid = ?", fid).Scan(&partitions)
-	len := len(partitions)
-	if len > 0 {
-		res := strconv.Itoa(int(partitions[0].ID))
-		for i := 1; i < len; i++ {
-			res += ("," + strconv.Itoa(int(partitions[i].ID)))
-		}
-		return res
-	}
-	return ""
+func GetSubpartitionList(db *gorm.DB, fid uint) []uint {
+	var id []uint
+	db.Model(&model.Partition{}).Where("fid = ?", fid).Pluck("id", &id)
+	return id
 }

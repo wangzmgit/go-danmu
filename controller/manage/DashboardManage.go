@@ -1,10 +1,9 @@
-package admin_controller
+package manage
 
 import (
-	"wzm/danmu3.0/response"
-	"wzm/danmu3.0/service"
-
 	"github.com/gin-gonic/gin"
+	"kuukaa.fun/danmu-v4/response"
+	"kuukaa.fun/danmu-v4/service"
 )
 
 /*********************************************************

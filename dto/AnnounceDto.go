@@ -1,6 +1,6 @@
 package dto
 
-type AddAnnounceRequest struct {
+type AddAnnounceDto struct {
 	Title   string
 	Content string
 	Url     string

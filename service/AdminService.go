@@ -2,14 +2,14 @@ package service
 
 import (
 	"net/http"
-	"wzm/danmu3.0/common"
-	"wzm/danmu3.0/dto"
-	"wzm/danmu3.0/model"
-	"wzm/danmu3.0/response"
-	"wzm/danmu3.0/vo"
 
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
+	"kuukaa.fun/danmu-v4/common"
+	"kuukaa.fun/danmu-v4/dto"
+	"kuukaa.fun/danmu-v4/model"
+	"kuukaa.fun/danmu-v4/response"
+	"kuukaa.fun/danmu-v4/vo"
 )
 
 /*********************************************************
@@ -54,7 +54,7 @@ func AdminLoginService(email string, password string) response.ResponseStruct {
 ** 函数功能: 添加管理员
 ** 日    期: 2021年11月12日11:47:20
 **********************************************************/
-func AddAdminService(adminDto dto.AddAdminRequest) response.ResponseStruct {
+func AddAdminService(adminDto dto.AddAdminDto) response.ResponseStruct {
 	res := response.ResponseStruct{
 		HttpStatus: http.StatusOK,
 		Code:       response.SuccessCode,

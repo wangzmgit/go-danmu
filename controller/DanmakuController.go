@@ -3,11 +3,11 @@ package controller
 import (
 	"net/http"
 	"strconv"
-	"wzm/danmu3.0/dto"
-	"wzm/danmu3.0/response"
-	"wzm/danmu3.0/service"
 
 	"github.com/gin-gonic/gin"
+	"kuukaa.fun/danmu-v4/dto"
+	"kuukaa.fun/danmu-v4/response"
+	"kuukaa.fun/danmu-v4/service"
 )
 
 func GetDanmaku(ctx *gin.Context) {
@@ -22,7 +22,7 @@ func GetDanmaku(ctx *gin.Context) {
 }
 
 func SendDanmaku(ctx *gin.Context) {
-	var danmaku dto.DanmakuRequest
+	var danmaku dto.DanmakuDto
 	err := ctx.ShouldBind(&danmaku)
 	if err != nil {
 		response.Response(ctx, http.StatusBadRequest, 400, nil, "请求错误")

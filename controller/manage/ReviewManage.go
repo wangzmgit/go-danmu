@@ -1,12 +1,12 @@
-package admin_controller
+package manage
 
 import (
 	"strconv"
-	"wzm/danmu3.0/dto"
-	"wzm/danmu3.0/response"
-	"wzm/danmu3.0/service"
 
 	"github.com/gin-gonic/gin"
+	"kuukaa.fun/danmu-v4/dto"
+	"kuukaa.fun/danmu-v4/response"
+	"kuukaa.fun/danmu-v4/service"
 )
 
 /*********************************************************
@@ -33,7 +33,7 @@ func GetReviewVideoList(ctx *gin.Context) {
 **********************************************************/
 func ReviewVideo(ctx *gin.Context) {
 	//获取参数
-	var reviewRequest dto.ReviewRequest
+	var reviewRequest dto.ReviewDto
 	err := ctx.Bind(&reviewRequest)
 	if err != nil {
 		response.Fail(ctx, nil, "请求错误")
@@ -57,5 +57,20 @@ func ReviewVideo(ctx *gin.Context) {
 	}
 
 	res := service.ReviewVideoService(reviewRequest, isReview)
+	response.HandleResponse(ctx, res)
+}
+
+/*********************************************************
+** 函数功能: 通过视频ID获取待审核视频资源
+** 日    期: 2022年1月10日11:02:51
+**********************************************************/
+func GetReviewVideoByID(ctx *gin.Context) {
+	vid, _ := strconv.Atoi(ctx.Query("vid"))
+	if vid == 0 {
+		response.CheckFail(ctx, nil, "视频不见了")
+		return
+	}
+
+	res := service.GetReviewVideoByIDService(vid)
 	response.HandleResponse(ctx, res)
 }

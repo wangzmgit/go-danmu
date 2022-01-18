@@ -1,12 +1,11 @@
 package controller
 
 import (
-	"wzm/danmu3.0/dto"
-	"wzm/danmu3.0/response"
-	"wzm/danmu3.0/service"
-	"wzm/danmu3.0/util"
-
 	"github.com/gin-gonic/gin"
+	"kuukaa.fun/danmu-v4/dto"
+	"kuukaa.fun/danmu-v4/response"
+	"kuukaa.fun/danmu-v4/service"
+	"kuukaa.fun/danmu-v4/util"
 )
 
 /*********************************************************

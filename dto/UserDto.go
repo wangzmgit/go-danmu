@@ -1,30 +1,30 @@
 package dto
 
-type RegisterRequest struct {
+type RegisterDto struct {
 	Name     string
 	Email    string
 	Password string
 	Code     string
 }
 
-type LoginRequest struct {
+type LoginDto struct {
 	Email    string
 	Password string
 }
 
-type UserModifyRequest struct {
+type ModifyUserDto struct {
 	Name     string
 	Gender   int
 	Birthday string
 	Sign     string
 }
 
-type PassModifyRequest struct {
+type ModifyPasswordDto struct {
 	Password string
 	Code     string
 }
 
-type AdminModifyUserRequest struct {
+type AdminModifyUserDto struct {
 	ID    uint
 	Name  string
 	Email string

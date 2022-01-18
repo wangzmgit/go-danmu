@@ -2,13 +2,13 @@ package service
 
 import (
 	"net/http"
-	"wzm/danmu3.0/common"
-	"wzm/danmu3.0/dto"
-	"wzm/danmu3.0/model"
-	"wzm/danmu3.0/response"
-	"wzm/danmu3.0/vo"
 
 	"github.com/gin-gonic/gin"
+	"kuukaa.fun/danmu-v4/common"
+	"kuukaa.fun/danmu-v4/dto"
+	"kuukaa.fun/danmu-v4/model"
+	"kuukaa.fun/danmu-v4/response"
+	"kuukaa.fun/danmu-v4/vo"
 )
 
 func GetDanmakuService(vid int) response.ResponseStruct {
@@ -32,7 +32,7 @@ func GetDanmakuService(vid int) response.ResponseStruct {
 	return res
 }
 
-func SendDanmaku(danmaku dto.DanmakuRequest, uid interface{}) response.ResponseStruct {
+func SendDanmaku(danmaku dto.DanmakuDto, uid interface{}) response.ResponseStruct {
 	DB := common.GetDB()
 	newDanmaku := model.Danmaku{
 		Vid:   danmaku.Vid,

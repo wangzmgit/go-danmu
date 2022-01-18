@@ -1,5 +1,5 @@
 package dto
 
-type InteractiveRequest struct {
+type InteractiveDto struct {
 	ID uint
 }

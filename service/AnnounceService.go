@@ -2,13 +2,13 @@ package service
 
 import (
 	"net/http"
-	"wzm/danmu3.0/common"
-	"wzm/danmu3.0/dto"
-	"wzm/danmu3.0/model"
-	"wzm/danmu3.0/response"
-	"wzm/danmu3.0/vo"
 
 	"github.com/gin-gonic/gin"
+	"kuukaa.fun/danmu-v4/common"
+	"kuukaa.fun/danmu-v4/dto"
+	"kuukaa.fun/danmu-v4/model"
+	"kuukaa.fun/danmu-v4/response"
+	"kuukaa.fun/danmu-v4/vo"
 )
 
 /*********************************************************
@@ -61,7 +61,7 @@ func AdminGetAnnounceService() response.ResponseStruct {
 ** 函数功能: 管理员添加公告
 ** 日    期: 2021年11月12日12:17:08
 **********************************************************/
-func AddAnnounceService(announce dto.AddAnnounceRequest) response.ResponseStruct {
+func AddAnnounceService(announce dto.AddAnnounceDto) response.ResponseStruct {
 	newAnnounce := model.Announce{
 		Title:   announce.Title,
 		Content: announce.Content,

@@ -4,14 +4,14 @@ import (
 	"net/http"
 	"strconv"
 	"time"
-	"wzm/danmu3.0/common"
-	"wzm/danmu3.0/dto"
-	"wzm/danmu3.0/model"
-	"wzm/danmu3.0/response"
-	"wzm/danmu3.0/util"
-	"wzm/danmu3.0/vo"
 
 	"github.com/gin-gonic/gin"
+	"kuukaa.fun/danmu-v4/common"
+	"kuukaa.fun/danmu-v4/dto"
+	"kuukaa.fun/danmu-v4/model"
+	"kuukaa.fun/danmu-v4/response"
+	"kuukaa.fun/danmu-v4/util"
+	"kuukaa.fun/danmu-v4/vo"
 
 	"github.com/jinzhu/gorm"
 
@@ -20,9 +20,9 @@ import (
 
 /*********************************************************
 ** 函数功能: 注册
-** 日    期:2021/11/8
+** 日    期: 2021/11/8
 **********************************************************/
-func RegisterService(user dto.RegisterRequest) response.ResponseStruct {
+func RegisterService(user dto.RegisterDto) response.ResponseStruct {
 	res := response.ResponseStruct{
 		HttpStatus: http.StatusOK,
 		Code:       response.SuccessCode,
@@ -61,9 +61,9 @@ func RegisterService(user dto.RegisterRequest) response.ResponseStruct {
 
 /*********************************************************
 ** 函数功能: 登录
-** 日    期:2021/11/8
+** 日    期: 2021/11/8
 **********************************************************/
-func LoginService(login dto.LoginRequest, userIP string) response.ResponseStruct {
+func LoginService(login dto.LoginDto, userIP string) response.ResponseStruct {
 	res := response.ResponseStruct{
 		HttpStatus: http.StatusOK,
 		Code:       response.SuccessCode,
@@ -105,9 +105,9 @@ func LoginService(login dto.LoginRequest, userIP string) response.ResponseStruct
 
 /*********************************************************
 ** 函数功能: 修改用户信息
-** 日    期:2021/11/8
+** 日    期: 2021/11/8
 **********************************************************/
-func UserModifyService(modify dto.UserModifyRequest, uid interface{}, tBirthday time.Time) response.ResponseStruct {
+func UserModifyService(modify dto.ModifyUserDto, uid interface{}, tBirthday time.Time) response.ResponseStruct {
 	res := response.ResponseStruct{
 		HttpStatus: http.StatusOK,
 		Code:       response.SuccessCode,
@@ -130,7 +130,7 @@ func UserModifyService(modify dto.UserModifyRequest, uid interface{}, tBirthday 
 
 /*********************************************************
 ** 函数功能: 修改密码
-** 日    期:2021/11/10
+** 日    期: 2021/11/10
 **********************************************************/
 func ModifyPasswordService(password string, user model.User) response.ResponseStruct {
 	res := response.ResponseStruct{
@@ -155,7 +155,7 @@ func ModifyPasswordService(password string, user model.User) response.ResponseSt
 
 /*********************************************************
 ** 函数功能: 通过用户ID获取用户信息
-** 日    期:2021/11/10
+** 日    期: 2021/11/10
 **********************************************************/
 func GetUserInfoByIDService(uid interface{}) response.ResponseStruct {
 	var user model.User
@@ -194,7 +194,7 @@ func GetUserListService(page int, pageSize int) response.ResponseStruct {
 ** 函数功能: 管理员修改用户信息
 ** 日    期: 2021年11月12日15:19:08
 **********************************************************/
-func AdminModifyUserService(newInfo dto.AdminModifyUserRequest) response.ResponseStruct {
+func AdminModifyUserService(newInfo dto.AdminModifyUserDto) response.ResponseStruct {
 	res := response.ResponseStruct{
 		HttpStatus: http.StatusOK,
 		Code:       response.SuccessCode,
@@ -262,7 +262,7 @@ func IsEmailBelongsToCurrentUser(email string, uid interface{}) bool {
 
 /*********************************************************
 ** 函数功能: 邮箱是否存在
-** 日    期:2021/7/10
+** 日    期: 2021/7/10
 **********************************************************/
 func IsEmailExist(db *gorm.DB, email string) bool {
 	var user model.User
@@ -275,7 +275,7 @@ func IsEmailExist(db *gorm.DB, email string) bool {
 
 /*********************************************************
 ** 函数功能: 用户是否存在
-** 日    期:2021/7/10
+** 日    期: 2021/7/10
 **********************************************************/
 func IsUserExist(db *gorm.DB, id uint) bool {
 	var user model.User

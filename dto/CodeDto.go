@@ -1,5 +1,5 @@
 package dto
 
-type SendCodeRequest struct {
+type SendCodeDto struct {
 	Email string
 }

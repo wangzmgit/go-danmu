@@ -2,36 +2,34 @@ package common
 
 import (
 	"fmt"
-	"wzm/danmu3.0/model"
 
 	"github.com/jinzhu/gorm"
 	"github.com/spf13/viper"
+	"kuukaa.fun/danmu-v4/model"
 )
 
 var DB *gorm.DB
 
 func InitDB() *gorm.DB {
-	driverName := viper.GetString("datasource.driver_name")
 	host := viper.GetString("datasource.host")
 	port := viper.GetString("datasource.port")
 	database := viper.GetString("datasource.database")
 	username := viper.GetString("datasource.username")
 	password := viper.GetString("datasource.password")
-	charset := viper.GetString("datasource.charset")
-	args := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=%s&parseTime=true",
+	args := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8&parseTime=true",
 		username,
 		password,
 		host,
 		port,
-		database,
-		charset)
-	db, err := gorm.Open(driverName, args)
+		database)
+	db, err := gorm.Open("mysql", args)
 	if err != nil {
 		panic("failed to connect database ,err:" + err.Error())
 	}
 	//数据库迁移
 	db.AutoMigrate(&model.User{})
 	db.AutoMigrate(&model.Video{})
+	db.AutoMigrate(&model.Resource{})
 	db.AutoMigrate(&model.Review{})
 	db.AutoMigrate(&model.Interactive{})
 	db.AutoMigrate(&model.Follow{})

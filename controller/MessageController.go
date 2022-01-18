@@ -2,18 +2,18 @@ package controller
 
 import (
 	"strconv"
-	"wzm/danmu3.0/dto"
-	"wzm/danmu3.0/response"
-	"wzm/danmu3.0/service"
 
 	"github.com/gin-gonic/gin"
+	"kuukaa.fun/danmu-v4/dto"
+	"kuukaa.fun/danmu-v4/response"
+	"kuukaa.fun/danmu-v4/service"
 )
 
 /*********************************************************
 ** 函数功能: 发送私信
 **********************************************************/
 func SendMessage(ctx *gin.Context) {
-	var requestMsg dto.SendMessageReques
+	var requestMsg dto.SendMessageDto
 	err := ctx.Bind(&requestMsg)
 	if err != nil {
 		response.Fail(ctx, nil, "请求错误")

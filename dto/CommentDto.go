@@ -1,16 +1,16 @@
 package dto
 
 //删除评论回复
-type CommentDeleteRequest struct {
+type CommentIdDto struct {
 	ID uint
 }
 
-type CommentRequest struct {
+type CommentDto struct {
 	Content string
 	Vid     uint
 }
 
-type ReplyRequest struct {
+type ReplyDto struct {
 	Cid       uint
 	Content   string
 	ReplyUid  uint

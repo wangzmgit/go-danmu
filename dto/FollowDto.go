@@ -1,5 +1,5 @@
 package dto
 
-type FollowRequest struct {
+type FollowDto struct {
 	ID uint
 }

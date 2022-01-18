@@ -1,6 +1,6 @@
-module wzm/danmu3.0
+module kuukaa.fun/danmu-v4
 
-go 1.14
+go 1.16
 
 require (
 	github.com/aliyun/aliyun-oss-go-sdk v2.1.9+incompatible
@@ -10,6 +10,7 @@ require (
 	github.com/go-redis/redis v6.15.9+incompatible
 	github.com/go-sql-driver/mysql v1.5.0
 	github.com/golang-sql/civil v0.0.0-20190719163853-cb61b32ac6fe
+	github.com/google/uuid v1.3.0
 	github.com/jinzhu/gorm v1.9.16
 	github.com/leodido/go-urn v1.2.1 // indirect
 	github.com/mattn/go-isatty v0.0.13 // indirect

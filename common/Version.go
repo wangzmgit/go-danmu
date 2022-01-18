@@ -1,5 +1,5 @@
 package common
 
 const (
-	Version = "3.8.9"
+	Version = "0.1.0"
 )

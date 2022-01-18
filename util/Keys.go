@@ -26,3 +26,7 @@ func VideoLikeKey(id int) string {
 func CodeKey(email string) string {
 	return fmt.Sprintf("code:%s", email)
 }
+
+func VideoClicksLimitKey(vid int, ip string) string {
+	return fmt.Sprintf("clicks:%d:%s", vid, ip)
+}

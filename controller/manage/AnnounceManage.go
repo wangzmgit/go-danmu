@@ -1,11 +1,10 @@
-package admin_controller
+package manage
 
 import (
-	"wzm/danmu3.0/dto"
-	"wzm/danmu3.0/response"
-	"wzm/danmu3.0/service"
-
 	"github.com/gin-gonic/gin"
+	"kuukaa.fun/danmu-v4/dto"
+	"kuukaa.fun/danmu-v4/response"
+	"kuukaa.fun/danmu-v4/service"
 )
 
 /*********************************************************
@@ -23,7 +22,7 @@ func AdminGetAnnounce(ctx *gin.Context) {
 **********************************************************/
 func AddAnnounce(ctx *gin.Context) {
 	//获取参数
-	var announce dto.AddAnnounceRequest
+	var announce dto.AddAnnounceDto
 	err := ctx.Bind(&announce)
 	if err != nil {
 		response.Fail(ctx, nil, "请求错误")
@@ -50,7 +49,7 @@ func AddAnnounce(ctx *gin.Context) {
 ** 日    期: 2021/8/4
 **********************************************************/
 func DeleteAnnounce(ctx *gin.Context) {
-	var request dto.AdminIDRequest
+	var request dto.AdminIdDto
 	if err := ctx.Bind(&request); err != nil {
 		response.Fail(ctx, nil, "请求错误")
 		return

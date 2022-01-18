@@ -1,6 +1,6 @@
 package dto
 
-type ReviewRequest struct {
+type ReviewDto struct {
 	VID     uint
 	Status  int
 	Remarks string

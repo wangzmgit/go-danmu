@@ -3,10 +3,10 @@ package middleware
 import (
 	"net/http"
 	"strings"
-	"wzm/danmu3.0/common"
-	"wzm/danmu3.0/model"
 
 	"github.com/gin-gonic/gin"
+	"kuukaa.fun/danmu-v4/common"
+	"kuukaa.fun/danmu-v4/model"
 )
 
 /*********************************************************

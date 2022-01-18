@@ -1,6 +1,6 @@
 package dto
 
-type CarouselRequest struct {
+type CarouselDto struct {
 	Img string
 	Url string
 }

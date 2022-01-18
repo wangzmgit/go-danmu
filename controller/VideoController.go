@@ -2,24 +2,24 @@ package controller
 
 import (
 	"strconv"
-	"wzm/danmu3.0/common"
-	"wzm/danmu3.0/dto"
-	"wzm/danmu3.0/response"
-	"wzm/danmu3.0/service"
-	"wzm/danmu3.0/util"
 
 	"github.com/gin-gonic/gin"
+	"kuukaa.fun/danmu-v4/common"
+	"kuukaa.fun/danmu-v4/dto"
+	"kuukaa.fun/danmu-v4/response"
+	"kuukaa.fun/danmu-v4/service"
+	"kuukaa.fun/danmu-v4/util"
 )
 
 /*********************************************************
 ** 函数功能: 上传视频信息
-** 日    期:2021/7/16
+** 日    期: 2021/7/16
 ** 修改时间: 2021/10/31
 ** 版    本: 3.3.0
 ** 修改内容: 可以上传子视频信息
 **********************************************************/
 func UploadVideoInfo(ctx *gin.Context) {
-	var video dto.UploadVideoRequest
+	var video dto.UploadVideoDto
 	err := ctx.Bind(&video)
 	if err != nil {
 		response.Fail(ctx, nil, "请求错误")
@@ -65,7 +65,7 @@ func GetVideoStatus(ctx *gin.Context) {
 **********************************************************/
 func ModifyVideoInfo(ctx *gin.Context) {
 	//获取参数
-	var video dto.VideoModifyRequest
+	var video dto.ModifyVideoDto
 	err := ctx.Bind(&video)
 	if err != nil {
 		response.Fail(ctx, nil, "请求错误")
@@ -95,7 +95,7 @@ func ModifyVideoInfo(ctx *gin.Context) {
 **********************************************************/
 func DeleteVideo(ctx *gin.Context) {
 	//获取参数
-	var video dto.DeleteVideoRequest
+	var video dto.VideoIdDto
 	err := ctx.Bind(&video)
 	if err != nil {
 		response.Fail(ctx, nil, "请求错误")
@@ -138,27 +138,6 @@ func GetMyUploadVideo(ctx *gin.Context) {
 }
 
 /*********************************************************
-** 函数功能: 视频修改请求
-** 日    期:2021/7/18
-**********************************************************/
-func UpdateRequest(ctx *gin.Context) {
-	var review dto.UpdateVideoReviewRequest
-	err := ctx.Bind(&review)
-	if err != nil {
-		response.Fail(ctx, nil, "请求错误")
-		return
-	}
-	status := review.Status
-	uid, _ := ctx.Get("id")
-	if status == 5001 || status == 5002 {
-		res := service.UpdateRequestService(review, uid)
-		response.HandleResponse(ctx, res)
-	} else {
-		response.Fail(ctx, nil, "申请状态有误")
-	}
-}
-
-/*********************************************************
 ** 函数功能: 通过ID获取视频
 ** 日    期: 2021/7/19
 ** 修改时间: 2021/10/31
@@ -173,24 +152,9 @@ func GetVideoByID(ctx *gin.Context) {
 		response.CheckFail(ctx, nil, "视频不见了")
 		return
 	}
-	res := service.GetVideoByIDService(vid)
-	response.HandleResponse(ctx, res)
-}
 
-/*********************************************************
-** 函数功能: 获取视频交互数据
-** 日    期:2021/7/22
-**********************************************************/
-func GetVideoInteractiveData(ctx *gin.Context) {
-	uid, _ := ctx.Get("id")
-	vid, _ := strconv.Atoi(ctx.Query("vid"))
-
-	if vid == 0 {
-		response.CheckFail(ctx, nil, "视频不见了")
-		return
-	}
-
-	res := service.GetVideoInteractiveDataService(vid, uid)
+	uid, _ := ctx.Get("uid")
+	res := service.GetVideoByIDService(vid, ctx.ClientIP(), uid)
 	response.HandleResponse(ctx, res)
 }
 
@@ -199,7 +163,6 @@ func GetVideoInteractiveData(ctx *gin.Context) {
 ** 日    期:2021/7/22
 **********************************************************/
 func GetCollectVideo(ctx *gin.Context) {
-
 	uid, _ := ctx.Get("id")
 	page, _ := strconv.Atoi(ctx.Query("page"))
 	pageSize, _ := strconv.Atoi(ctx.Query("page_size"))
@@ -238,7 +201,6 @@ func GetRecommendVideo(ctx *gin.Context) {
 **********************************************************/
 func GetVideoList(ctx *gin.Context) {
 	var request dto.GetVideoListDto
-
 	request.Page, _ = strconv.Atoi(ctx.Query("page"))
 	request.PageSize, _ = strconv.Atoi(ctx.Query("page_size"))
 	request.Partition, _ = strconv.Atoi(ctx.DefaultQuery("partition", "0")) //分区
@@ -247,7 +209,6 @@ func GetVideoList(ctx *gin.Context) {
 		response.Fail(ctx, nil, "页码或数量有误")
 		return
 	}
-
 	if request.PageSize >= 30 {
 		response.Fail(ctx, nil, "请求数量过多")
 		return
@@ -265,7 +226,6 @@ func GetVideoList(ctx *gin.Context) {
 ** 修改内容: 获取合集所属的视频，不获取合集子视频
 **********************************************************/
 func GetVideoListByUserID(ctx *gin.Context) {
-
 	uid, _ := strconv.Atoi(ctx.Query("uid"))
 	page, _ := strconv.Atoi(ctx.Query("page"))
 	pageSize, _ := strconv.Atoi(ctx.Query("page_size"))

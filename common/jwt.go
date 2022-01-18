@@ -2,9 +2,9 @@ package common
 
 import (
 	"time"
-	"wzm/danmu3.0/model"
 
 	"github.com/spf13/viper"
+	"kuukaa.fun/danmu-v4/model"
 
 	"github.com/dgrijalva/jwt-go"
 )
@@ -18,7 +18,7 @@ type Claims struct {
 
 /*********************************************************
 ** 函数功能: 发放用户Token
-** 日    期:2021/7/10
+** 日    期: 2021/7/10
 **********************************************************/
 func ReleaseToken(user model.User) (string, error) {
 	//token过期时间

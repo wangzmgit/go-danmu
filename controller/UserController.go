@@ -4,24 +4,24 @@ import (
 	"net/http"
 	"strconv"
 	"time"
-	"wzm/danmu3.0/dto"
-	"wzm/danmu3.0/model"
-	"wzm/danmu3.0/response"
-	"wzm/danmu3.0/service"
-	"wzm/danmu3.0/util"
-	"wzm/danmu3.0/vo"
 
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
+	"kuukaa.fun/danmu-v4/dto"
+	"kuukaa.fun/danmu-v4/model"
+	"kuukaa.fun/danmu-v4/response"
+	"kuukaa.fun/danmu-v4/service"
+	"kuukaa.fun/danmu-v4/util"
+	"kuukaa.fun/danmu-v4/vo"
 )
 
 /*********************************************************
 ** 函数功能: 用户注册
-** 日    期:2021/7/10
+** 日    期: 2021/7/10
 **********************************************************/
 func Register(ctx *gin.Context) {
 	//获取参数
-	var request dto.RegisterRequest
+	var request dto.RegisterDto
 	err := ctx.Bind(&request)
 	if err != nil {
 		response.Fail(ctx, nil, "请求错误")
@@ -60,7 +60,7 @@ func Register(ctx *gin.Context) {
 **********************************************************/
 func Login(ctx *gin.Context) {
 	//获取参数
-	var request dto.LoginRequest
+	var request dto.LoginDto
 	err := ctx.Bind(&request)
 	if err != nil {
 		response.Response(ctx, http.StatusBadRequest, 4000, nil, "请求错误")
@@ -98,7 +98,7 @@ func UserInfo(ctx *gin.Context) {
 **********************************************************/
 func ModifyInfo(ctx *gin.Context) {
 	//获取参数
-	var request dto.UserModifyRequest
+	var request dto.ModifyUserDto
 	err := ctx.Bind(&request)
 	if err != nil {
 		response.Fail(ctx, nil, "请求错误")
@@ -131,7 +131,7 @@ func ModifyInfo(ctx *gin.Context) {
 **********************************************************/
 func ModifyPassword(ctx *gin.Context) {
 	//获取参数
-	var passModify dto.PassModifyRequest
+	var passModify dto.ModifyPasswordDto
 	err := ctx.Bind(&passModify)
 	if err != nil {
 		response.Fail(ctx, nil, "请求错误")

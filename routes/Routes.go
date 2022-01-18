@@ -1,17 +1,17 @@
 package routes
 
 import (
-	"wzm/danmu3.0/controller"
-	admin_controller "wzm/danmu3.0/controller/admin"
-	"wzm/danmu3.0/middleware"
-	"wzm/danmu3.0/util"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"kuukaa.fun/danmu-v4/controller"
+	"kuukaa.fun/danmu-v4/controller/manage"
+	"kuukaa.fun/danmu-v4/middleware"
+	"kuukaa.fun/danmu-v4/util"
 )
 
 func CollectRoute(r *gin.Engine) *gin.Engine {
 	r.Use(middleware.CORSMiddleware())
-
 	v1 := r.Group("/api/v1")
 	{
 		user := v1.Group("/user")
@@ -38,7 +38,7 @@ func CollectRoute(r *gin.Engine) *gin.Engine {
 		//video 信息的增删改查接口
 		video := v1.Group("/video")
 		{
-			video.GET("/get", controller.GetVideoByID)
+			video.GET("/get", middleware.UidMiddleware(), controller.GetVideoByID)
 			video.GET("/recommend/get", controller.GetRecommendVideo)
 			video.GET("/list/get", controller.GetVideoList)
 			video.GET("/user/get", controller.GetVideoListByUserID)
@@ -48,13 +48,12 @@ func CollectRoute(r *gin.Engine) *gin.Engine {
 				videoAuth.GET("/status", controller.GetVideoStatus)
 				videoAuth.GET("/collect/get", controller.GetCollectVideo)
 				videoAuth.GET("/upload/get", controller.GetMyUploadVideo)
-				videoAuth.POST("/update/request", controller.UpdateRequest)
 				videoAuth.POST("/update", controller.ModifyVideoInfo) //只更新视频信息
 				videoAuth.POST("/delete", controller.DeleteVideo)
 				videoAuth.POST("/upload", controller.UploadVideoInfo)
 			}
 		}
-		//文件上传相关接口
+		// //文件上传相关接口
 		file := v1.Group("/file")
 		file.Use(middleware.AuthMiddleware())
 		{
@@ -67,7 +66,6 @@ func CollectRoute(r *gin.Engine) *gin.Engine {
 		interactive := v1.Group("/interactive")
 		interactive.Use(middleware.AuthMiddleware())
 		{
-			interactive.GET("/video", controller.GetVideoInteractiveData) //获取点赞收藏关注的交互数据
 			interactive.POST("/collect/add", controller.Collect)
 			interactive.POST("/collect/cancel", controller.CancelCollect)
 			interactive.POST("/like/add", controller.Like)
@@ -105,12 +103,14 @@ func CollectRoute(r *gin.Engine) *gin.Engine {
 			message.GET("/details", controller.GetMessageDetails)
 			message.POST("/send", controller.SendMessage)
 		}
+
 		danmaku := v1.Group("/danmaku")
 		{
 			danmaku.GET("/get", controller.GetDanmaku)
 			danmaku.POST("/send", middleware.AuthMiddleware(), controller.SendDanmaku)
 		}
 
+		//合集
 		collection := v1.Group("/collection")
 		{
 			collection.GET("/get", controller.GetCollectionByID)
@@ -130,60 +130,66 @@ func CollectRoute(r *gin.Engine) *gin.Engine {
 		}
 
 		//其他接口
-		v1.GET("search", controller.Search)
-		v1.GET("carousel", controller.GetCarousel)
+		v1.GET("/search", controller.Search)
+		v1.GET("/carousel", controller.GetCarousel)
 		v1.GET("/partition/list", controller.GetPartitionList)
 		v1.GET("/partition/all", controller.GetAllPartition)
 		v1.POST("opinion", controller.CreateOpinion)
 		v1.POST("opinion/site", middleware.AuthMiddleware(), controller.CreateOpinionOnSite)
 
-		//管理员接口
+		// //管理员接口
 		admin := v1.Group("/admin")
 		{
-			admin.POST("/login", admin_controller.AdminLogin)
+			admin.POST("/login", manage.AdminLogin)
 			superAdminAuth := admin.Group("")
 			superAdminAuth.Use(middleware.AdminMiddleware(util.SuperAdmin))
 			{
-				superAdminAuth.POST("/add", admin_controller.AddAdmin) //添加管理员
-				superAdminAuth.GET("/list", admin_controller.GetAdminList)
-				superAdminAuth.POST("/delete", admin_controller.DeleteAdmin)
-				superAdminAuth.POST("/user/delete", admin_controller.AdminDeleteUser)
-				superAdminAuth.POST("/partition/add", admin_controller.AddPartition)
-				superAdminAuth.POST("/partition/delete", admin_controller.DeletePartition)
+				superAdminAuth.POST("/add", manage.AddAdmin) //添加管理员
+				superAdminAuth.GET("/list", manage.GetAdminList)
+				superAdminAuth.POST("/delete", manage.DeleteAdmin)
+				superAdminAuth.POST("/user/delete", manage.AdminDeleteUser)
+				superAdminAuth.POST("/partition/add", manage.AddPartition)
+				superAdminAuth.POST("/partition/delete", manage.DeletePartition)
 				config := superAdminAuth.Group("/config")
 				{
-					config.GET("/oss/get", admin_controller.GetOssConfig)
-					config.GET("/email/get", admin_controller.GetEmailConfig)
-					config.POST("/oss/set", admin_controller.SetOssConfig)
-					config.POST("/email/set", admin_controller.SetEmailConfig)
-					config.POST("/admin/set", admin_controller.SetAdminConfig)
+					config.GET("/oss/get", manage.GetOssConfig)
+					config.GET("/email/get", manage.GetEmailConfig)
+					config.POST("/oss/set", manage.SetOssConfig)
+					config.POST("/email/set", manage.SetEmailConfig)
+					config.POST("/admin/set", manage.SetAdminConfig)
 				}
 			}
 			adminAuth := admin.Group("")
 			adminAuth.Use(middleware.AdminMiddleware(util.Admin))
 			{
-				adminAuth.GET("/data", admin_controller.GetRecentWebsiteData)
-				adminAuth.GET("/data/total", admin_controller.GetTotalWebsiteData)
-				adminAuth.GET("/user/list", admin_controller.GetUserList)
-				adminAuth.GET("/opinion/list", admin_controller.GetOpinionList) //获取反馈列表
-				adminAuth.POST("/user/modify", admin_controller.AdminModifyUser)
-				adminAuth.GET("/video/list", admin_controller.AdminGetVideoList)
-				adminAuth.POST("/video/add", admin_controller.ImportVideo)
-				adminAuth.POST("/video/delete", admin_controller.AdminDeleteVideo)
-				adminAuth.POST("/announce/add", admin_controller.AddAnnounce)
-				adminAuth.POST("/announce/delete", admin_controller.DeleteAnnounce)
-				adminAuth.POST("/carousel/upload/img", admin_controller.UploadCarousel)
-				adminAuth.POST("/carousel/upload/info", admin_controller.UploadCarouselInfo)
-				adminAuth.POST("/carousel/delete", admin_controller.DeleteCarousel)
+				adminAuth.GET("/data", manage.GetRecentWebsiteData)
+				adminAuth.GET("/data/total", manage.GetTotalWebsiteData)
+				adminAuth.GET("/user/list", manage.GetUserList)
+				adminAuth.GET("/opinion/list", manage.GetOpinionList) //获取反馈列表
+				adminAuth.POST("/user/modify", manage.AdminModifyUser)
+				adminAuth.POST("/video/cover/upload", manage.AdminUploadCover) //管理员上传封面
+				adminAuth.GET("/video/list", manage.AdminGetVideoList)
+				adminAuth.POST("/video/import", manage.ImportVideo)
+				adminAuth.GET("/video/resource/list", manage.GetResourceList)
+				adminAuth.POST("/video/resource/upload", manage.AdminUploadVideo) //管理员上传视频
+				adminAuth.POST("/video/resource/delete", manage.DeleteResource)
+				adminAuth.POST("/video/resource/import", manage.ImportResource)
+				adminAuth.POST("/video/delete", manage.AdminDeleteVideo)
+				adminAuth.POST("/announce/add", manage.AddAnnounce)
+				adminAuth.POST("/announce/delete", manage.DeleteAnnounce)
+				adminAuth.POST("/carousel/upload/img", manage.UploadCarousel)
+				adminAuth.POST("/carousel/upload/info", manage.UploadCarouselInfo)
+				adminAuth.POST("/carousel/delete", manage.DeleteCarousel)
 			}
 
 			auditorAuth := admin.Group("")
 			auditorAuth.Use(middleware.AdminMiddleware(util.Auditor))
 			{
-				auditorAuth.GET("/review/list", admin_controller.GetReviewVideoList)
-				auditorAuth.POST("/review", admin_controller.ReviewVideo)
-				auditorAuth.GET("/announce/list", admin_controller.AdminGetAnnounce)
-				auditorAuth.GET("/carousel", admin_controller.AdminGetCarousel)
+				auditorAuth.GET("/review/list", manage.GetReviewVideoList)
+				auditorAuth.POST("/review", manage.ReviewVideo)
+				auditorAuth.GET("/announce/list", manage.AdminGetAnnounce)
+				auditorAuth.GET("/carousel", manage.AdminGetCarousel)
+				auditorAuth.GET("/video", manage.GetReviewVideoByID)
 			}
 		}
 
@@ -193,6 +199,13 @@ func CollectRoute(r *gin.Engine) *gin.Engine {
 			v2.GET("/comment/get", controller.GetCommentsV2)
 			v2.GET("/comment/reply", controller.GetReplyDetailsV2)
 		}
+
+		//静态文件
+		r.StaticFS("/avatar", http.Dir("./file/avatar"))
+		r.StaticFS("/cover", http.Dir("./file/cover"))
+		r.StaticFS("/video", http.Dir("./file/video"))
+		r.StaticFS("/carousel", http.Dir("./file/carousel"))
+		r.StaticFS("/output", http.Dir("./file/output"))
 	}
 	return r
 }

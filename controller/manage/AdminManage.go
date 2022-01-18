@@ -1,16 +1,16 @@
-package admin_controller
+package manage
 
 import (
 	"strconv"
-	"wzm/danmu3.0/common"
-	"wzm/danmu3.0/dto"
-	"wzm/danmu3.0/response"
-	"wzm/danmu3.0/service"
-	"wzm/danmu3.0/util"
-	"wzm/danmu3.0/vo"
 
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
+	"kuukaa.fun/danmu-v4/common"
+	"kuukaa.fun/danmu-v4/dto"
+	"kuukaa.fun/danmu-v4/response"
+	"kuukaa.fun/danmu-v4/service"
+	"kuukaa.fun/danmu-v4/util"
+	"kuukaa.fun/danmu-v4/vo"
 )
 
 /*********************************************************
@@ -19,7 +19,7 @@ import (
 **********************************************************/
 func AdminLogin(ctx *gin.Context) {
 	//获取参数
-	var requestAdmin dto.AdminLoginRequest
+	var requestAdmin dto.AdminLoginDto
 	requestErr := ctx.Bind(&requestAdmin)
 	if requestErr != nil {
 		response.Fail(ctx, nil, "请求错误")
@@ -58,7 +58,7 @@ func AdminLogin(ctx *gin.Context) {
 **********************************************************/
 func AddAdmin(ctx *gin.Context) {
 	//获取参数
-	var request dto.AddAdminRequest
+	var request dto.AddAdminDto
 	err := ctx.Bind(&request)
 	if err != nil {
 		response.Fail(ctx, nil, "请求错误")
@@ -97,7 +97,7 @@ func AddAdmin(ctx *gin.Context) {
 **********************************************************/
 func DeleteAdmin(ctx *gin.Context) {
 	//获取参数
-	var request dto.AdminIDRequest
+	var request dto.AdminIdDto
 	if err := ctx.Bind(&request); err != nil {
 		response.Fail(ctx, nil, "请求错误")
 		return

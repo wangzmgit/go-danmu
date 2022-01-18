@@ -2,8 +2,9 @@ package vo
 
 import (
 	"time"
-	"wzm/danmu3.0/model"
-	"wzm/danmu3.0/util"
+
+	"kuukaa.fun/danmu-v4/model"
+	"kuukaa.fun/danmu-v4/util"
 )
 
 type UserVo struct {

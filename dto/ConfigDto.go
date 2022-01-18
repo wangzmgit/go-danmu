@@ -1,6 +1,7 @@
 package dto
 
 type OssConfigDto struct {
+	Storage         bool
 	Bucket          string
 	Endpoint        string
 	AccesskeyId     string

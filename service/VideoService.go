@@ -2,18 +2,18 @@ package service
 
 import (
 	"net/http"
-	"strconv"
 	"time"
-	"wzm/danmu3.0/common"
-	"wzm/danmu3.0/dto"
-	"wzm/danmu3.0/model"
-	"wzm/danmu3.0/response"
-	"wzm/danmu3.0/util"
-	"wzm/danmu3.0/vo"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"github.com/jinzhu/gorm"
 	"github.com/spf13/viper"
+	"kuukaa.fun/danmu-v4/common"
+	"kuukaa.fun/danmu-v4/dto"
+	"kuukaa.fun/danmu-v4/model"
+	"kuukaa.fun/danmu-v4/response"
+	"kuukaa.fun/danmu-v4/util"
+	"kuukaa.fun/danmu-v4/vo"
 )
 
 /*********************************************************
@@ -26,7 +26,7 @@ import (
 ** 版    本: 3.6.8
 ** 修改内容: 分区
 **********************************************************/
-func UploadVideoInfoService(video dto.UploadVideoRequest, uid interface{}) response.ResponseStruct {
+func UploadVideoInfoService(video dto.UploadVideoDto, uid interface{}) response.ResponseStruct {
 	res := response.ResponseStruct{
 		HttpStatus: http.StatusOK,
 		Code:       response.SuccessCode,
@@ -41,14 +41,15 @@ func UploadVideoInfoService(video dto.UploadVideoRequest, uid interface{}) respo
 		res.Msg = "分区不存在"
 		return res
 	}
+
 	newVideo := model.Video{
-		Title:        video.Title,
-		Cover:        video.Cover,
-		Introduction: video.Introduction,
-		Original:     video.Original,
-		Uid:          uid.(uint),
-		VideoType:    viper.GetString("server.coding"),
-		PartitionID:  video.Partition,
+		Title:       video.Title,
+		Cover:       video.Cover,
+		Desc:        video.Desc,
+		Copyright:   video.Copyright,
+		Uid:         uid.(uint),
+		VideoType:   viper.GetString("transcoding.coding"),
+		PartitionID: video.Partition,
 	}
 
 	tx := DB.Begin()
@@ -95,10 +96,10 @@ func GetVideoStatusService(vid int, uid interface{}) response.ResponseStruct {
 	//通过子分区获取父分区
 	partition := GetPartitionName(DB, review.Video.PartitionID)
 	var video = vo.ReviewVideoVo{
-		Title:        review.Video.Title,
-		Cover:        review.Video.Cover,
-		Introduction: review.Video.Introduction,
-		Partition:    partition,
+		Title:     review.Video.Title,
+		Cover:     review.Video.Cover,
+		Desc:      review.Video.Desc,
+		Partition: partition,
 	}
 
 	res.Data = gin.H{"status": review.Status, "remarks": review.Remarks, "video": video}
@@ -112,7 +113,7 @@ func GetVideoStatusService(vid int, uid interface{}) response.ResponseStruct {
 ** 版    本: 3.6.8
 ** 修改内容: 分区
 **********************************************************/
-func ModifyVideoInfoService(video dto.VideoModifyRequest, uid interface{}) response.ResponseStruct {
+func ModifyVideoInfoService(video dto.ModifyVideoDto, uid interface{}) response.ResponseStruct {
 	res := response.ResponseStruct{
 		HttpStatus: http.StatusOK,
 		Code:       response.SuccessCode,
@@ -123,10 +124,10 @@ func ModifyVideoInfoService(video dto.VideoModifyRequest, uid interface{}) respo
 	tx := DB.Begin()
 	if err := tx.Model(&model.Video{}).Where("id = ? and uid = ?", video.ID, uid).Updates(
 		map[string]interface{}{
-			"title":        video.Title,
-			"cover":        video.Cover,
-			"introduction": video.Introduction,
-			"original":     video.Original,
+			"title":     video.Title,
+			"cover":     video.Cover,
+			"desc":      video.Desc,
+			"copyright": video.Copyright,
 		},
 	).Error; err != nil {
 		tx.Rollback()
@@ -201,54 +202,13 @@ func GetMyUploadVideoService(page int, pageSize int, uid interface{}) response.R
 }
 
 /*********************************************************
-** 函数功能: 视频信息修改请求
-** 日    期: 2021/11/10
-**********************************************************/
-func UpdateRequestService(review dto.UpdateVideoReviewRequest, uid interface{}) response.ResponseStruct {
-	res := response.ResponseStruct{
-		HttpStatus: http.StatusOK,
-		Code:       response.SuccessCode,
-		Data:       nil,
-		Msg:        "ok",
-	}
-	//从上下文中获取用户id
-	DB := common.GetDB()
-	tx := DB.Begin()
-	if err := tx.Model(&model.Video{}).Where("id = ? and uid = ?", review.ID, uid).Updates(
-		map[string]interface{}{
-			"review": false,
-		},
-	).Error; err != nil {
-		tx.Rollback()
-		res.HttpStatus = http.StatusBadRequest
-		res.Code = response.FailCode
-		res.Msg = "修改失败"
-		return res
-	}
-	//更新审核状态
-	if err := tx.Model(&model.Review{}).Where("vid = ?", review.ID).Updates(
-		map[string]interface{}{
-			"status": review.Status,
-		},
-	).Error; err != nil {
-		tx.Rollback()
-		res.HttpStatus = http.StatusBadRequest
-		res.Code = response.FailCode
-		res.Msg = "状态更新失败"
-		return res
-	}
-	tx.Commit()
-	return res
-}
-
-/*********************************************************
 ** 函数功能: 通过视频ID获取视频
 ** 日    期: 2021/11/10
 ** 修改时间: 2021年11月17日12:59:45
 ** 版    本: 3.5.0
 ** 修改内容: 移除子视频
 **********************************************************/
-func GetVideoByIDService(vid int) response.ResponseStruct {
+func GetVideoByIDService(vid int, ip string, uid interface{}) response.ResponseStruct {
 	res := response.ResponseStruct{
 		HttpStatus: http.StatusOK,
 		Code:       response.SuccessCode,
@@ -265,51 +225,30 @@ func GetVideoByIDService(vid int) response.ResponseStruct {
 		res.Msg = "视频不见了"
 		return res
 	}
-
-	//视频数据
+	//获取视频资源
+	resource := GetVideoResource(DB, uint(vid))
+	//获取视频交互数据
 	like, collect := CollectAndLikeCount(DB, uint(vid))
-	//增加播放量
-	Redis := common.RedisClient
-	if Redis != nil {
-		strClicks, _ := Redis.Get(util.VideoClicksKey(vid)).Result()
-		if strClicks == "" {
-			Redis.RPush(util.ClicksVideoList, vid)
-			//25小时防止数据当天过期
-			Redis.Set(util.VideoClicksKey(vid), video.Clicks, time.Hour*25)
+	//增加播放量(一个ip在同一个视频下，每30分钟可重新增加1播放量)
+	if redis := common.RedisClient; redis != nil {
+		clicksLimit, _ := redis.Get(util.VideoClicksLimitKey(vid, ip)).Result()
+		if clicksLimit == "" {
+			DB.Model(&video).UpdateColumn("clicks", gorm.Expr("clicks + 1"))
+			redis.Set(util.VideoClicksLimitKey(vid, ip), 1, time.Minute*30)
 		}
-		Redis.Incr(util.VideoClicksKey(vid))
 	}
-	var data = vo.VideoData{
-		LikeCount:    like,
-		CollectCount: collect,
+	//获取交互数据(如果用户已经登录)
+	var interactiveData vo.InteractiveVo
+	if uid.(uint) != 0 {
+		interactiveData = GetVideoInteractiveData(DB, vid, uid.(uint))
 	}
-	res.Data = gin.H{"video": vo.ToVideoVo(video, data)}
+
+	res.Data = gin.H{
+		"video":       vo.ToVideoVo(video, like, collect, resource),
+		"interactive": interactiveData,
+	}
+
 	return res
-}
-
-/*********************************************************
-** 函数功能: 获取视频交互数据
-** 日    期:2021/11/11
-**********************************************************/
-func GetVideoInteractiveDataService(vid int, uid interface{}) response.ResponseStruct {
-	DB := common.GetDB()
-	//获取作者id
-	var fid dto.AuthorUid
-	DB.Raw("select uid from videos where id = ?", vid).Scan(&fid)
-	like, collect := IsCollectAndLike(DB, uid.(uint), uint(vid))
-	follow := IsFollow(DB, uid.(uint), fid.UID)
-	data := vo.InteractiveData{
-		Collect: collect,
-		Like:    like,
-		Follow:  follow,
-	}
-
-	return response.ResponseStruct{
-		HttpStatus: http.StatusOK,
-		Code:       response.SuccessCode,
-		Data:       gin.H{"data": data},
-		Msg:        "ok",
-	}
 }
 
 /*********************************************************
@@ -343,17 +282,11 @@ func GetRecommendVideoService() response.ResponseStruct {
 	var videos []vo.RecommendVideoVo
 	DB := common.GetDB()
 	DB = DB.Limit(8)
-	Redis := common.RedisClient
-	const sql = "select videos.id,title,cover,name as author,clicks from users,videos where users.id=videos.uid and review=1 and videos.deleted_at is null order by clicks desc"
+
+	const sql = "select videos.id,title,cover,name as author,clicks from" +
+		" users,videos where users.id=videos.uid and review=1 and videos.deleted_at is null order by clicks desc"
 
 	DB.Raw(sql).Scan(&videos)
-	length := len(videos)
-	//获取到播放量
-	if Redis != nil {
-		for i := 0; i < length; i++ {
-			videos[i].Clicks = vo.GetClicksFromRedis(Redis, int(videos[i].ID), videos[i].Clicks)
-		}
-	}
 
 	return response.ResponseStruct{
 		HttpStatus: http.StatusOK,
@@ -387,8 +320,8 @@ func GetVideoListService(query dto.GetVideoListDto) response.ResponseStruct {
 	} else {
 		//获取该分区下的子分区
 		list := GetSubpartitionList(DB, uint(query.Partition))
-		sql := "review = 1 and partition_id in (" + list + ")"
-		Pagination.Model(&model.Video{}).Select("id,title,cover").Where(sql).Scan(&videos).Count(&total)
+		Pagination.Debug().Model(&model.Video{}).Select("id,title,cover").
+			Where("review = 1 and partition_id in (?)", list).Scan(&videos).Count(&total)
 	}
 
 	return response.ResponseStruct{
@@ -434,18 +367,22 @@ func GetVideoListByUserIDService(uid int, page int, pageSize int) response.Respo
 ** 函数功能: 管理员获取视频列表
 ** 日    期: 2021年11月12日15:30:26
 **********************************************************/
-func AdminGetVideoListService(page int, pageSize int) response.ResponseStruct {
+func AdminGetVideoListService(page int, pageSize int, videoFrom string) response.ResponseStruct {
 	var total int //记录总数
 	var videos []model.Video
 
 	DB := common.GetDB()
 	DB = DB.Limit(pageSize).Offset((page - 1) * pageSize)
-	DB.Where("review = 1").Find(&videos).Count(&total)
+	if videoFrom == "admin" {
+		DB.Where("review = 1 and uid = 0").Find(&videos).Count(&total)
+	} else {
+		DB.Where("review = 1 and uid != 0").Find(&videos).Count(&total)
+	}
 
 	return response.ResponseStruct{
 		HttpStatus: http.StatusOK,
 		Code:       response.SuccessCode,
-		Data:       gin.H{"count": total, "videos": vo.ToAdminVideoVo(videos)},
+		Data:       gin.H{"count": total, "videos": vo.ToAdminVideoListVo(videos)},
 		Msg:        "ok",
 	}
 }
@@ -480,15 +417,15 @@ func ImportVideoService(video dto.ImportVideo) response.ResponseStruct {
 	}
 
 	newVideo := model.Video{
-		Title:        video.Title,
-		Cover:        video.Cover,
-		Introduction: video.Introduction,
-		Original:     true,
-		Uid:          0,
-		VideoType:    "mp4",
-		Video:        video.Video,
-		Review:       true,
+		Title:     video.Title,
+		Cover:     video.Cover,
+		Desc:      video.Desc,
+		Copyright: true,
+		Uid:       0,
+		VideoType: video.Type,
+		Review:    true,
 	}
+
 	DB := common.GetDB()
 	if err := DB.Create(&newVideo).Error; err != nil {
 		res.HttpStatus = http.StatusBadRequest
@@ -496,8 +433,75 @@ func ImportVideoService(video dto.ImportVideo) response.ResponseStruct {
 		res.Msg = "上传失败"
 		return res
 	}
-	res.Data = gin.H{"vid": newVideo.ID}
+
 	return res
+}
+
+/*********************************************************
+** 函数功能: 管理员导入视频资源
+** 日    期: 2022年1月13日16:22:05
+**********************************************************/
+func ImportResourceService(video dto.ImportResourceDto) response.ResponseStruct {
+	res := response.ResponseStruct{
+		HttpStatus: http.StatusOK,
+		Code:       response.SuccessCode,
+		Data:       nil,
+		Msg:        "ok",
+	}
+
+	DB := common.GetDB()
+	//添加视频链接
+	if err := DB.Model(&model.Resource{}).Create(&model.Resource{
+		Vid:      video.Vid,
+		Res360:   video.Res360,
+		Res480:   video.Res480,
+		Res720:   video.Res720,
+		Res1080:  video.Res1080,
+		Original: video.Original,
+	}).Error; err != nil {
+		res.HttpStatus = http.StatusBadRequest
+		res.Code = response.FailCode
+		res.Msg = "创建视频资源失败"
+		return res
+	}
+
+	return res
+}
+
+/*********************************************************
+** 函数功能: 管理员获取视频资源
+** 日    期: 2022年1月14日11:29:45
+**********************************************************/
+func GetResourceListService(vid int) response.ResponseStruct {
+	res := response.ResponseStruct{
+		HttpStatus: http.StatusOK,
+		Code:       response.SuccessCode,
+		Data:       nil,
+		Msg:        "ok",
+	}
+
+	DB := common.GetDB()
+	var resources []vo.ResourceInfoVo
+	DB.Model(&model.Resource{}).Select("uuid,title,created_at").Where("vid = ?", vid).Scan(&resources)
+
+	res.Data = gin.H{"resources": resources}
+	return res
+}
+
+/*********************************************************
+** 函数功能: 管理员删除视频资源
+** 日    期: 2022年1月14日12:11:37
+**********************************************************/
+func DeleteResourceService(uuid uuid.UUID) response.ResponseStruct {
+	DB := common.GetDB()
+	DB.Where("uuid = ?", uuid).Delete(model.Resource{})
+	//删除审核状态
+	return response.ResponseStruct{
+		HttpStatus: http.StatusOK,
+		Code:       response.SuccessCode,
+		Data:       nil,
+		Msg:        "ok",
+	}
 }
 
 /*********************************************************
@@ -519,7 +523,7 @@ func IsUserOwnsVideo(db *gorm.DB, vid uint, uid uint) bool {
 **********************************************************/
 func IsVideoExist(db *gorm.DB, vid uint) bool {
 	var video model.Video
-	db.Where("id = ?", vid).First(&video)
+	db.First(&video, vid)
 	if video.ID != 0 {
 		return true
 	}
@@ -527,33 +531,30 @@ func IsVideoExist(db *gorm.DB, vid uint) bool {
 }
 
 /*********************************************************
-** 函数功能: 将点击量存入数据库
-** 日    期:2021/7/22
+** 函数功能: 获取视频资源
+** 日    期: 2022年1月6日10:33:53
 **********************************************************/
-func ClicksStoreInDB() {
-	util.Logfile("[Info]", " Clicks are stored in the database")
-	var vid int          //视频id
-	var key string       //redis的key
-	var clicks int       //点击量数字
-	var strClicks string //字符串格式
-	DB := common.GetDB()
-	Redis := common.RedisClient
-	if Redis == nil {
-		util.Logfile("[Error]", " Clicks save failed")
-		return
+func GetVideoResource(db *gorm.DB, vid uint) []model.Resource {
+	var resource []model.Resource
+	db.Model(&model.Resource{}).Where("vid = ?", vid).Find(&resource)
+	return resource
+}
+
+/*********************************************************
+** 函数功能: 获取视频交互数据
+** 日    期:2021/11/11
+**********************************************************/
+func GetVideoInteractiveData(db *gorm.DB, vid int, uid uint) vo.InteractiveVo {
+	var video model.Video
+	//获取作者id
+	db.First(&video, vid)
+
+	like, collect := IsCollectAndLike(db, uid, uint(vid))
+	follow := IsFollow(db, uid, video.Uid)
+
+	return vo.InteractiveVo{
+		Collect: collect,
+		Like:    like,
+		Follow:  follow,
 	}
-	videos := Redis.LRange(util.ClicksVideoList, 0, -1).Val()
-	for _, i := range videos {
-		vid, _ = strconv.Atoi(i)
-		key = util.VideoClicksKey(vid)
-		strClicks, _ = Redis.Get(key).Result()
-		clicks, _ = strconv.Atoi(strClicks)
-		//删除redis数据
-		Redis.Del(key)
-		//写入数据库
-		DB.Model(&model.Video{}).Where("id = ?", vid).Update("clicks", clicks)
-	}
-	//删除list
-	Redis.Del(util.ClicksVideoList)
-	util.Logfile("[Info]", " Click volume storage completed")
 }

@@ -1,30 +1,30 @@
-package admin_controller
+package manage
 
 import (
-	"wzm/danmu3.0/dto"
-	"wzm/danmu3.0/response"
-
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
+	"kuukaa.fun/danmu-v4/dto"
+	"kuukaa.fun/danmu-v4/response"
 )
 
 func GetOssConfig(ctx *gin.Context) {
 	response.Success(ctx, gin.H{
-		"bucket":          viper.Get("aliyunoss.bucket"),
-		"endpoint":        viper.Get("aliyunoss.endpoint"),
-		"accesskeyId":     viper.Get("aliyunoss.accesskey_id"),
-		"accesskeySecret": viper.Get("aliyunoss.accesskey_secret"),
-		"domain":          viper.Get("aliyunoss.domain"),
+		"storage":         viper.GetBool("aliyunoss.storage"),
+		"bucket":          viper.GetString("aliyunoss.bucket"),
+		"endpoint":        viper.GetString("aliyunoss.endpoint"),
+		"accesskeyId":     viper.GetString("aliyunoss.accesskey_id"),
+		"accesskeySecret": viper.GetString("aliyunoss.accesskey_secret"),
+		"domain":          viper.GetString("aliyunoss.domain"),
 	}, "ok")
 }
 
 func GetEmailConfig(ctx *gin.Context) {
 	response.Success(ctx, gin.H{
-		"name":     viper.Get("email.name"),
-		"host":     viper.Get("email.host"),
-		"port":     viper.Get("email.port"),
-		"address":  viper.Get("email.address"),
-		"password": viper.Get("email.password"),
+		"name":     viper.GetString("email.name"),
+		"host":     viper.GetString("email.host"),
+		"port":     viper.GetInt("email.port"),
+		"address":  viper.GetString("email.address"),
+		"password": viper.GetString("email.password"),
 	}, "ok")
 }
 
@@ -35,7 +35,11 @@ func SetOssConfig(ctx *gin.Context) {
 		response.Fail(ctx, nil, "请求错误")
 		return
 	}
-
+	if !oss.Storage && oss.Domain == "" {
+		response.CheckFail(ctx, nil, "域名不存在")
+		return
+	}
+	viper.Set("aliyunoss.storage", oss.Storage)
 	viper.Set("aliyunoss.bucket", oss.Bucket)
 	viper.Set("aliyunoss.endpoint", oss.Endpoint)
 	viper.Set("aliyunoss.accesskey_id", oss.AccesskeyId)

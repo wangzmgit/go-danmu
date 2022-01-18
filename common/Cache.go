@@ -1,10 +1,9 @@
 package common
 
 import (
-	"wzm/danmu3.0/util"
-
 	"github.com/go-redis/redis"
 	"github.com/spf13/viper"
+	"kuukaa.fun/danmu-v4/util"
 )
 
 var RedisClient *redis.Client
@@ -22,5 +21,4 @@ func Redis() {
 	} else {
 		RedisClient = client
 	}
-
 }

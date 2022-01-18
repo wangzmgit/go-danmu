@@ -2,14 +2,14 @@ package service
 
 import (
 	"net/http"
-	"wzm/danmu3.0/common"
-	"wzm/danmu3.0/dto"
-	"wzm/danmu3.0/model"
-	"wzm/danmu3.0/response"
-	"wzm/danmu3.0/vo"
 
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
+	"kuukaa.fun/danmu-v4/common"
+	"kuukaa.fun/danmu-v4/dto"
+	"kuukaa.fun/danmu-v4/model"
+	"kuukaa.fun/danmu-v4/response"
+	"kuukaa.fun/danmu-v4/vo"
 )
 
 /*********************************************************
@@ -97,7 +97,7 @@ func GetCollectionContentService(cid int, page int, pageSize int) response.Respo
 	DB := common.GetDB()
 	DB = DB.Limit(pageSize).Offset((page - 1) * pageSize)
 	sqlID := "(select vid from video_collections where deleted_at is null and collection_id = ?)"
-	DB.Raw("select id,title,cover,created_at,introduction from videos where deleted_at is null and review = 1 and id in "+sqlID, cid).Scan(&videos)
+	DB.Raw("select id,title,cover,created_at,`desc` from videos where deleted_at is null and review = 1 and id in "+sqlID, cid).Scan(&videos)
 	DB.Model(&model.VideoCollection{}).Where("collection_id = ?", cid).Count(&count) //获取已添加数量
 
 	return response.ResponseStruct{

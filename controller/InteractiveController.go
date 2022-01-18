@@ -1,11 +1,10 @@
 package controller
 
 import (
-	"wzm/danmu3.0/dto"
-	"wzm/danmu3.0/response"
-	"wzm/danmu3.0/service"
-
 	"github.com/gin-gonic/gin"
+	"kuukaa.fun/danmu-v4/dto"
+	"kuukaa.fun/danmu-v4/response"
+	"kuukaa.fun/danmu-v4/service"
 )
 
 /*********************************************************
@@ -14,7 +13,7 @@ import (
 **********************************************************/
 func Collect(ctx *gin.Context) {
 	//获取参数
-	var request dto.InteractiveRequest
+	var request dto.InteractiveDto
 	if err := ctx.Bind(&request); err != nil {
 		response.Fail(ctx, nil, "请求错误")
 		return
@@ -38,7 +37,7 @@ func Collect(ctx *gin.Context) {
 **********************************************************/
 func CancelCollect(ctx *gin.Context) {
 	//获取参数
-	var request dto.InteractiveRequest
+	var request dto.InteractiveDto
 	if err := ctx.Bind(&request); err != nil {
 		response.Fail(ctx, nil, "请求错误")
 		return
@@ -57,7 +56,7 @@ func CancelCollect(ctx *gin.Context) {
 **********************************************************/
 func Like(ctx *gin.Context) {
 	//获取参数
-	var request dto.InteractiveRequest
+	var request dto.InteractiveDto
 	if err := ctx.Bind(&request); err != nil {
 		response.Fail(ctx, nil, "请求错误")
 		return
@@ -80,7 +79,7 @@ func Like(ctx *gin.Context) {
 **********************************************************/
 func Dislike(ctx *gin.Context) {
 	//获取参数
-	var request dto.InteractiveRequest
+	var request dto.InteractiveDto
 	if err := ctx.Bind(&request); err != nil {
 		response.Fail(ctx, nil, "请求错误")
 		return
