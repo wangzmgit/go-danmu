@@ -40,7 +40,7 @@ func main() {
 	gin.DisableConsoleColor()
 	gin.DefaultWriter = io.MultiWriter(file)
 	// 设置模式
-	gin.SetMode(DebugMode)
+	gin.SetMode(ReleaseMode)
 	r := gin.Default()
 	r = routes.CollectRoute(r)
 	port := viper.GetString("server.port")

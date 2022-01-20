@@ -16,8 +16,6 @@ redis_password=
 
 #配置项结束(以下内容不需要修改)
 
-#配置后端的配置文件
-#写入配置文件
 writeConfig() {
 	jwt_secret=$(date +%s%N)
 	sleep 5
@@ -28,13 +26,11 @@ server:
   jwt_secret: ${jwt_secret}
   admin_jwt_secret: ${admin_jwt_secret}
 datasource:
-  driver_name: mysql
   host: ${intranet}
   port: 3306
   database: ${db_name}
   username: ${db_user}
   password: ${db_password}
-  charset: utf8mb4
 redis:
   address: ${intranet}:6379
   password: ${redis_password}

@@ -170,6 +170,6 @@ func GetUrl() string {
 			return "http://" + viper.GetString("aliyunoss.domain") + "/"
 		}
 	} else {
-		return viper.GetString("aliyunoss.domain") + "/"
+		return "/api/"
 	}
 }
