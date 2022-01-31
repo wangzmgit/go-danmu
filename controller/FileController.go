@@ -140,7 +140,12 @@ func UploadVideo(ctx *gin.Context) {
 	objectName := "video/" + video.Filename
 	//获取url
 	if viper.GetString("transcoding.coding") == "hls" {
-		urls["original"] = service.GetUrl() + "output/" + videoName + "/" + "index.m3u8"
+
+		if viper.GetBool("aliyunoss.storage") {
+			urls["original"] = service.GetUrl() + videoName + "/" + "index.m3u8"
+		} else {
+			urls["original"] = service.GetUrl() + "output/" + videoName + "/" + "index.m3u8"
+		}
 	} else {
 		urls["original"] = service.GetUrl() + objectName
 	}
