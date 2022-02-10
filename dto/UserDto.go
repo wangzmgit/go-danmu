@@ -12,6 +12,11 @@ type LoginDto struct {
 	Password string
 }
 
+type EmailLoginDto struct {
+	Email string
+	Code  string
+}
+
 type ModifyUserDto struct {
 	Name     string
 	Gender   int

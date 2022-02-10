@@ -27,6 +27,10 @@ func CodeKey(email string) string {
 	return fmt.Sprintf("code:%s", email)
 }
 
+func LoginCodeKey(email string) string {
+	return fmt.Sprintf("login:%s", email)
+}
+
 func VideoClicksLimitKey(vid int, ip string) string {
 	return fmt.Sprintf("clicks:%d:%s", vid, ip)
 }

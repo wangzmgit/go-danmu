@@ -41,7 +41,7 @@ func Register(ctx *gin.Context) {
 		response.CheckFail(ctx, nil, "密码不要少于六位")
 		return
 	}
-	if !VerificationCode(email, code) {
+	if !VerificationCode(util.CodeKey(email), code) {
 		response.CheckFail(ctx, nil, "验证码有误")
 		return
 	}
@@ -80,6 +80,40 @@ func Login(ctx *gin.Context) {
 	}
 	res := service.LoginService(request, ctx.ClientIP())
 
+	response.HandleResponse(ctx, res)
+}
+
+/*********************************************************
+** 函数功能: 邮箱验证登录
+** 日    期: 2022年2月10日13:05:59
+**********************************************************/
+func EmailLogin(ctx *gin.Context) {
+	//获取参数
+	var request dto.EmailLoginDto
+	err := ctx.Bind(&request)
+	if err != nil {
+		response.Response(ctx, http.StatusBadRequest, 4000, nil, "请求错误")
+		return
+	}
+	email := request.Email
+	code := request.Code
+
+	//数据验证
+	if !util.VerifyEmailFormat(email) {
+		response.CheckFail(ctx, nil, "邮箱格式有误哦")
+		return
+	}
+	if len(code) == 0 {
+		response.CheckFail(ctx, nil, "验证码不能为空")
+		return
+	}
+	//验证验证码是否正确
+	if !VerificationCode(util.LoginCodeKey(email), code) {
+		response.CheckFail(ctx, nil, "验证码有误")
+		return
+	}
+
+	res := service.EmailLoginService(request, ctx.ClientIP())
 	response.HandleResponse(ctx, res)
 }
 
@@ -149,7 +183,7 @@ func ModifyPassword(ctx *gin.Context) {
 	user, _ := ctx.Get("user")
 	modelUser := user.(model.User)
 	//验证验证码是否正确
-	if !VerificationCode(modelUser.Email, code) {
+	if !VerificationCode(util.CodeKey(modelUser.Email), code) {
 		response.CheckFail(ctx, nil, "验证码有误")
 		return
 	}

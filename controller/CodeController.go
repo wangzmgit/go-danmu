@@ -69,16 +69,17 @@ func SendCode(ctx *gin.Context) {
 ** 函数功能: 验证验证码
 ** 日    期:2021/7/24
 **********************************************************/
-func VerificationCode(email string, code string) bool {
+func VerificationCode(emailKey string, code string) bool {
 	Redis := common.RedisClient
 	if Redis == nil {
 		util.Logfile("[Error]", "Verification code redis error")
 		return false
 	}
-	dbCode, _ := Redis.Get(util.CodeKey(email)).Result()
+	dbCode, _ := Redis.Get(emailKey).Result()
 	if dbCode == "" || dbCode != code {
 		return false
 	}
+	Redis.Del(emailKey)
 	return true
 }
 
@@ -131,6 +132,52 @@ func SendCodeToMyself(ctx *gin.Context) {
 		response.Success(ctx, nil, "ok")
 	} else {
 		Redis.Del(util.CodeKey(email))
+		response.Fail(ctx, nil, "发送失败")
+	}
+}
+
+/*********************************************************
+** 函数功能: 发送登录验证码
+** 日    期: 2022年2月10日12:55:40
+**********************************************************/
+func SendLoginCode(ctx *gin.Context) {
+	var requestUser dto.SendCodeDto
+	err := ctx.Bind(&requestUser)
+	if err != nil {
+		response.Response(ctx, http.StatusBadRequest, 4000, nil, "请求错误")
+		return
+	}
+	email := requestUser.Email
+	if !util.VerifyEmailFormat(email) {
+		response.CheckFail(ctx, nil, "邮箱格式有误")
+		return
+	}
+	//存储code到redis
+	Redis := common.RedisClient
+	if Redis == nil {
+		response.ServerError(ctx, nil, "系统故障")
+		return
+	}
+	code, _ := Redis.Get(util.LoginCodeKey(email)).Result()
+	if code != "" {
+		//如果时间小于一分钟则不能重新发送
+		duration, _ := Redis.TTL(util.LoginCodeKey(email)).Result()
+		if duration >= 240000000000 {
+			response.Fail(ctx, nil, "操作过于频繁")
+			return
+		}
+	}
+	randomCode := util.RandomCode(6)
+	err = Redis.Set(util.LoginCodeKey(email), randomCode, time.Second*300).Err()
+	if err != nil {
+		response.ServerError(ctx, nil, "发送失败")
+		return
+	}
+	send := util.SendEmail(email, randomCode, "登录验证")
+	if send {
+		response.Success(ctx, nil, "ok")
+	} else {
+		Redis.Del(util.LoginCodeKey(email))
 		response.Fail(ctx, nil, "发送失败")
 	}
 }

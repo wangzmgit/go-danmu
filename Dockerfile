@@ -18,4 +18,4 @@ RUN apk add nginx unzip \
     && mv danmaku /var/www \
     && rm danmuFE.zip 
 
-CMD ["sh","./entrypoint.sh"]
+CMD nginx -c /etc/nginx/nginx.conf && ./app

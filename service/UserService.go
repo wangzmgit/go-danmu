@@ -104,6 +104,44 @@ func LoginService(login dto.LoginDto, userIP string) response.ResponseStruct {
 }
 
 /*********************************************************
+** 函数功能: 邮箱登录
+** 日    期: 2021/11/8
+**********************************************************/
+func EmailLoginService(login dto.EmailLoginDto, userIP string) response.ResponseStruct {
+	res := response.ResponseStruct{
+		HttpStatus: http.StatusOK,
+		Code:       response.SuccessCode,
+		Data:       nil,
+		Msg:        "ok",
+	}
+
+	//判断邮箱是否存在
+	var user model.User
+	DB := common.GetDB()
+	DB.Where("email = ?", login.Email).First(&user)
+	if user.ID == 0 {
+		res.HttpStatus = http.StatusBadRequest
+		res.Code = response.FailCode
+		res.Msg = "用户不存在"
+		return res
+	}
+
+	//发放token
+	token, err := common.ReleaseToken(user)
+	if err != nil {
+		res.HttpStatus = http.StatusInternalServerError
+		res.Code = response.ServerErrorCode
+		res.Msg = "系统异常"
+		util.Logfile("[Error]", " token generate error  "+err.Error())
+		return res
+	}
+	util.Logfile("[Info]", " Token issued successfully uid "+strconv.Itoa(int(user.ID))+" | "+userIP)
+	//返回数据
+	res.Data = gin.H{"token": token, "user": vo.ToUserVo(user)}
+	return res
+}
+
+/*********************************************************
 ** 函数功能: 修改用户信息
 ** 日    期: 2021/11/8
 **********************************************************/

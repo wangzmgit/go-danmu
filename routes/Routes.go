@@ -17,8 +17,9 @@ func CollectRoute(r *gin.Engine) *gin.Engine {
 		user := v1.Group("/user")
 		{
 			user.GET("/info/other", controller.GetUserInfoByID)
-			user.POST("/register", controller.Register) //用户注册
-			user.POST("/login", controller.Login)       //用户登录
+			user.POST("/register", controller.Register)      //用户注册
+			user.POST("/login", controller.Login)            //用户登录
+			user.POST("/email/login", controller.EmailLogin) //邮箱登录
 			//需要用户登录
 			userAuth := user.Group("")
 			userAuth.Use(middleware.AuthMiddleware())
@@ -32,6 +33,7 @@ func CollectRoute(r *gin.Engine) *gin.Engine {
 		code := v1.Group("/code")
 		{
 			code.POST("/send", controller.SendCode)
+			code.POST("/send/login", controller.SendLoginCode)
 			code.POST("/send/myself", middleware.AuthMiddleware(), controller.SendCodeToMyself)
 		}
 
