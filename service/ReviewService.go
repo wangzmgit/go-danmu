@@ -120,7 +120,7 @@ func VideoReviewFail(vid int, msg string) response.ResponseStruct {
 	//创建审核状态
 	if err := tx.Model(&model.Review{}).Where("vid = ?", vid).Updates(
 		map[string]interface{}{
-			"status":  401,
+			"status":  4001,
 			"remarks": msg,
 		},
 	).Error; err != nil {
