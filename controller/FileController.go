@@ -104,6 +104,7 @@ func UploadVideo(ctx *gin.Context) {
 		"res1080":  "",
 		"original": "",
 	}
+	maxRes := 0 //最大分辨率
 	vid, _ := strconv.Atoi(ctx.PostForm("vid"))
 	if vid <= 0 {
 		response.Fail(ctx, nil, "VID格式有误")
@@ -141,9 +142,17 @@ func UploadVideo(ctx *gin.Context) {
 	//获取url
 	if viper.GetString("transcoding.coding") == "hls" {
 		if viper.GetBool("aliyunoss.storage") {
-			urls["original"] = service.GetUrl() + "video/" + videoName + "/" + "index.m3u8"
+			if viper.GetInt("transcoding.max_res") == 0 {
+				urls["original"] = service.GetUrl() + "video/" + videoName + "/" + "index.m3u8"
+			} else {
+				urls, maxRes = service.GetUrlDifferentRes(videoName, localFileName, vid, true)
+			}
 		} else {
-			urls["original"] = service.GetUrl() + "output/" + videoName + "/" + "index.m3u8"
+			if viper.GetInt("transcoding.max_res") == 0 {
+				urls["original"] = service.GetUrl() + "output/" + videoName + "/" + "index.m3u8"
+			} else {
+				urls, maxRes = service.GetUrlDifferentRes(videoName, localFileName, vid, false)
+			}
 		}
 	} else {
 		urls["original"] = service.GetUrl() + objectName
@@ -153,7 +162,7 @@ func UploadVideo(ctx *gin.Context) {
 	res := service.UploadVideoService(urls, vid, uid.(uint))
 	//启动转码服务或上传服务
 	if viper.GetString("transcoding.coding") == "hls" {
-		go service.Transcoding(video.Filename, vid)
+		go service.Transcoding(video.Filename, vid, maxRes)
 	} else {
 		if viper.GetBool("aliyunoss.storage") {
 			go service.UploadVideoToOSS(localFileName, objectName, vid)

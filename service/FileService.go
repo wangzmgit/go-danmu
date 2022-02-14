@@ -2,6 +2,7 @@ package service
 
 import (
 	"net/http"
+	"os"
 
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
@@ -170,6 +171,98 @@ func GetUrl() string {
 			return "http://" + viper.GetString("aliyunoss.domain") + "/"
 		}
 	} else {
-		return "/api/"
+		if len(viper.GetString("aliyunoss.domain")) == 0 {
+			return "/api/"
+		} else {
+			return "http://" + viper.GetString("aliyunoss.domain") + "/api/"
+		}
+	}
+}
+
+/*********************************************************
+** 函数功能: 获取不同分辨率URL
+** 日    期: 2022年2月13日18:01:35
+**********************************************************/
+func GetUrlDifferentRes(videoName, localFileName string, vid int, oss bool) (map[string]string, int) {
+	urls := map[string]string{
+		"res360":   "",
+		"res480":   "",
+		"res720":   "",
+		"res1080":  "",
+		"original": "",
+	}
+	ossDir := "video"
+	if !oss {
+		ossDir = "output"
+	}
+	maxRes, err := PreTreatmentVideo(localFileName, vid)
+	maxRes = util.Min(maxRes, viper.GetInt("transcoding.max_res"))
+	if err != nil {
+		//调用审核失败
+		VideoReviewFail(vid, "视频处理出现错误")
+		return nil, 0
+	}
+	switch maxRes {
+	case 1080:
+		urls["res1080"] = GetUrl() + ossDir + "/" + videoName + "/1080p/" + "index.m3u8"
+		fallthrough
+	case 720:
+		urls["res720"] = GetUrl() + ossDir + "/" + videoName + "/720p/" + "index.m3u8"
+		fallthrough
+	case 480:
+		urls["res480"] = GetUrl() + ossDir + "/" + videoName + "/480p/" + "index.m3u8"
+		fallthrough
+	case 360:
+		urls["res360"] = GetUrl() + ossDir + "/" + videoName + "/360p/" + "index.m3u8"
+	}
+	return urls, maxRes
+}
+
+/*********************************************************
+** 函数功能: 创建不同分辨率文件夹
+** 日    期: 2022年2月13日18:47:04
+**********************************************************/
+func CreateResDir(maxRes int, dirName string) {
+	switch maxRes {
+	case 1080:
+		os.Mkdir("./file/output/"+dirName+"/1080p", os.ModePerm)
+		fallthrough
+	case 720:
+		os.Mkdir("./file/output/"+dirName+"/720p", os.ModePerm)
+		fallthrough
+	case 480:
+		os.Mkdir("./file/output/"+dirName+"/480p", os.ModePerm)
+		fallthrough
+	case 360:
+		os.Mkdir("./file/output/"+dirName+"/360p", os.ModePerm)
+	}
+}
+
+/*********************************************************
+** 函数功能: 删除临时文件
+** 日    期: 2022年2月13日19:00:44
+**********************************************************/
+func DeleteTempFile(maxRes int, dirName string) {
+	if maxRes == 0 {
+		os.Remove("./file/output/" + dirName + "/temp.m3u8")
+		os.Remove("./file/output/" + dirName + "/temp_original.ts")
+	} else {
+		switch maxRes {
+		case 1080:
+			os.Remove("./file/output/" + dirName + "/temp_1080p.ts")
+			os.Remove("./file/output/" + dirName + "/temp_1080p.mp4")
+			fallthrough
+		case 720:
+			os.Remove("./file/output/" + dirName + "/temp_720p.ts")
+			os.Remove("./file/output/" + dirName + "/temp_720p.mp4")
+			fallthrough
+		case 480:
+			os.Remove("./file/output/" + dirName + "/temp_480p.ts")
+			os.Remove("./file/output/" + dirName + "/temp_480p.mp4")
+			fallthrough
+		case 360:
+			os.Remove("./file/output/" + dirName + "/temp_360p.ts")
+			os.Remove("./file/output/" + dirName + "/temp_360p.mp4")
+		}
 	}
 }

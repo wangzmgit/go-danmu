@@ -39,6 +39,7 @@ admin:
   password: "123456"
 transcoding:
   coding: ${coding}
+  max_res: 0
 EOF
 }
 
