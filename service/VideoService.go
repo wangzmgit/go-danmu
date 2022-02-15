@@ -31,14 +31,14 @@ func UploadVideoInfoService(video dto.UploadVideoDto, uid interface{}) response.
 		HttpStatus: http.StatusOK,
 		Code:       response.SuccessCode,
 		Data:       nil,
-		Msg:        "ok",
+		Msg:        response.OK,
 	}
 
 	DB := common.GetDB()
 	if !IsSubpartition(DB, video.Partition) {
 		res.HttpStatus = http.StatusUnprocessableEntity
 		res.Code = response.CheckFailCode
-		res.Msg = "分区不存在"
+		res.Msg = response.PartitionNotExist
 		return res
 	}
 
@@ -57,7 +57,7 @@ func UploadVideoInfoService(video dto.UploadVideoDto, uid interface{}) response.
 		tx.Rollback()
 		res.HttpStatus = http.StatusBadRequest
 		res.Code = response.FailCode
-		res.Msg = "上传失败"
+		res.Msg = response.UploadFail
 		return res
 	}
 	//创建审核状态
@@ -65,7 +65,7 @@ func UploadVideoInfoService(video dto.UploadVideoDto, uid interface{}) response.
 		tx.Rollback()
 		res.HttpStatus = http.StatusBadRequest
 		res.Code = response.FailCode
-		res.Msg = "更新审核状态失败"
+		res.Msg = response.UpdateStatusFail
 		return res
 	}
 	tx.Commit()
@@ -82,7 +82,7 @@ func GetVideoStatusService(vid int, uid interface{}) response.ResponseStruct {
 		HttpStatus: http.StatusOK,
 		Code:       response.SuccessCode,
 		Data:       nil,
-		Msg:        "ok",
+		Msg:        response.OK,
 	}
 	var review model.Review
 	DB := common.GetDB()
@@ -90,7 +90,7 @@ func GetVideoStatusService(vid int, uid interface{}) response.ResponseStruct {
 	if review.ID == 0 || review.Video.Uid != uid {
 		res.HttpStatus = http.StatusBadRequest
 		res.Code = response.FailCode
-		res.Msg = "视频不见了"
+		res.Msg = response.VideoNotExist
 		return res
 	}
 	//通过子分区获取父分区
@@ -118,7 +118,7 @@ func ModifyVideoInfoService(video dto.ModifyVideoDto, uid interface{}) response.
 		HttpStatus: http.StatusOK,
 		Code:       response.SuccessCode,
 		Data:       nil,
-		Msg:        "ok",
+		Msg:        response.OK,
 	}
 	DB := common.GetDB()
 	tx := DB.Begin()
@@ -133,7 +133,7 @@ func ModifyVideoInfoService(video dto.ModifyVideoDto, uid interface{}) response.
 		tx.Rollback()
 		res.HttpStatus = http.StatusBadRequest
 		res.Code = response.FailCode
-		res.Msg = "视频信息修改失败"
+		res.Msg = response.ModifyFail
 		return res
 	}
 	//更新审核状态
@@ -145,7 +145,7 @@ func ModifyVideoInfoService(video dto.ModifyVideoDto, uid interface{}) response.
 		tx.Rollback()
 		res.HttpStatus = http.StatusBadRequest
 		res.Code = response.FailCode
-		res.Msg = "更新审核状态失败"
+		res.Msg = response.UpdateStatusFail
 		return res
 	}
 	tx.Commit()
@@ -161,7 +161,7 @@ func DeleteVideoService(vid uint, uid interface{}) response.ResponseStruct {
 		HttpStatus: http.StatusOK,
 		Code:       response.SuccessCode,
 		Data:       nil,
-		Msg:        "ok",
+		Msg:        response.OK,
 	}
 
 	DB := common.GetDB()
@@ -169,7 +169,7 @@ func DeleteVideoService(vid uint, uid interface{}) response.ResponseStruct {
 		//该视频不属于这个用户
 		res.HttpStatus = http.StatusBadRequest
 		res.Code = response.FailCode
-		res.Msg = "删除失败"
+		res.Msg = response.DeleteFail
 		return res
 	}
 	DB.Where("id = ?", vid).Delete(model.Video{})
@@ -197,7 +197,7 @@ func GetMyUploadVideoService(page int, pageSize int, uid interface{}) response.R
 		HttpStatus: http.StatusOK,
 		Code:       response.SuccessCode,
 		Data:       gin.H{"count": totalSize, "data": vo.ToUploadVideoVo(videos)},
-		Msg:        "ok",
+		Msg:        response.OK,
 	}
 }
 
@@ -213,7 +213,7 @@ func GetVideoByIDService(vid int, ip string, uid interface{}) response.ResponseS
 		HttpStatus: http.StatusOK,
 		Code:       response.SuccessCode,
 		Data:       nil,
-		Msg:        "ok",
+		Msg:        response.OK,
 	}
 
 	var video model.Video
@@ -222,7 +222,7 @@ func GetVideoByIDService(vid int, ip string, uid interface{}) response.ResponseS
 	if video.ID == 0 {
 		res.HttpStatus = http.StatusBadRequest
 		res.Code = response.CheckFailCode
-		res.Msg = "视频不见了"
+		res.Msg = response.VideoNotExist
 		return res
 	}
 	//获取视频资源
@@ -267,7 +267,7 @@ func GetCollectVideoService(uid interface{}, page int, pageSize int) response.Re
 		HttpStatus: http.StatusOK,
 		Code:       response.SuccessCode,
 		Data:       gin.H{"count": count, "videos": vo.ToCollectVideoVo(favorites)},
-		Msg:        "ok",
+		Msg:        response.OK,
 	}
 }
 
@@ -292,7 +292,7 @@ func GetRecommendVideoService() response.ResponseStruct {
 		HttpStatus: http.StatusOK,
 		Code:       response.SuccessCode,
 		Data:       gin.H{"videos": videos},
-		Msg:        "ok",
+		Msg:        response.OK,
 	}
 }
 
@@ -328,7 +328,7 @@ func GetVideoListService(query dto.GetVideoListDto) response.ResponseStruct {
 		HttpStatus: http.StatusOK,
 		Code:       response.SuccessCode,
 		Data:       gin.H{"count": total, "videos": videos},
-		Msg:        "ok",
+		Msg:        response.OK,
 	}
 }
 
@@ -344,7 +344,7 @@ func GetVideoListByUserIDService(uid int, page int, pageSize int) response.Respo
 		HttpStatus: http.StatusOK,
 		Code:       response.SuccessCode,
 		Data:       nil,
-		Msg:        "ok",
+		Msg:        response.OK,
 	}
 	var videos []vo.SearchVideoVo
 
@@ -352,7 +352,7 @@ func GetVideoListByUserIDService(uid int, page int, pageSize int) response.Respo
 	if !IsUserExist(DB, uint(uid)) {
 		res.HttpStatus = http.StatusUnprocessableEntity
 		res.Code = response.CheckFailCode
-		res.Msg = "用户不存在"
+		res.Msg = response.UserNotExist
 		return res
 	}
 	//记录总数
@@ -383,7 +383,7 @@ func AdminGetVideoListService(page int, pageSize int, videoFrom string) response
 		HttpStatus: http.StatusOK,
 		Code:       response.SuccessCode,
 		Data:       gin.H{"count": total, "videos": vo.ToAdminVideoListVo(videos)},
-		Msg:        "ok",
+		Msg:        response.OK,
 	}
 }
 
@@ -400,7 +400,7 @@ func AdminDeleteVideoService(id uint) response.ResponseStruct {
 		HttpStatus: http.StatusOK,
 		Code:       response.SuccessCode,
 		Data:       nil,
-		Msg:        "ok",
+		Msg:        response.OK,
 	}
 }
 
@@ -413,7 +413,7 @@ func ImportVideoService(video dto.ImportVideo) response.ResponseStruct {
 		HttpStatus: http.StatusOK,
 		Code:       response.SuccessCode,
 		Data:       nil,
-		Msg:        "ok",
+		Msg:        response.OK,
 	}
 
 	newVideo := model.Video{
@@ -430,7 +430,7 @@ func ImportVideoService(video dto.ImportVideo) response.ResponseStruct {
 	if err := DB.Create(&newVideo).Error; err != nil {
 		res.HttpStatus = http.StatusBadRequest
 		res.Code = response.CheckFailCode
-		res.Msg = "上传失败"
+		res.Msg = response.UploadFail
 		return res
 	}
 
@@ -446,7 +446,7 @@ func ImportResourceService(video dto.ImportResourceDto) response.ResponseStruct 
 		HttpStatus: http.StatusOK,
 		Code:       response.SuccessCode,
 		Data:       nil,
-		Msg:        "ok",
+		Msg:        response.OK,
 	}
 
 	DB := common.GetDB()
@@ -461,7 +461,7 @@ func ImportResourceService(video dto.ImportResourceDto) response.ResponseStruct 
 	}).Error; err != nil {
 		res.HttpStatus = http.StatusBadRequest
 		res.Code = response.FailCode
-		res.Msg = "创建视频资源失败"
+		res.Msg = response.CreateFail
 		return res
 	}
 
@@ -477,7 +477,7 @@ func GetResourceListService(vid int) response.ResponseStruct {
 		HttpStatus: http.StatusOK,
 		Code:       response.SuccessCode,
 		Data:       nil,
-		Msg:        "ok",
+		Msg:        response.OK,
 	}
 
 	DB := common.GetDB()
@@ -500,7 +500,7 @@ func DeleteResourceService(uuid uuid.UUID) response.ResponseStruct {
 		HttpStatus: http.StatusOK,
 		Code:       response.SuccessCode,
 		Data:       nil,
-		Msg:        "ok",
+		Msg:        response.OK,
 	}
 }
 

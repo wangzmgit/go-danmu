@@ -21,14 +21,14 @@ func CollectService(vid uint, uid interface{}) response.ResponseStruct {
 		HttpStatus: http.StatusOK,
 		Code:       response.SuccessCode,
 		Data:       nil,
-		Msg:        "ok",
+		Msg:        response.OK,
 	}
 	//验证视频是否存在
 	DB := common.GetDB()
 	if !IsVideoExist(DB, vid) {
 		res.HttpStatus = http.StatusUnprocessableEntity
 		res.Code = response.CheckFailCode
-		res.Msg = "视频不见了"
+		res.Msg = response.VideoNotExist
 		return res
 	}
 	//验证是否已经收藏
@@ -36,7 +36,7 @@ func CollectService(vid uint, uid interface{}) response.ResponseStruct {
 	if status == 0 {
 		res.HttpStatus = http.StatusUnprocessableEntity
 		res.Code = response.CheckFailCode
-		res.Msg = "已经收藏"
+		res.Msg = response.IsCollect
 		return res
 	}
 	if status == -1 {
@@ -69,7 +69,7 @@ func CancelCollectService(vid uint, uid interface{}) response.ResponseStruct {
 		HttpStatus: http.StatusOK,
 		Code:       response.SuccessCode,
 		Data:       nil,
-		Msg:        "ok",
+		Msg:        response.OK,
 	}
 	//验证收藏是否存在
 	DB := common.GetDB()
@@ -77,7 +77,7 @@ func CancelCollectService(vid uint, uid interface{}) response.ResponseStruct {
 	if status != 0 {
 		res.HttpStatus = http.StatusUnprocessableEntity
 		res.Code = response.CheckFailCode
-		res.Msg = "没有收藏"
+		res.Msg = response.NotCollect
 		return res
 	} else {
 		DB.Model(&model.Interactive{}).Where("uid = ? AND vid = ?", uid, vid).Update("collect", false)
@@ -102,14 +102,14 @@ func LikeService(vid uint, uid interface{}) response.ResponseStruct {
 		HttpStatus: http.StatusOK,
 		Code:       response.SuccessCode,
 		Data:       nil,
-		Msg:        "ok",
+		Msg:        response.OK,
 	}
 	//验证视频是否存在
 	DB := common.GetDB()
 	if !IsVideoExist(DB, vid) {
 		res.HttpStatus = http.StatusUnprocessableEntity
 		res.Code = response.CheckFailCode
-		res.Msg = "视频不见了"
+		res.Msg = response.VideoNotExist
 		return res
 	}
 	//验证是否已经点赞
@@ -117,7 +117,7 @@ func LikeService(vid uint, uid interface{}) response.ResponseStruct {
 	if status == 0 {
 		res.HttpStatus = http.StatusUnprocessableEntity
 		res.Code = response.CheckFailCode
-		res.Msg = "已经点过赞了"
+		res.Msg = response.IsLike
 		return res
 	}
 	if status == -1 {
@@ -150,7 +150,7 @@ func DislikeService(vid uint, uid interface{}) response.ResponseStruct {
 		HttpStatus: http.StatusOK,
 		Code:       response.SuccessCode,
 		Data:       nil,
-		Msg:        "ok",
+		Msg:        response.OK,
 	}
 	//验证点赞是否存在
 	DB := common.GetDB()
@@ -169,14 +169,14 @@ func DislikeService(vid uint, uid interface{}) response.ResponseStruct {
 	} else {
 		res.HttpStatus = http.StatusUnprocessableEntity
 		res.Code = response.CheckFailCode
-		res.Msg = "还没有点赞"
+		res.Msg = response.NotLike
 		return res
 	}
 }
 
 /*********************************************************
 ** 函数功能: 是否已经收藏
-** 日    期:2021/7/22
+** 日    期: 2021/7/22
 **********************************************************/
 func IsCollect(db *gorm.DB, uid uint, vid uint) int {
 	//不存在返回-1，存在但是没有收藏返回1，已经收藏返回0
@@ -184,7 +184,7 @@ func IsCollect(db *gorm.DB, uid uint, vid uint) int {
 	db.Where("uid = ? AND vid = ?", uid, vid).First(&favorites)
 	if favorites.ID == 0 {
 		return -1
-	} else if favorites.Collect == false {
+	} else if !favorites.Collect {
 		return 1
 	}
 	return 0
@@ -192,7 +192,7 @@ func IsCollect(db *gorm.DB, uid uint, vid uint) int {
 
 /*********************************************************
 ** 函数功能: 是否已经点赞
-** 日    期:2021/7/22
+** 日    期: 2021/7/22
 **********************************************************/
 func IsLike(db *gorm.DB, uid uint, vid uint) int {
 	//不存在返回-1，存在但是没有点赞返回1，已经点赞返回0
@@ -200,7 +200,7 @@ func IsLike(db *gorm.DB, uid uint, vid uint) int {
 	db.Where("uid = ? AND vid = ?", uid, vid).First(&like)
 	if like.ID == 0 {
 		return -1
-	} else if like.Like == false {
+	} else if !like.Like {
 		return 1
 	}
 	return 0

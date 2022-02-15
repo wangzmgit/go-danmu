@@ -35,7 +35,7 @@ func GetTotalWebsiteDataService() response.ResponseStruct {
 		HttpStatus: http.StatusOK,
 		Code:       response.SuccessCode,
 		Data:       gin.H{"data": data},
-		Msg:        "ok",
+		Msg:        response.OK,
 	}
 }
 
@@ -55,7 +55,7 @@ func GetGetRecentWebsiteDataService() response.ResponseStruct {
 		HttpStatus: http.StatusOK,
 		Code:       response.SuccessCode,
 		Data:       gin.H{"data": data},
-		Msg:        "ok",
+		Msg:        response.OK,
 	}
 }
 

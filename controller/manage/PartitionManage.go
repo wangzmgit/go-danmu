@@ -16,14 +16,14 @@ func AddPartition(ctx *gin.Context) {
 	var partition dto.PartitionDto
 	err := ctx.Bind(&partition)
 	if err != nil {
-		response.Fail(ctx, nil, "请求错误")
+		response.Fail(ctx, nil, response.RequestError)
 		return
 	}
 
 	content := partition.Content
 
 	if len(content) == 0 {
-		response.CheckFail(ctx, nil, "内容不能为空")
+		response.CheckFail(ctx, nil, response.ContentCheck)
 		return
 	}
 
@@ -38,13 +38,13 @@ func AddPartition(ctx *gin.Context) {
 func DeletePartition(ctx *gin.Context) {
 	var request dto.DeletePartitionDto
 	if err := ctx.Bind(&request); err != nil {
-		response.Fail(ctx, nil, "请求错误")
+		response.Fail(ctx, nil, response.RequestError)
 		return
 	}
 	id := request.ID
 
 	if id == 0 {
-		response.CheckFail(ctx, nil, "分区不存在")
+		response.CheckFail(ctx, nil, response.PartitionNotExist)
 		return
 	}
 

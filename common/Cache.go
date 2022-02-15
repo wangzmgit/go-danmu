@@ -16,7 +16,7 @@ func Redis() {
 	})
 	_, err := client.Ping().Result()
 	if err != nil {
-		util.Logfile("[Error]", " redis error "+err.Error())
+		util.Logfile(util.ErrorLog, " redis error "+err.Error())
 		RedisClient = nil
 	} else {
 		RedisClient = client

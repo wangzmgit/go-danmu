@@ -11,6 +11,7 @@ require (
 	github.com/go-sql-driver/mysql v1.5.0
 	github.com/golang-sql/civil v0.0.0-20190719163853-cb61b32ac6fe
 	github.com/google/uuid v1.3.0
+	github.com/gorilla/websocket v1.4.2 // indirect
 	github.com/jinzhu/gorm v1.9.16
 	github.com/leodido/go-urn v1.2.1 // indirect
 	github.com/mattn/go-isatty v0.0.13 // indirect

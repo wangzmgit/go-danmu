@@ -20,25 +20,25 @@ func SendCode(ctx *gin.Context) {
 	var requestUser dto.SendCodeDto
 	err := ctx.Bind(&requestUser)
 	if err != nil {
-		response.Response(ctx, http.StatusBadRequest, 4000, nil, "请求错误")
+		response.Response(ctx, http.StatusBadRequest, 4000, nil, response.RequestError)
 		return
 	}
 	email := requestUser.Email
 
 	//数据验证
 	if !util.VerifyEmailFormat(email) {
-		response.CheckFail(ctx, nil, "邮箱格式有误")
+		response.CheckFail(ctx, nil, response.EmailFormatCheck)
 		return
 	}
 	//邮箱是否存在
 	if service.IsEmailRegistered(email) {
-		response.CheckFail(ctx, nil, "该邮箱已经被注册了")
+		response.CheckFail(ctx, nil, response.EmailRegistered)
 		return
 	}
 	//存储code到redis
 	Redis := common.RedisClient
 	if Redis == nil {
-		response.ServerError(ctx, nil, "系统故障")
+		response.ServerError(ctx, nil, response.SystemError)
 		return
 	}
 	code, _ := Redis.Get(util.CodeKey(email)).Result()
@@ -46,22 +46,22 @@ func SendCode(ctx *gin.Context) {
 		//如果时间小于一分钟则不能重新发送
 		duration, _ := Redis.TTL(util.CodeKey(email)).Result()
 		if duration >= 240000000000 {
-			response.Fail(ctx, nil, "操作过于频繁")
+			response.Fail(ctx, nil, response.OperationTooFrequently)
 			return
 		}
 	}
 	randomCode := util.RandomCode(6)
 	err = Redis.Set(util.CodeKey(email), randomCode, time.Second*300).Err()
 	if err != nil {
-		response.ServerError(ctx, nil, "发送失败")
+		response.ServerError(ctx, nil, response.SendFail)
 		return
 	}
-	send := util.SendEmail(email, randomCode, "注册验证码")
+	send := util.SendEmail(email, randomCode, util.RegisterCode)
 	if send {
-		response.Success(ctx, nil, "发送成功")
+		response.Success(ctx, nil, response.OK)
 	} else {
 		Redis.Del(util.CodeKey(email))
-		response.Fail(ctx, nil, "发送失败")
+		response.Fail(ctx, nil, response.SendFail)
 	}
 }
 
@@ -70,9 +70,12 @@ func SendCode(ctx *gin.Context) {
 ** 日    期:2021/7/24
 **********************************************************/
 func VerificationCode(emailKey string, code string) bool {
+	if len(code) == 0 {
+		return false
+	}
 	Redis := common.RedisClient
 	if Redis == nil {
-		util.Logfile("[Error]", "Verification code redis error")
+		util.Logfile(util.ErrorLog, "Verification code redis error")
 		return false
 	}
 	dbCode, _ := Redis.Get(emailKey).Result()
@@ -92,24 +95,24 @@ func SendCodeToMyself(ctx *gin.Context) {
 	var requestUser dto.SendCodeDto
 	err := ctx.Bind(&requestUser)
 	if err != nil {
-		response.Response(ctx, http.StatusBadRequest, 4000, nil, "请求错误")
+		response.Response(ctx, http.StatusBadRequest, 4000, nil, response.RequestError)
 		return
 	}
 	email := requestUser.Email
 	if !util.VerifyEmailFormat(email) {
-		response.CheckFail(ctx, nil, "邮箱格式有误")
+		response.CheckFail(ctx, nil, response.EmailFormatCheck)
 		return
 	}
 	//邮箱是否属于当前用户
 	uid, _ := ctx.Get("id")
 	if !service.IsEmailBelongsToCurrentUser(email, uid) {
-		response.CheckFail(ctx, nil, "邮箱验证失败")
+		response.CheckFail(ctx, nil, response.VerificationFail)
 		return
 	}
 	//存储code到redis
 	Redis := common.RedisClient
 	if Redis == nil {
-		response.ServerError(ctx, nil, "系统故障")
+		response.ServerError(ctx, nil, response.SystemError)
 		return
 	}
 	code, _ := Redis.Get(util.CodeKey(email)).Result()
@@ -117,22 +120,22 @@ func SendCodeToMyself(ctx *gin.Context) {
 		//如果时间小于一分钟则不能重新发送
 		duration, _ := Redis.TTL(util.CodeKey(email)).Result()
 		if duration >= 240000000000 {
-			response.Fail(ctx, nil, "操作过于频繁")
+			response.Fail(ctx, nil, response.OperationTooFrequently)
 			return
 		}
 	}
 	randomCode := util.RandomCode(6)
 	err = Redis.Set(util.CodeKey(email), randomCode, time.Second*300).Err()
 	if err != nil {
-		response.ServerError(ctx, nil, "发送失败")
+		response.ServerError(ctx, nil, response.SendFail)
 		return
 	}
-	send := util.SendEmail(email, randomCode, "修改密码验证")
+	send := util.SendEmail(email, randomCode, util.ModifyPasswordCode)
 	if send {
-		response.Success(ctx, nil, "ok")
+		response.Success(ctx, nil, response.OK)
 	} else {
 		Redis.Del(util.CodeKey(email))
-		response.Fail(ctx, nil, "发送失败")
+		response.Fail(ctx, nil, response.SendFail)
 	}
 }
 
@@ -144,18 +147,18 @@ func SendLoginCode(ctx *gin.Context) {
 	var requestUser dto.SendCodeDto
 	err := ctx.Bind(&requestUser)
 	if err != nil {
-		response.Response(ctx, http.StatusBadRequest, 4000, nil, "请求错误")
+		response.Response(ctx, http.StatusBadRequest, 4000, nil, response.RequestError)
 		return
 	}
 	email := requestUser.Email
 	if !util.VerifyEmailFormat(email) {
-		response.CheckFail(ctx, nil, "邮箱格式有误")
+		response.CheckFail(ctx, nil, response.EmailFormatCheck)
 		return
 	}
 	//存储code到redis
 	Redis := common.RedisClient
 	if Redis == nil {
-		response.ServerError(ctx, nil, "系统故障")
+		response.ServerError(ctx, nil, response.SystemError)
 		return
 	}
 	code, _ := Redis.Get(util.LoginCodeKey(email)).Result()
@@ -163,21 +166,21 @@ func SendLoginCode(ctx *gin.Context) {
 		//如果时间小于一分钟则不能重新发送
 		duration, _ := Redis.TTL(util.LoginCodeKey(email)).Result()
 		if duration >= 240000000000 {
-			response.Fail(ctx, nil, "操作过于频繁")
+			response.Fail(ctx, nil, response.OperationTooFrequently)
 			return
 		}
 	}
 	randomCode := util.RandomCode(6)
 	err = Redis.Set(util.LoginCodeKey(email), randomCode, time.Second*300).Err()
 	if err != nil {
-		response.ServerError(ctx, nil, "发送失败")
+		response.ServerError(ctx, nil, response.SendFail)
 		return
 	}
-	send := util.SendEmail(email, randomCode, "登录验证")
+	send := util.SendEmail(email, randomCode, util.LoginCode)
 	if send {
-		response.Success(ctx, nil, "ok")
+		response.Success(ctx, nil, response.OK)
 	} else {
 		Redis.Del(util.LoginCodeKey(email))
-		response.Fail(ctx, nil, "发送失败")
+		response.Fail(ctx, nil, response.SendFail)
 	}
 }

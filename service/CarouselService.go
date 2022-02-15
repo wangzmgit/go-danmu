@@ -22,7 +22,7 @@ func GetCarouselService() response.ResponseStruct {
 		HttpStatus: http.StatusOK,
 		Code:       response.SuccessCode,
 		Data:       gin.H{"carousels": carousels},
-		Msg:        "ok",
+		Msg:        response.OK,
 	}
 }
 
@@ -41,7 +41,7 @@ func UploadCarouselInfoService(img string, url string) response.ResponseStruct {
 		HttpStatus: http.StatusOK,
 		Code:       response.SuccessCode,
 		Data:       nil,
-		Msg:        "ok",
+		Msg:        response.OK,
 	}
 }
 
@@ -58,7 +58,7 @@ func AdminGetCarouselService() response.ResponseStruct {
 		HttpStatus: http.StatusOK,
 		Code:       response.SuccessCode,
 		Data:       gin.H{"carousels": carousels},
-		Msg:        "ok",
+		Msg:        response.OK,
 	}
 }
 
@@ -74,6 +74,6 @@ func DeleteCarouselService(id uint) response.ResponseStruct {
 		HttpStatus: http.StatusOK,
 		Code:       response.SuccessCode,
 		Data:       nil,
-		Msg:        "ok",
+		Msg:        response.OK,
 	}
 }

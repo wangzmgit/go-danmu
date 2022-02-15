@@ -20,24 +20,24 @@ import (
 func UploadCarousel(ctx *gin.Context) {
 	carousel, err := ctx.FormFile("carousel")
 	if err != nil {
-		response.Fail(ctx, nil, "图片上传失败")
+		response.Fail(ctx, nil, response.FileUploadFail)
 		return
 	}
 	suffix := path.Ext(carousel.Filename)
 	if suffix != ".jpg" && suffix != ".jpeg" && suffix != ".png" {
-		response.CheckFail(ctx, nil, "图片不符合要求")
+		response.CheckFail(ctx, nil, response.FileCheckFail)
 		return
 	}
 	carousel.Filename = util.RandomString(3) + strconv.FormatInt(time.Now().UnixNano(), 10) + suffix
 	errSave := ctx.SaveUploadedFile(carousel, "./file/carousel/"+carousel.Filename)
 	if errSave != nil {
-		response.Fail(ctx, nil, "图片保存失败")
+		response.Fail(ctx, nil, response.FileSaveFail)
 		return
 	}
 	fileInfo, err := os.Stat("./file/carousel/" + carousel.Filename)
 	//大小限制到5M
 	if fileInfo == nil || fileInfo.Size() > 1024*1024*5 || err != nil {
-		response.CheckFail(ctx, nil, "图片大小不符合要求")
+		response.CheckFail(ctx, nil, response.FileSizeCheckFail)
 		return
 	}
 	// 拼接上传图片的路径信息
@@ -55,12 +55,12 @@ func UploadCarousel(ctx *gin.Context) {
 func AdminUploadVideo(ctx *gin.Context) {
 	video, err := ctx.FormFile("video")
 	if err != nil {
-		response.Fail(ctx, nil, "视频上传失败")
+		response.Fail(ctx, nil, response.FileUploadFail)
 		return
 	}
 	suffix := path.Ext(video.Filename)
 	if suffix != ".mp4" {
-		response.CheckFail(ctx, nil, "请上传mp4格式文件")
+		response.CheckFail(ctx, nil, response.FileCheckFail)
 		return
 	}
 	//仅文件名(不含后缀)
@@ -68,13 +68,13 @@ func AdminUploadVideo(ctx *gin.Context) {
 	video.Filename = videoName + suffix
 	errSave := ctx.SaveUploadedFile(video, "./file/video/"+video.Filename)
 	if errSave != nil {
-		response.Fail(ctx, nil, "视频保存失败")
+		response.Fail(ctx, nil, response.FileSaveFail)
 		return
 	}
 	fileInfo, err := os.Stat("./file/video/" + video.Filename)
 	//大小限制到500M
 	if fileInfo == nil || fileInfo.Size() > 1024*1024*500 || err != nil {
-		response.CheckFail(ctx, nil, "视频大小不符合要求")
+		response.CheckFail(ctx, nil, response.FileSizeCheckFail)
 		return
 	}
 
@@ -84,13 +84,13 @@ func AdminUploadVideo(ctx *gin.Context) {
 	//获取url
 	url := service.GetUrl() + objectName
 	//记录日志
-	util.Logfile("[Info]", " admin upload video"+" | "+ctx.ClientIP()+" | "+objectName)
+	util.Logfile(util.InfoLog, " admin upload video"+" | "+ctx.ClientIP()+" | "+objectName)
 	//启动上传服务
 	if viper.GetBool("aliyunoss.storage") {
 		go service.UploadOSS(localFileName, objectName)
 	}
 
-	response.Success(ctx, gin.H{"url": url}, "ok")
+	response.Success(ctx, gin.H{"url": url}, response.OK)
 }
 
 /*********************************************************
@@ -100,32 +100,32 @@ func AdminUploadVideo(ctx *gin.Context) {
 func AdminUploadCover(ctx *gin.Context) {
 	cover, err := ctx.FormFile("cover")
 	if err != nil {
-		response.Fail(ctx, nil, "图片上传失败")
+		response.Fail(ctx, nil, response.FileUploadFail)
 		return
 	}
 	suffix := path.Ext(cover.Filename)
 	if suffix != ".jpg" && suffix != ".jpeg" && suffix != ".png" {
-		response.CheckFail(ctx, nil, "图片不符合要求")
+		response.CheckFail(ctx, nil, response.FileCheckFail)
 		return
 	}
 	//储存文件
 	cover.Filename = util.RandomString(3) + strconv.FormatInt(time.Now().UnixNano(), 10) + suffix
 	errSave := ctx.SaveUploadedFile(cover, "./file/cover/"+cover.Filename)
 	if errSave != nil {
-		response.Fail(ctx, nil, "图片保存失败")
+		response.Fail(ctx, nil, response.FileSaveFail)
 		return
 	}
 	fileInfo, err := os.Stat("./file/cover/" + cover.Filename)
 	//大小限制到5M
 	if fileInfo == nil || fileInfo.Size() > 1024*1024*5 || err != nil {
-		response.CheckFail(ctx, nil, "图片不符合要求")
+		response.CheckFail(ctx, nil, response.FileSizeCheckFail)
 		return
 	}
 
 	localFileName := "./file/cover/" + cover.Filename
 	objectName := "cover/" + cover.Filename
 	//记录日志
-	util.Logfile("[Info]", " Admin upload cover "+" | "+ctx.ClientIP()+" | "+objectName)
+	util.Logfile(util.InfoLog, " Admin upload cover "+" | "+ctx.ClientIP()+" | "+objectName)
 
 	res := service.UploadCoverService(localFileName, objectName)
 	response.HandleResponse(ctx, res)

@@ -20,14 +20,14 @@ func FollowingService(fid uint, uid interface{}) response.ResponseStruct {
 		HttpStatus: http.StatusOK,
 		Code:       response.SuccessCode,
 		Data:       nil,
-		Msg:        "ok",
+		Msg:        response.OK,
 	}
 	//验证关注的人是否存在
 	DB := common.GetDB()
 	if !IsUserExist(DB, fid) {
 		res.HttpStatus = http.StatusUnprocessableEntity
 		res.Code = response.CheckFailCode
-		res.Msg = "用户不存在"
+		res.Msg = response.UserNotExist
 		return res
 	}
 	//没有记录自动创建记录
@@ -47,7 +47,7 @@ func UnFollowService(fid uint, uid interface{}) response.ResponseStruct {
 		HttpStatus: http.StatusOK,
 		Code:       response.SuccessCode,
 		Data:       nil,
-		Msg:        "ok",
+		Msg:        response.OK,
 	}
 }
 
@@ -62,7 +62,7 @@ func GetFollowStatusService(uid uint, fid uint) response.ResponseStruct {
 		HttpStatus: http.StatusOK,
 		Code:       response.SuccessCode,
 		Data:       gin.H{"follow": follow},
-		Msg:        "ok",
+		Msg:        response.OK,
 	}
 }
 
@@ -79,7 +79,7 @@ func GetFollowingByIDService(uid interface{}, page int, pageSize int) response.R
 		HttpStatus: http.StatusOK,
 		Code:       response.SuccessCode,
 		Data:       gin.H{"users": users},
-		Msg:        "ok",
+		Msg:        response.OK,
 	}
 }
 
@@ -96,7 +96,7 @@ func GetFollowersByIDService(uid interface{}, page int, pageSize int) response.R
 		HttpStatus: http.StatusOK,
 		Code:       response.SuccessCode,
 		Data:       gin.H{"users": users},
-		Msg:        "ok",
+		Msg:        response.OK,
 	}
 }
 
@@ -114,7 +114,7 @@ func GetFollowCountService(uid int) response.ResponseStruct {
 		HttpStatus: http.StatusOK,
 		Code:       response.SuccessCode,
 		Data:       gin.H{"following": following, "followers": followers},
-		Msg:        "ok",
+		Msg:        response.OK,
 	}
 }
 

@@ -15,7 +15,7 @@ func Collect(ctx *gin.Context) {
 	//获取参数
 	var request dto.InteractiveDto
 	if err := ctx.Bind(&request); err != nil {
-		response.Fail(ctx, nil, "请求错误")
+		response.Fail(ctx, nil, response.RequestError)
 		return
 	}
 
@@ -23,7 +23,7 @@ func Collect(ctx *gin.Context) {
 	uid, _ := ctx.Get("id")
 	//验证数据
 	if vid <= 0 {
-		response.CheckFail(ctx, nil, "视频不见了")
+		response.CheckFail(ctx, nil, response.VideoNotExist)
 		return
 	}
 
@@ -39,7 +39,7 @@ func CancelCollect(ctx *gin.Context) {
 	//获取参数
 	var request dto.InteractiveDto
 	if err := ctx.Bind(&request); err != nil {
-		response.Fail(ctx, nil, "请求错误")
+		response.Fail(ctx, nil, response.RequestError)
 		return
 	}
 
@@ -58,14 +58,14 @@ func Like(ctx *gin.Context) {
 	//获取参数
 	var request dto.InteractiveDto
 	if err := ctx.Bind(&request); err != nil {
-		response.Fail(ctx, nil, "请求错误")
+		response.Fail(ctx, nil, response.RequestError)
 		return
 	}
 	vid := request.ID
 	uid, _ := ctx.Get("id")
 	//验证数据
 	if vid <= 0 {
-		response.CheckFail(ctx, nil, "视频不见了")
+		response.CheckFail(ctx, nil, response.VideoNotExist)
 		return
 	}
 
@@ -81,7 +81,7 @@ func Dislike(ctx *gin.Context) {
 	//获取参数
 	var request dto.InteractiveDto
 	if err := ctx.Bind(&request); err != nil {
-		response.Fail(ctx, nil, "请求错误")
+		response.Fail(ctx, nil, response.RequestError)
 		return
 	}
 	vid := request.ID

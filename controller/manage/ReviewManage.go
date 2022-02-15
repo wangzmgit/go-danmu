@@ -19,7 +19,7 @@ func GetReviewVideoList(ctx *gin.Context) {
 	pageSize, _ := strconv.Atoi(ctx.Query("page_size"))
 
 	if page <= 0 || pageSize <= 0 {
-		response.CheckFail(ctx, nil, "页码或数量有误")
+		response.CheckFail(ctx, nil, response.PageOrSizeError)
 		return
 	}
 
@@ -36,14 +36,14 @@ func ReviewVideo(ctx *gin.Context) {
 	var reviewRequest dto.ReviewDto
 	err := ctx.Bind(&reviewRequest)
 	if err != nil {
-		response.Fail(ctx, nil, "请求错误")
+		response.Fail(ctx, nil, response.RequestError)
 		return
 	}
 	vid := reviewRequest.VID
 	status := reviewRequest.Status
 	var isReview bool
 	if vid == 0 {
-		response.CheckFail(ctx, nil, "视频不存在")
+		response.CheckFail(ctx, nil, response.VideoNotExist)
 		return
 	}
 
@@ -52,7 +52,7 @@ func ReviewVideo(ctx *gin.Context) {
 	} else if status == 4001 || status == 4002 {
 		isReview = false
 	} else {
-		response.CheckFail(ctx, nil, "状态错误")
+		response.CheckFail(ctx, nil, response.ParameterError)
 		return
 	}
 
@@ -67,7 +67,7 @@ func ReviewVideo(ctx *gin.Context) {
 func GetReviewVideoByID(ctx *gin.Context) {
 	vid, _ := strconv.Atoi(ctx.Query("vid"))
 	if vid == 0 {
-		response.CheckFail(ctx, nil, "视频不见了")
+		response.CheckFail(ctx, nil, response.VideoNotExist)
 		return
 	}
 

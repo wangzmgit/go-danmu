@@ -19,7 +19,7 @@ func GetUserList(ctx *gin.Context) {
 	page, _ := strconv.Atoi(ctx.Query("page"))
 	pageSize, _ := strconv.Atoi(ctx.Query("page_size"))
 	if page <= 0 || pageSize <= 0 {
-		response.CheckFail(ctx, nil, "页码或数量有误")
+		response.CheckFail(ctx, nil, response.PageOrSizeError)
 		return
 	}
 
@@ -36,18 +36,18 @@ func AdminModifyUser(ctx *gin.Context) {
 	var requestUser dto.AdminModifyUserDto
 	err := ctx.Bind(&requestUser)
 	if err != nil {
-		response.Fail(ctx, nil, "请求错误")
+		response.Fail(ctx, nil, response.RequestError)
 		return
 	}
 	email := requestUser.Email
 	name := requestUser.Name
 
 	if len(name) == 0 {
-		response.CheckFail(ctx, nil, "昵称不能为空")
+		response.CheckFail(ctx, nil, response.NickCheck)
 		return
 	}
 	if !util.VerifyEmailFormat(email) {
-		response.CheckFail(ctx, nil, "邮箱格式有误")
+		response.CheckFail(ctx, nil, response.EmailFormatCheck)
 		return
 	}
 
@@ -62,7 +62,7 @@ func AdminModifyUser(ctx *gin.Context) {
 func AdminDeleteUser(ctx *gin.Context) {
 	var request dto.AdminIdDto
 	if err := ctx.Bind(&request); err != nil {
-		response.Fail(ctx, nil, "请求错误")
+		response.Fail(ctx, nil, response.RequestError)
 		return
 	}
 	id := request.ID

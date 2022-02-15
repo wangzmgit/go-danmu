@@ -16,7 +16,7 @@ func GetDanmakuService(vid int) response.ResponseStruct {
 		HttpStatus: http.StatusOK,
 		Code:       response.SuccessCode,
 		Data:       nil,
-		Msg:        "ok",
+		Msg:        response.OK,
 	}
 
 	var danmakuList []vo.DanmakuVo
@@ -24,7 +24,7 @@ func GetDanmakuService(vid int) response.ResponseStruct {
 	if !IsVideoExist(DB, uint(vid)) {
 		res.HttpStatus = http.StatusUnprocessableEntity
 		res.Code = response.CheckFailCode
-		res.Msg = "找不到视频"
+		res.Msg = response.VideoNotExist
 		return res
 	}
 	DB.Model(&model.Danmaku{}).Select("time,type,color,text").Where("vid = ? ", vid).Scan(&danmakuList)
@@ -47,6 +47,6 @@ func SendDanmaku(danmaku dto.DanmakuDto, uid interface{}) response.ResponseStruc
 		HttpStatus: http.StatusOK,
 		Code:       response.SuccessCode,
 		Data:       nil,
-		Msg:        "ok",
+		Msg:        response.OK,
 	}
 }

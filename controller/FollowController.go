@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"net/http"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -19,7 +18,7 @@ func Following(ctx *gin.Context) {
 	var follow dto.FollowDto
 	err := ctx.Bind(&follow)
 	if err != nil {
-		response.Response(ctx, http.StatusBadRequest, 400, nil, "请求错误")
+		response.Fail(ctx, nil, response.RequestError)
 		return
 	}
 	//关注的人的id和自己的id
@@ -27,7 +26,7 @@ func Following(ctx *gin.Context) {
 	uid, _ := ctx.Get("id")
 	//判断关注的是否为自己
 	if fid == uid {
-		response.CheckFail(ctx, nil, "不能关注自己")
+		response.CheckFail(ctx, nil, response.CantFollowYourself)
 		return
 	}
 
@@ -43,7 +42,7 @@ func UnFollow(ctx *gin.Context) {
 	var follow dto.FollowDto
 	err := ctx.Bind(&follow)
 	if err != nil {
-		response.Response(ctx, http.StatusBadRequest, 400, nil, "请求错误")
+		response.Fail(ctx, nil, response.RequestError)
 		return
 	}
 	//关注的人的id和自己的id
@@ -61,7 +60,7 @@ func UnFollow(ctx *gin.Context) {
 func GetFollowStatus(ctx *gin.Context) {
 	fid, _ := strconv.Atoi(ctx.Query("fid"))
 	if fid == 0 {
-		response.CheckFail(ctx, nil, "用户不存在")
+		response.CheckFail(ctx, nil, response.UserNotExist)
 		return
 	}
 	uid, _ := ctx.Get("id")
@@ -82,17 +81,17 @@ func GetFollowingByID(ctx *gin.Context) {
 	pageSize, _ := strconv.Atoi(ctx.Query("page_size"))
 
 	if uid == 0 {
-		response.CheckFail(ctx, nil, "用户不存在")
+		response.CheckFail(ctx, nil, response.UserNotExist)
 		return
 	}
 
 	if page <= 0 || pageSize <= 0 {
-		response.CheckFail(ctx, nil, "页码或数量有误")
+		response.CheckFail(ctx, nil, response.PageOrSizeError)
 		return
 	}
 
 	if pageSize >= 30 {
-		response.CheckFail(ctx, nil, "请求数量过多")
+		response.CheckFail(ctx, nil, response.TooManyRequests)
 		return
 	}
 
@@ -110,17 +109,17 @@ func GetFollowersByID(ctx *gin.Context) {
 	pageSize, _ := strconv.Atoi(ctx.Query("page_size"))
 
 	if uid == 0 {
-		response.CheckFail(ctx, nil, "用户不存在")
+		response.CheckFail(ctx, nil, response.UserNotExist)
 		return
 	}
 
 	if page <= 0 || pageSize <= 0 {
-		response.CheckFail(ctx, nil, "页码或数量有误")
+		response.CheckFail(ctx, nil, response.PageOrSizeError)
 		return
 	}
 
 	if pageSize >= 30 {
-		response.CheckFail(ctx, nil, "请求数量过多")
+		response.CheckFail(ctx, nil, response.TooManyRequests)
 		return
 	}
 	res := service.GetFollowersByIDService(uid, page, pageSize)
@@ -134,7 +133,7 @@ func GetFollowersByID(ctx *gin.Context) {
 func GetFollowCount(ctx *gin.Context) {
 	uid, _ := strconv.Atoi(ctx.Query("uid"))
 	if uid == 0 {
-		response.CheckFail(ctx, nil, "用户不存在")
+		response.CheckFail(ctx, nil, response.UserNotExist)
 		return
 	}
 

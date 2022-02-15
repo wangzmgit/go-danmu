@@ -117,7 +117,7 @@ func Transcoding(completeName string, vid int, maxRes int) {
 ** 日    期: 2022年2月13日11:06:35
 ** 参    数: 最大分辨率
 **********************************************************/
-func PreTreatmentVideo(input string, vid int) (int, error) {
+func PreTreatmentVideo(input string) (int, error) {
 	var err error
 	var videoData dto.VideoInfoData
 	videoData, err = GetVideoInfo(input)
@@ -306,7 +306,7 @@ func RewriteM3U8(url string, output string, fileName string, vid int) {
 			if err == io.EOF {
 				break
 			} else {
-				util.Logfile("[Error] ", "transcoding err "+err.Error())
+				util.Logfile(util.ErrorLog, "transcoding err "+err.Error())
 				return
 			}
 		}
@@ -360,7 +360,7 @@ func RewriteDifferentRes(url string, output string, fileName string, vid int, re
 			if err == io.EOF {
 				break
 			} else {
-				util.Logfile("[Error] ", "transcoding err "+err.Error())
+				util.Logfile(util.ErrorLog, "transcoding err "+err.Error())
 				return
 			}
 		}

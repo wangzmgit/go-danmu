@@ -18,7 +18,7 @@ func CreateCollection(ctx *gin.Context) {
 	var request dto.CreateCollectionDto
 	err := ctx.Bind(&request)
 	if err != nil {
-		response.Fail(ctx, nil, "请求错误")
+		response.Fail(ctx, nil, response.RequestError)
 		return
 	}
 	title := request.Title
@@ -27,12 +27,12 @@ func CreateCollection(ctx *gin.Context) {
 
 	//验证数据
 	if len(title) == 0 {
-		response.CheckFail(ctx, nil, "标题不能为空")
+		response.CheckFail(ctx, nil, response.TitleCheck)
 		return
 	}
 
 	if len(cover) == 0 {
-		response.CheckFail(ctx, nil, "封面图不能为空")
+		response.CheckFail(ctx, nil, response.CoverCheck)
 		return
 	}
 
@@ -49,7 +49,7 @@ func ModifyCollection(ctx *gin.Context) {
 	var request dto.ModifyCollectionDto
 	err := ctx.Bind(&request)
 	if err != nil {
-		response.Fail(ctx, nil, "请求错误")
+		response.Fail(ctx, nil, response.RequestError)
 		return
 	}
 	title := request.Title
@@ -58,12 +58,12 @@ func ModifyCollection(ctx *gin.Context) {
 
 	//验证数据
 	if len(title) == 0 {
-		response.CheckFail(ctx, nil, "标题不能为空")
+		response.CheckFail(ctx, nil, response.TitleCheck)
 		return
 	}
 
 	if len(cover) == 0 {
-		response.CheckFail(ctx, nil, "封面图不能为空")
+		response.CheckFail(ctx, nil, response.CoverCheck)
 		return
 	}
 
@@ -82,12 +82,12 @@ func GetCreateCollectionList(ctx *gin.Context) {
 	pageSize, _ := strconv.Atoi(ctx.Query("page_size"))
 
 	if page <= 0 || pageSize <= 0 {
-		response.CheckFail(ctx, nil, "页码或数量有误")
+		response.CheckFail(ctx, nil, response.PageOrSizeError)
 		return
 	}
 
 	if pageSize >= 30 {
-		response.CheckFail(ctx, nil, "请求数量过多")
+		response.CheckFail(ctx, nil, response.TooManyRequests)
 		return
 	}
 
@@ -106,17 +106,16 @@ func GetCollectionContent(ctx *gin.Context) {
 	pageSize, _ := strconv.Atoi(ctx.Query("page_size"))
 
 	if cid <= 0 {
-		response.CheckFail(ctx, nil, "视频不存在")
+		response.CheckFail(ctx, nil, response.CollectionNotExist)
 		return
 	}
 
 	if page <= 0 || pageSize <= 0 {
-		response.CheckFail(ctx, nil, "页码或数量有误")
+		response.CheckFail(ctx, nil, response.PageOrSizeError)
 		return
 	}
-
 	if pageSize >= 30 {
-		response.CheckFail(ctx, nil, "请求数量过多")
+		response.CheckFail(ctx, nil, response.TooManyRequests)
 		return
 	}
 
@@ -132,7 +131,7 @@ func GetCollectionContent(ctx *gin.Context) {
 func GetCollectionByID(ctx *gin.Context) {
 	id, _ := strconv.Atoi(ctx.Query("id"))
 	if id <= 0 {
-		response.CheckFail(ctx, nil, "找不到合集")
+		response.CheckFail(ctx, nil, response.CollectionNotExist)
 		return
 	}
 
@@ -150,7 +149,7 @@ func DeleteCollection(ctx *gin.Context) {
 	var collection dto.DeleteCollectionDto
 	err := ctx.Bind(&collection)
 	if err != nil {
-		response.Fail(ctx, nil, "请求错误")
+		response.Fail(ctx, nil, response.RequestError)
 		return
 	}
 	id := collection.ID
@@ -158,7 +157,7 @@ func DeleteCollection(ctx *gin.Context) {
 
 	//数据验证
 	if id == 0 {
-		response.CheckFail(ctx, nil, "合集不存在")
+		response.CheckFail(ctx, nil, response.CollectionNotExist)
 		return
 	}
 
@@ -179,17 +178,17 @@ func GetCanAddVideo(ctx *gin.Context) {
 	page, _ := strconv.Atoi(ctx.Query("page"))
 	pageSize, _ := strconv.Atoi(ctx.Query("page_size"))
 	if page <= 0 || pageSize <= 0 {
-		response.CheckFail(ctx, nil, "页码或数量有误")
+		response.CheckFail(ctx, nil, response.PageOrSizeError)
 		return
 	}
 
 	if pageSize >= 30 {
-		response.CheckFail(ctx, nil, "请求数量过多")
+		response.CheckFail(ctx, nil, response.TooManyRequests)
 		return
 	}
 
 	if id <= 0 {
-		response.CheckFail(ctx, nil, "找不到合集")
+		response.CheckFail(ctx, nil, response.CollectionNotExist)
 		return
 	}
 
@@ -208,7 +207,7 @@ func AddVideoToCollection(ctx *gin.Context) {
 	var video dto.AddVideoDto
 	err := ctx.Bind(&video)
 	if err != nil {
-		response.Fail(ctx, nil, "请求错误")
+		response.Fail(ctx, nil, response.RequestError)
 		return
 	}
 	vid := video.Vid
@@ -217,7 +216,7 @@ func AddVideoToCollection(ctx *gin.Context) {
 
 	//数据验证
 	if vid == 0 || cid == 0 {
-		response.CheckFail(ctx, nil, "合集或视频不存在")
+		response.CheckFail(ctx, nil, response.CollectionOrVideoNotExist)
 		return
 	}
 
@@ -236,7 +235,7 @@ func DeleteCollectionVideo(ctx *gin.Context) {
 	var video dto.DeleteVideoDto
 	err := ctx.Bind(&video)
 	if err != nil {
-		response.Fail(ctx, nil, "请求错误")
+		response.Fail(ctx, nil, response.RequestError)
 		return
 	}
 	vid := video.Vid
@@ -245,7 +244,7 @@ func DeleteCollectionVideo(ctx *gin.Context) {
 
 	//数据验证
 	if vid == 0 || cid == 0 {
-		response.CheckFail(ctx, nil, "合集或视频不存在")
+		response.CheckFail(ctx, nil, response.CollectionOrVideoNotExist)
 		return
 	}
 
@@ -264,12 +263,12 @@ func GetCollectionList(ctx *gin.Context) {
 	pageSize, _ := strconv.Atoi(ctx.Query("page_size"))
 
 	if page <= 0 || pageSize <= 0 {
-		response.CheckFail(ctx, nil, "页码或数量有误")
+		response.CheckFail(ctx, nil, response.PageOrSizeError)
 		return
 	}
 
 	if pageSize >= 30 {
-		response.CheckFail(ctx, nil, "请求数量过多")
+		response.CheckFail(ctx, nil, response.TooManyRequests)
 		return
 	}
 

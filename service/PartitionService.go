@@ -26,7 +26,7 @@ func GetPartitionListService(fid int) response.ResponseStruct {
 		HttpStatus: http.StatusOK,
 		Code:       response.SuccessCode,
 		Data:       gin.H{"partitions": partitions},
-		Msg:        "ok",
+		Msg:        response.OK,
 	}
 }
 
@@ -39,14 +39,14 @@ func AddPartitionService(partition dto.PartitionDto) response.ResponseStruct {
 		HttpStatus: http.StatusOK,
 		Code:       response.SuccessCode,
 		Data:       nil,
-		Msg:        "ok",
+		Msg:        response.OK,
 	}
 	DB := common.GetDB()
 
 	if partition.Fid != 0 && !IsParentPartitionExist(DB, partition.Fid) {
 		res.HttpStatus = http.StatusBadRequest
 		res.Code = response.FailCode
-		res.Msg = "所属分区不存在"
+		res.Msg = response.ParentPartitionNotExist
 		return res
 	}
 
@@ -58,7 +58,7 @@ func AddPartitionService(partition dto.PartitionDto) response.ResponseStruct {
 	if err := DB.Create(&newPartition).Error; err != nil {
 		res.HttpStatus = http.StatusBadRequest
 		res.Code = response.FailCode
-		res.Msg = "创建分区失败"
+		res.Msg = response.CreateFail
 		return res
 	}
 
@@ -77,7 +77,7 @@ func DeletePartitionService(id uint) response.ResponseStruct {
 		HttpStatus: http.StatusOK,
 		Code:       response.SuccessCode,
 		Data:       nil,
-		Msg:        "ok",
+		Msg:        response.OK,
 	}
 }
 
@@ -98,7 +98,7 @@ func GetAllPartitionService() response.ResponseStruct {
 		HttpStatus: http.StatusOK,
 		Code:       response.SuccessCode,
 		Data:       gin.H{"partitions": partitions},
-		Msg:        "ok",
+		Msg:        response.OK,
 	}
 }
 

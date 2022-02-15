@@ -25,18 +25,18 @@ func AddAnnounce(ctx *gin.Context) {
 	var announce dto.AddAnnounceDto
 	err := ctx.Bind(&announce)
 	if err != nil {
-		response.Fail(ctx, nil, "请求错误")
+		response.Fail(ctx, nil, response.RequestError)
 		return
 	}
 	title := announce.Title
 	content := announce.Content
 
 	if len(title) == 0 {
-		response.CheckFail(ctx, nil, "标题不能为空")
+		response.CheckFail(ctx, nil, response.TitleCheck)
 		return
 	}
 	if len(content) == 0 {
-		response.CheckFail(ctx, nil, "内容不能为空")
+		response.CheckFail(ctx, nil, response.ContentCheck)
 		return
 	}
 
@@ -51,7 +51,7 @@ func AddAnnounce(ctx *gin.Context) {
 func DeleteAnnounce(ctx *gin.Context) {
 	var request dto.AdminIdDto
 	if err := ctx.Bind(&request); err != nil {
-		response.Fail(ctx, nil, "请求错误")
+		response.Fail(ctx, nil, response.RequestError)
 		return
 	}
 	id := request.ID

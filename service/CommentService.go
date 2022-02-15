@@ -21,7 +21,7 @@ func GetCommentsService(page int, pageSize int, vid int) response.ResponseStruct
 		HttpStatus: http.StatusOK,
 		Code:       response.SuccessCode,
 		Data:       nil,
-		Msg:        "ok",
+		Msg:        response.OK,
 	}
 	var count int
 	var comments []vo.CommentVo
@@ -32,7 +32,7 @@ func GetCommentsService(page int, pageSize int, vid int) response.ResponseStruct
 	if !IsVideoExist(DB, uint(vid)) {
 		res.HttpStatus = http.StatusBadRequest
 		res.Code = response.FailCode
-		res.Msg = "视频不存在"
+		res.Msg = response.VideoNotExist
 		return res
 	}
 
@@ -56,7 +56,7 @@ func GetCommentsV2Service(page int, pageSize int, vid int) response.ResponseStru
 		HttpStatus: http.StatusOK,
 		Code:       response.SuccessCode,
 		Data:       nil,
-		Msg:        "ok",
+		Msg:        response.OK,
 	}
 	var count int
 	var comments []vo.CommentVo
@@ -70,7 +70,7 @@ func GetCommentsV2Service(page int, pageSize int, vid int) response.ResponseStru
 	if !IsVideoExist(DB, uint(vid)) {
 		res.HttpStatus = http.StatusBadRequest
 		res.Code = response.FailCode
-		res.Msg = "视频不存在"
+		res.Msg = response.VideoNotExist
 		return res
 	}
 	DB = DB.Limit(pageSize).Offset((page - 1) * pageSize)
@@ -93,7 +93,7 @@ func GetReplyDetailsV2Service(cid int, page int, pageSize int) response.Response
 		HttpStatus: http.StatusOK,
 		Code:       response.SuccessCode,
 		Data:       nil,
-		Msg:        "ok",
+		Msg:        response.OK,
 	}
 
 	var replies []vo.ReplyVo
@@ -103,7 +103,7 @@ func GetReplyDetailsV2Service(cid int, page int, pageSize int) response.Response
 	if !IsCommentExist(DB, uint(cid)) {
 		res.HttpStatus = http.StatusBadRequest
 		res.Code = response.FailCode
-		res.Msg = "评论不存在"
+		res.Msg = response.CommentNotExist
 		return res
 	}
 	DB = DB.Limit(pageSize).Offset((page - 1) * pageSize)
@@ -124,7 +124,7 @@ func DeleteCommentService(id uint, uid interface{}) response.ResponseStruct {
 		HttpStatus: http.StatusOK,
 		Code:       response.SuccessCode,
 		Data:       nil,
-		Msg:        "ok",
+		Msg:        response.OK,
 	}
 }
 
@@ -139,7 +139,7 @@ func DeleteReplyService(id uint, uid interface{}) response.ResponseStruct {
 		HttpStatus: http.StatusOK,
 		Code:       response.SuccessCode,
 		Data:       nil,
-		Msg:        "ok",
+		Msg:        response.OK,
 	}
 }
 
@@ -152,14 +152,14 @@ func CommentService(comment dto.CommentDto, uid interface{}) response.ResponseSt
 		HttpStatus: http.StatusOK,
 		Code:       response.SuccessCode,
 		Data:       nil,
-		Msg:        "ok",
+		Msg:        response.OK,
 	}
 
 	DB := common.GetDB()
 	if !IsVideoExist(DB, comment.Vid) {
 		res.HttpStatus = http.StatusBadRequest
 		res.Code = response.FailCode
-		res.Msg = "视频不存在"
+		res.Msg = response.VideoNotExist
 		return res
 	}
 
@@ -176,14 +176,14 @@ func ReplyService(reply dto.ReplyDto, uid interface{}) response.ResponseStruct {
 		HttpStatus: http.StatusOK,
 		Code:       response.SuccessCode,
 		Data:       nil,
-		Msg:        "ok",
+		Msg:        response.OK,
 	}
 
 	DB := common.GetDB()
 	if !IsCommentExist(DB, reply.Cid) {
 		res.HttpStatus = http.StatusBadRequest
 		res.Code = response.FailCode
-		res.Msg = "评论不存在"
+		res.Msg = response.CommentNotExist
 		return res
 	}
 

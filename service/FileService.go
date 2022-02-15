@@ -21,7 +21,7 @@ func UploadAvatarService(localFileName string, objectName string, uid uint) resp
 		HttpStatus: http.StatusOK,
 		Code:       response.SuccessCode,
 		Data:       nil,
-		Msg:        "ok",
+		Msg:        response.OK,
 	}
 
 	if viper.GetBool("aliyunoss.storage") {
@@ -48,7 +48,7 @@ func UploadCoverService(localFileName string, objectName string) response.Respon
 		HttpStatus: http.StatusOK,
 		Code:       response.SuccessCode,
 		Data:       nil,
-		Msg:        "ok",
+		Msg:        response.OK,
 	}
 
 	if viper.GetBool("aliyunoss.storage") {
@@ -73,7 +73,7 @@ func UploadVideoService(urls map[string]string, vid int, uid uint) response.Resp
 		HttpStatus: http.StatusOK,
 		Code:       response.SuccessCode,
 		Data:       nil,
-		Msg:        "ok",
+		Msg:        response.OK,
 	}
 	var err error
 	var videoInfo model.Video
@@ -83,7 +83,7 @@ func UploadVideoService(urls map[string]string, vid int, uid uint) response.Resp
 	if videoInfo.ID == 0 || videoInfo.Uid != uid {
 		res.HttpStatus = http.StatusBadRequest
 		res.Code = response.FailCode
-		res.Msg = "视频不存在"
+		res.Msg = response.VideoNotExist
 		return res
 	}
 	//当前版本不支持普通用户上传分P，在上传前将该视频的其他视频资源删除
@@ -104,11 +104,11 @@ func UploadVideoService(urls map[string]string, vid int, uid uint) response.Resp
 		newResource.Original = urls["original"]
 	}
 	if err = tx.Model(&model.Resource{}).Create(&newResource).Error; err != nil {
-		util.Logfile("[Error]", " upload video error "+err.Error())
+		util.Logfile(util.ErrorLog, " upload video error "+err.Error())
 		tx.Rollback()
 		res.HttpStatus = http.StatusBadRequest
 		res.Code = response.FailCode
-		res.Msg = "上传失败"
+		res.Msg = response.FileUploadFail
 		return res
 	}
 	//创建新的审核状态
@@ -116,7 +116,7 @@ func UploadVideoService(urls map[string]string, vid int, uid uint) response.Resp
 		tx.Rollback()
 		res.HttpStatus = http.StatusBadRequest
 		res.Code = response.FailCode
-		res.Msg = "上传失败"
+		res.Msg = response.FileUploadFail
 		return res
 	}
 	tx.Commit()
@@ -133,7 +133,7 @@ func UploadCarouselService(localFileName string, objectName string) response.Res
 		HttpStatus: http.StatusOK,
 		Code:       response.SuccessCode,
 		Data:       nil,
-		Msg:        "ok",
+		Msg:        response.OK,
 	}
 
 	if viper.GetBool("aliyunoss.storage") {
@@ -141,7 +141,7 @@ func UploadCarouselService(localFileName string, objectName string) response.Res
 		if !success {
 			res.HttpStatus = http.StatusBadRequest
 			res.Code = response.FailCode
-			res.Msg = "上传失败"
+			res.Msg = response.FileUploadFail
 			return res
 		}
 	}
@@ -195,7 +195,7 @@ func GetUrlDifferentRes(videoName, localFileName string, vid int, oss bool) (map
 	if !oss {
 		ossDir = "output"
 	}
-	maxRes, err := PreTreatmentVideo(localFileName, vid)
+	maxRes, err := PreTreatmentVideo(localFileName)
 	maxRes = util.Min(maxRes, viper.GetInt("transcoding.max_res"))
 	if err != nil {
 		//调用审核失败

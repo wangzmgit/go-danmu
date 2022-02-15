@@ -16,7 +16,7 @@ func UploadCarouselInfo(ctx *gin.Context) {
 	var carousel dto.CarouselDto
 	err := ctx.Bind(&carousel)
 	if err != nil {
-		response.Fail(ctx, nil, "请求错误")
+		response.Fail(ctx, nil, response.RequestError)
 		return
 	}
 	img := carousel.Img
@@ -24,7 +24,7 @@ func UploadCarouselInfo(ctx *gin.Context) {
 
 	//验证数据
 	if len(img) == 0 {
-		response.CheckFail(ctx, nil, "图片不能为空")
+		response.CheckFail(ctx, nil, response.ImgNotExist)
 		return
 	}
 
@@ -49,13 +49,13 @@ func DeleteCarousel(ctx *gin.Context) {
 	//获取参数
 	var request dto.AdminIdDto
 	if err := ctx.Bind(&request); err != nil {
-		response.Fail(ctx, nil, "请求错误")
+		response.Fail(ctx, nil, response.RequestError)
 		return
 	}
 	id := request.ID
 
 	if id == 0 {
-		response.CheckFail(ctx, nil, "轮播图不存在")
+		response.CheckFail(ctx, nil, response.CarouselNotExist)
 		return
 	}
 

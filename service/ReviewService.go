@@ -29,7 +29,7 @@ func GetReviewVideoListService(page int, pageSize int) response.ResponseStruct {
 		HttpStatus: http.StatusOK,
 		Code:       response.SuccessCode,
 		Data:       gin.H{"count": total, "videos": vo.ToAdminVideoListVo(videos)},
-		Msg:        "ok",
+		Msg:        response.OK,
 	}
 }
 
@@ -46,7 +46,7 @@ func GetReviewVideoByIDService(vid int) response.ResponseStruct {
 		HttpStatus: http.StatusOK,
 		Code:       response.SuccessCode,
 		Data:       gin.H{"video": vo.ToReviewResourceVo(videos)},
-		Msg:        "ok",
+		Msg:        response.OK,
 	}
 }
 
@@ -59,7 +59,7 @@ func ReviewVideoService(review dto.ReviewDto, isReview bool) response.ResponseSt
 		HttpStatus: http.StatusOK,
 		Code:       response.SuccessCode,
 		Data:       nil,
-		Msg:        "ok",
+		Msg:        response.OK,
 	}
 
 	DB := common.GetDB()
@@ -72,7 +72,7 @@ func ReviewVideoService(review dto.ReviewDto, isReview bool) response.ResponseSt
 		tx.Rollback()
 		res.HttpStatus = http.StatusBadRequest
 		res.Code = response.FailCode
-		res.Msg = "更新视频状态失败"
+		res.Msg = response.UpdateStatusFail
 		return res
 	}
 	//创建审核状态
@@ -85,7 +85,7 @@ func ReviewVideoService(review dto.ReviewDto, isReview bool) response.ResponseSt
 		tx.Rollback()
 		res.HttpStatus = http.StatusBadRequest
 		res.Code = response.FailCode
-		res.Msg = "更新审核状态失败"
+		res.Msg = response.UpdateStatusFail
 		return res
 	}
 	tx.Commit()
@@ -101,7 +101,7 @@ func VideoReviewFail(vid int, msg string) response.ResponseStruct {
 		HttpStatus: http.StatusOK,
 		Code:       response.SuccessCode,
 		Data:       nil,
-		Msg:        "ok",
+		Msg:        response.OK,
 	}
 
 	DB := common.GetDB()
@@ -114,7 +114,7 @@ func VideoReviewFail(vid int, msg string) response.ResponseStruct {
 		tx.Rollback()
 		res.HttpStatus = http.StatusBadRequest
 		res.Code = response.FailCode
-		res.Msg = "更新视频状态失败"
+		res.Msg = response.UpdateStatusFail
 		return res
 	}
 	//创建审核状态
@@ -127,7 +127,7 @@ func VideoReviewFail(vid int, msg string) response.ResponseStruct {
 		tx.Rollback()
 		res.HttpStatus = http.StatusBadRequest
 		res.Code = response.FailCode
-		res.Msg = "更新审核状态失败"
+		res.Msg = response.UpdateStatusFail
 		return res
 	}
 	tx.Commit()

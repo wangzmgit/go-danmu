@@ -15,7 +15,7 @@ func GetOssConfig(ctx *gin.Context) {
 		"accesskeyId":     viper.GetString("aliyunoss.accesskey_id"),
 		"accesskeySecret": viper.GetString("aliyunoss.accesskey_secret"),
 		"domain":          viper.GetString("aliyunoss.domain"),
-	}, "ok")
+	}, response.OK)
 }
 
 func GetEmailConfig(ctx *gin.Context) {
@@ -25,20 +25,17 @@ func GetEmailConfig(ctx *gin.Context) {
 		"port":     viper.GetInt("email.port"),
 		"address":  viper.GetString("email.address"),
 		"password": viper.GetString("email.password"),
-	}, "ok")
+	}, response.OK)
 }
 
 func SetOssConfig(ctx *gin.Context) {
 	var oss dto.OssConfigDto
 	err := ctx.Bind(&oss)
 	if err != nil {
-		response.Fail(ctx, nil, "请求错误")
+		response.Fail(ctx, nil, response.RequestError)
 		return
 	}
-	if !oss.Storage && oss.Domain == "" {
-		response.CheckFail(ctx, nil, "域名不存在")
-		return
-	}
+
 	viper.Set("aliyunoss.storage", oss.Storage)
 	viper.Set("aliyunoss.bucket", oss.Bucket)
 	viper.Set("aliyunoss.endpoint", oss.Endpoint)
@@ -47,14 +44,14 @@ func SetOssConfig(ctx *gin.Context) {
 	viper.Set("aliyunoss.domain", oss.Domain)
 
 	viper.WriteConfig()
-	response.Success(ctx, nil, "ok")
+	response.Success(ctx, nil, response.OK)
 }
 
 func SetEmailConfig(ctx *gin.Context) {
 	var email dto.EmailConfigDto
 	err := ctx.Bind(&email)
 	if err != nil {
-		response.Fail(ctx, nil, "请求错误")
+		response.Fail(ctx, nil, response.RequestError)
 		return
 	}
 
@@ -65,14 +62,14 @@ func SetEmailConfig(ctx *gin.Context) {
 	viper.Set("email.password", email.Password)
 
 	viper.WriteConfig()
-	response.Success(ctx, nil, "ok")
+	response.Success(ctx, nil, response.OK)
 }
 
 func SetAdminConfig(ctx *gin.Context) {
 	var admin dto.AdminConfigDto
 	err := ctx.Bind(&admin)
 	if err != nil {
-		response.Fail(ctx, nil, "请求错误")
+		response.Fail(ctx, nil, response.RequestError)
 		return
 	}
 
@@ -80,5 +77,5 @@ func SetAdminConfig(ctx *gin.Context) {
 	viper.Set("admin.password", admin.Password)
 
 	viper.WriteConfig()
-	response.Success(ctx, nil, "ok")
+	response.Success(ctx, nil, response.OK)
 }

@@ -22,7 +22,7 @@ func UploadVideoInfo(ctx *gin.Context) {
 	var video dto.UploadVideoDto
 	err := ctx.Bind(&video)
 	if err != nil {
-		response.Fail(ctx, nil, "请求错误")
+		response.Fail(ctx, nil, response.RequestError)
 		return
 	}
 	title := video.Title
@@ -32,15 +32,15 @@ func UploadVideoInfo(ctx *gin.Context) {
 
 	//验证数据
 	if len(title) == 0 {
-		response.CheckFail(ctx, nil, "标题不能为空")
+		response.CheckFail(ctx, nil, response.TitleCheck)
 		return
 	}
 	if len(cover) == 0 {
-		response.CheckFail(ctx, nil, "封面图不能为空")
+		response.CheckFail(ctx, nil, response.CoverCheck)
 		return
 	}
 	if partition == 0 {
-		response.CheckFail(ctx, nil, "未选择分区")
+		response.CheckFail(ctx, nil, response.PartitionCheck)
 		return
 	}
 
@@ -68,18 +68,18 @@ func ModifyVideoInfo(ctx *gin.Context) {
 	var video dto.ModifyVideoDto
 	err := ctx.Bind(&video)
 	if err != nil {
-		response.Fail(ctx, nil, "请求错误")
+		response.Fail(ctx, nil, response.RequestError)
 		return
 	}
 	title := video.Title
 	cover := video.Cover
 
 	if len(title) == 0 {
-		response.CheckFail(ctx, nil, "标题不能为空")
+		response.CheckFail(ctx, nil, response.TitleCheck)
 		return
 	}
 	if len(cover) == 0 {
-		response.CheckFail(ctx, nil, "封面图不能为空")
+		response.CheckFail(ctx, nil, response.CoverCheck)
 		return
 	}
 
@@ -98,14 +98,14 @@ func DeleteVideo(ctx *gin.Context) {
 	var video dto.VideoIdDto
 	err := ctx.Bind(&video)
 	if err != nil {
-		response.Fail(ctx, nil, "请求错误")
+		response.Fail(ctx, nil, response.RequestError)
 		return
 	}
 	id := video.ID
 	uid, _ := ctx.Get("id")
 	//数据验证
 	if id == 0 {
-		response.CheckFail(ctx, nil, "视频不存在")
+		response.CheckFail(ctx, nil, response.VideoNotExist)
 		return
 	}
 	//删除视频
@@ -130,7 +130,7 @@ func GetMyUploadVideo(ctx *gin.Context) {
 	page, _ := strconv.Atoi(ctx.Query("page"))
 	pageSize, _ := strconv.Atoi(ctx.Query("page_size"))
 	if page <= 0 || pageSize <= 0 {
-		response.CheckFail(ctx, nil, "页码或数量有误")
+		response.CheckFail(ctx, nil, response.PageOrSizeError)
 		return
 	}
 	res := service.GetMyUploadVideoService(page, pageSize, uid)
@@ -149,7 +149,7 @@ func GetMyUploadVideo(ctx *gin.Context) {
 func GetVideoByID(ctx *gin.Context) {
 	vid, _ := strconv.Atoi(ctx.Query("vid"))
 	if vid == 0 {
-		response.CheckFail(ctx, nil, "视频不见了")
+		response.CheckFail(ctx, nil, response.VideoNotExist)
 		return
 	}
 
@@ -168,7 +168,7 @@ func GetCollectVideo(ctx *gin.Context) {
 	pageSize, _ := strconv.Atoi(ctx.Query("page_size"))
 
 	if page <= 0 || pageSize <= 0 {
-		response.Fail(ctx, nil, "页码或数量有误")
+		response.Fail(ctx, nil, response.PageOrSizeError)
 		return
 	}
 
@@ -206,11 +206,11 @@ func GetVideoList(ctx *gin.Context) {
 	request.Partition, _ = strconv.Atoi(ctx.DefaultQuery("partition", "0")) //分区
 
 	if request.Page <= 0 || request.PageSize <= 0 {
-		response.Fail(ctx, nil, "页码或数量有误")
+		response.Fail(ctx, nil, response.PageOrSizeError)
 		return
 	}
 	if request.PageSize >= 30 {
-		response.Fail(ctx, nil, "请求数量过多")
+		response.Fail(ctx, nil, response.TooManyRequests)
 		return
 	}
 
@@ -231,7 +231,7 @@ func GetVideoListByUserID(ctx *gin.Context) {
 	pageSize, _ := strconv.Atoi(ctx.Query("page_size"))
 
 	if page <= 0 || pageSize <= 0 {
-		response.Fail(ctx, nil, "页码或数量有误")
+		response.Fail(ctx, nil, response.PageOrSizeError)
 		return
 	}
 

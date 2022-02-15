@@ -37,7 +37,7 @@ func GetAnnounceService(uid interface{}) response.ResponseStruct {
 		HttpStatus: http.StatusOK,
 		Code:       response.SuccessCode,
 		Data:       gin.H{"announces": announceList},
-		Msg:        "ok",
+		Msg:        response.OK,
 	}
 }
 
@@ -53,7 +53,7 @@ func AdminGetAnnounceService() response.ResponseStruct {
 		HttpStatus: http.StatusOK,
 		Code:       response.SuccessCode,
 		Data:       gin.H{"announces": announceList},
-		Msg:        "ok",
+		Msg:        response.OK,
 	}
 }
 
@@ -74,7 +74,7 @@ func AddAnnounceService(announce dto.AddAnnounceDto) response.ResponseStruct {
 		HttpStatus: http.StatusOK,
 		Code:       response.SuccessCode,
 		Data:       nil,
-		Msg:        "ok",
+		Msg:        response.OK,
 	}
 }
 
@@ -90,6 +90,6 @@ func DeleteAnnounceService(id uint) response.ResponseStruct {
 		HttpStatus: http.StatusOK,
 		Code:       response.SuccessCode,
 		Data:       nil,
-		Msg:        "ok",
+		Msg:        response.OK,
 	}
 }

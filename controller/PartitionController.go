@@ -15,7 +15,7 @@ import (
 func GetPartitionList(ctx *gin.Context) {
 	fid, _ := strconv.Atoi(ctx.DefaultQuery("fid", "0"))
 	if fid < 0 {
-		response.Fail(ctx, nil, "参数有误")
+		response.Fail(ctx, nil, response.ParameterError)
 		return
 	}
 

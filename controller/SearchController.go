@@ -18,7 +18,7 @@ import (
 func Search(ctx *gin.Context) {
 	search := ctx.Query("keywords")
 	if len(search) == 0 {
-		response.CheckFail(ctx, nil, "请输入搜索内容")
+		response.CheckFail(ctx, nil, response.SearchCheck)
 		return
 	}
 

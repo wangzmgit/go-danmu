@@ -17,7 +17,7 @@ func CreateOpinionOnSite(ctx *gin.Context) {
 	var request dto.OpinionOnSiteDto
 	err := ctx.Bind(&request)
 	if err != nil {
-		response.Fail(ctx, nil, "请求错误")
+		response.Fail(ctx, nil, response.RequestError)
 		return
 	}
 	desc := request.Desc
@@ -26,7 +26,7 @@ func CreateOpinionOnSite(ctx *gin.Context) {
 
 	//验证数据
 	if len(desc) == 0 {
-		response.CheckFail(ctx, nil, "内容不能为空")
+		response.CheckFail(ctx, nil, response.ContentCheck)
 		return
 	}
 
@@ -43,7 +43,7 @@ func CreateOpinion(ctx *gin.Context) {
 	var request dto.OpinionDto
 	err := ctx.Bind(&request)
 	if err != nil {
-		response.Fail(ctx, nil, "请求错误")
+		response.Fail(ctx, nil, response.RequestError)
 		return
 	}
 	name := request.Name
@@ -54,27 +54,27 @@ func CreateOpinion(ctx *gin.Context) {
 
 	//验证数据
 	if len(name) == 0 {
-		response.CheckFail(ctx, nil, "姓名不能为空")
+		response.CheckFail(ctx, nil, response.NameCheck)
 		return
 	}
 
 	if len(email) != 0 && !util.VerifyEmailFormat(email) {
-		response.CheckFail(ctx, nil, "邮箱格式有误")
+		response.CheckFail(ctx, nil, response.EmailFormatCheck)
 		return
 	}
 
 	if len(telephone) != 0 && !util.VerifyTelephoneFormat(telephone) {
-		response.CheckFail(ctx, nil, "联系方式格式有误")
+		response.CheckFail(ctx, nil, response.TelephoneFormatCheck)
 		return
 	}
 
 	if gender < 0 || gender > 2 {
-		response.CheckFail(ctx, nil, "性别选择有误")
+		response.CheckFail(ctx, nil, response.GenderCheck)
 		return
 	}
 
 	if len(desc) == 0 {
-		response.CheckFail(ctx, nil, "内容不能为空")
+		response.CheckFail(ctx, nil, response.ContentCheck)
 		return
 	}
 

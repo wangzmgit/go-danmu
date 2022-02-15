@@ -18,12 +18,12 @@ func GetOpinionList(ctx *gin.Context) {
 	pageSize, _ := strconv.Atoi(ctx.Query("page_size"))
 
 	if page <= 0 || pageSize <= 0 {
-		response.CheckFail(ctx, nil, "页码或数量有误")
+		response.CheckFail(ctx, nil, response.PageOrSizeError)
 		return
 	}
 
 	if pageSize >= 30 {
-		response.CheckFail(ctx, nil, "请求数量过多")
+		response.CheckFail(ctx, nil, response.TooManyRequests)
 		return
 	}
 

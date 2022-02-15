@@ -23,6 +23,6 @@ func SearchService(keywords string) response.ResponseStruct {
 		HttpStatus: http.StatusOK,
 		Code:       response.SuccessCode,
 		Data:       gin.H{"videos": videos},
-		Msg:        "ok",
+		Msg:        response.OK,
 	}
 }

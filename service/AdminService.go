@@ -21,7 +21,7 @@ func AdminLoginService(email string, password string) response.ResponseStruct {
 		HttpStatus: http.StatusOK,
 		Code:       response.SuccessCode,
 		Data:       nil,
-		Msg:        "ok",
+		Msg:        response.OK,
 	}
 	var admin model.Admin
 
@@ -35,7 +35,7 @@ func AdminLoginService(email string, password string) response.ResponseStruct {
 			if err != nil {
 				res.HttpStatus = http.StatusInternalServerError
 				res.Code = response.ServerErrorCode
-				res.Msg = "服务器出错了"
+				res.Msg = response.SystemError
 				return res
 			}
 			adminInfo.Name = admin.Name
@@ -46,7 +46,7 @@ func AdminLoginService(email string, password string) response.ResponseStruct {
 	}
 	res.HttpStatus = http.StatusUnprocessableEntity
 	res.Code = response.CheckFailCode
-	res.Msg = "用户名或密码错误"
+	res.Msg = response.NameOrPasswordError
 	return res
 }
 
@@ -59,14 +59,14 @@ func AddAdminService(adminDto dto.AddAdminDto) response.ResponseStruct {
 		HttpStatus: http.StatusOK,
 		Code:       response.SuccessCode,
 		Data:       nil,
-		Msg:        "ok",
+		Msg:        response.OK,
 	}
 	var admin model.Admin
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(adminDto.Password), bcrypt.DefaultCost)
 	if err != nil {
 		res.HttpStatus = http.StatusInternalServerError
 		res.Code = response.ServerErrorCode
-		res.Msg = "服务器出错了"
+		res.Msg = response.SystemError
 		return res
 	}
 	DB := common.GetDB()
@@ -84,7 +84,7 @@ func AddAdminService(adminDto dto.AddAdminDto) response.ResponseStruct {
 	}
 	res.HttpStatus = http.StatusUnprocessableEntity
 	res.Code = response.CheckFailCode
-	res.Msg = "该管理员账号已存在"
+	res.Msg = response.EmailRegistered
 	return res
 }
 
@@ -97,7 +97,7 @@ func DeleteAdminService(id uint) response.ResponseStruct {
 		HttpStatus: http.StatusOK,
 		Code:       response.SuccessCode,
 		Data:       nil,
-		Msg:        "ok",
+		Msg:        response.OK,
 	}
 	var admin model.Admin
 
@@ -109,7 +109,7 @@ func DeleteAdminService(id uint) response.ResponseStruct {
 	}
 	res.HttpStatus = http.StatusBadRequest
 	res.Code = response.FailCode
-	res.Msg = "该管理员账号不存在"
+	res.Msg = response.UserNotExist
 	return res
 }
 
@@ -129,6 +129,6 @@ func GetAdminListService(page int, pageSize int) response.ResponseStruct {
 		HttpStatus: http.StatusOK,
 		Code:       response.SuccessCode,
 		Data:       gin.H{"count": total, "admins": admins},
-		Msg:        "ok",
+		Msg:        response.OK,
 	}
 }

@@ -10,6 +10,12 @@ import (
 	"github.com/spf13/viper"
 )
 
+const (
+	LoginCode          = "登录验证"
+	RegisterCode       = "注册验证码"
+	ModifyPasswordCode = "修改密码验证"
+)
+
 //参数: 目标邮箱，验证码，主题
 func SendEmail(ToEmail string, code string, subject string) bool {
 	host := viper.GetString("email.host")

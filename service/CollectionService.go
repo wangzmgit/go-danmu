@@ -31,7 +31,7 @@ func CreateCollectionService(collection dto.CreateCollectionDto, uid interface{}
 		HttpStatus: http.StatusOK,
 		Code:       response.SuccessCode,
 		Data:       nil,
-		Msg:        "ok",
+		Msg:        response.OK,
 	}
 }
 
@@ -44,7 +44,7 @@ func ModifyCollectionService(collection dto.ModifyCollectionDto, uid interface{}
 		HttpStatus: http.StatusOK,
 		Code:       response.SuccessCode,
 		Data:       nil,
-		Msg:        "ok",
+		Msg:        response.OK,
 	}
 
 	DB := common.GetDB()
@@ -52,7 +52,7 @@ func ModifyCollectionService(collection dto.ModifyCollectionDto, uid interface{}
 	if !IsUserOwnsCollection(DB, collection.ID, uid.(uint)) {
 		res.HttpStatus = http.StatusUnprocessableEntity
 		res.Code = response.CheckFailCode
-		res.Msg = "合集不存在"
+		res.Msg = response.CollectionNotExist
 		return res
 	}
 
@@ -62,7 +62,7 @@ func ModifyCollectionService(collection dto.ModifyCollectionDto, uid interface{}
 	if err != nil {
 		res.HttpStatus = http.StatusBadRequest
 		res.Code = response.FailCode
-		res.Msg = "修改失败"
+		res.Msg = response.ModifyFail
 		return res
 	}
 	return res
@@ -83,7 +83,7 @@ func GetCreateCollectionListService(page int, pageSize int, uid interface{}) res
 		HttpStatus: http.StatusOK,
 		Code:       response.SuccessCode,
 		Data:       gin.H{"count": count, "collections": collections},
-		Msg:        "ok",
+		Msg:        response.OK,
 	}
 }
 
@@ -104,7 +104,7 @@ func GetCollectionContentService(cid int, page int, pageSize int) response.Respo
 		HttpStatus: http.StatusOK,
 		Code:       response.SuccessCode,
 		Data:       gin.H{"count": count, "videos": videos},
-		Msg:        "ok",
+		Msg:        response.OK,
 	}
 }
 
@@ -124,7 +124,7 @@ func GetCollectionByIDService(id int) response.ResponseStruct {
 		HttpStatus: http.StatusOK,
 		Code:       response.SuccessCode,
 		Data:       gin.H{"collection": vo.ToCollectionVo(collection), "user": vo.ToAuthorVo(user)},
-		Msg:        "ok",
+		Msg:        response.OK,
 	}
 }
 
@@ -139,7 +139,7 @@ func DeleteCollectionService(id uint, uid interface{}) response.ResponseStruct {
 		HttpStatus: http.StatusOK,
 		Code:       response.SuccessCode,
 		Data:       nil,
-		Msg:        "ok",
+		Msg:        response.OK,
 	}
 }
 
@@ -165,7 +165,7 @@ func GetCanAddVideoService(id int, uid interface{}, page int, pageSize int) resp
 		HttpStatus: http.StatusOK,
 		Code:       response.SuccessCode,
 		Data:       gin.H{"count": count - addedCount, "videos": videos},
-		Msg:        "ok",
+		Msg:        response.OK,
 	}
 }
 
@@ -178,21 +178,21 @@ func AddVideoToCollectionService(vid uint, cid uint, uid interface{}) response.R
 		HttpStatus: http.StatusOK,
 		Code:       response.SuccessCode,
 		Data:       nil,
-		Msg:        "ok",
+		Msg:        response.OK,
 	}
 
 	DB := common.GetDB()
 	if !IsUserOwnsVideo(DB, vid, uid.(uint)) {
 		res.HttpStatus = http.StatusUnprocessableEntity
 		res.Code = response.CheckFailCode
-		res.Msg = "视频不存在"
+		res.Msg = response.VideoNotExist
 		return res
 	}
 
 	if !IsUserOwnsCollection(DB, cid, uid.(uint)) {
 		res.HttpStatus = http.StatusUnprocessableEntity
 		res.Code = response.CheckFailCode
-		res.Msg = "合集不存在"
+		res.Msg = response.PartitionNotExist
 		return res
 	}
 
@@ -215,28 +215,28 @@ func DeleteCollectionVideoService(vid uint, cid uint, uid interface{}) response.
 		HttpStatus: http.StatusOK,
 		Code:       response.SuccessCode,
 		Data:       nil,
-		Msg:        "ok",
+		Msg:        response.OK,
 	}
 
 	DB := common.GetDB()
 	if !IsUserOwnsVideo(DB, vid, uid.(uint)) {
 		res.HttpStatus = http.StatusUnprocessableEntity
 		res.Code = response.CheckFailCode
-		res.Msg = "视频不存在"
+		res.Msg = response.VideoNotExist
 		return res
 	}
 
 	if !IsUserOwnsCollection(DB, cid, uid.(uint)) {
 		res.HttpStatus = http.StatusUnprocessableEntity
 		res.Code = response.CheckFailCode
-		res.Msg = "合集不存在"
+		res.Msg = response.PartitionNotExist
 		return res
 	}
 
 	if err := DB.Where("collection_id = ? and vid = ?", cid, vid).Delete(model.VideoCollection{}).Error; err != nil {
 		res.HttpStatus = http.StatusBadRequest
 		res.Code = response.FailCode
-		res.Msg = "删除失败"
+		res.Msg = response.DeleteFail
 		return res
 	}
 	return res
@@ -270,6 +270,6 @@ func GetCollectionListService(page int, pageSize int) response.ResponseStruct {
 		HttpStatus: http.StatusOK,
 		Code:       response.SuccessCode,
 		Data:       gin.H{"count": count, "collections": collections},
-		Msg:        "ok",
+		Msg:        response.OK,
 	}
 }

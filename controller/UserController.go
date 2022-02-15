@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"net/http"
 	"strconv"
 	"time"
 
@@ -24,7 +23,7 @@ func Register(ctx *gin.Context) {
 	var request dto.RegisterDto
 	err := ctx.Bind(&request)
 	if err != nil {
-		response.Fail(ctx, nil, "请求错误")
+		response.Fail(ctx, nil, response.RequestError)
 		return
 	}
 	name := request.Name
@@ -34,15 +33,15 @@ func Register(ctx *gin.Context) {
 
 	//数据验证
 	if !util.VerifyEmailFormat(email) {
-		response.CheckFail(ctx, nil, "邮箱格式有误哦")
+		response.CheckFail(ctx, nil, response.EmailFormatCheck)
 		return
 	}
 	if len(password) < 6 {
-		response.CheckFail(ctx, nil, "密码不要少于六位")
+		response.CheckFail(ctx, nil, response.PasswordCheck)
 		return
 	}
 	if !VerificationCode(util.CodeKey(email), code) {
-		response.CheckFail(ctx, nil, "验证码有误")
+		response.CheckFail(ctx, nil, response.VerificationCodeError)
 		return
 	}
 	//如果名称为空，则为随机字符串
@@ -63,7 +62,7 @@ func Login(ctx *gin.Context) {
 	var request dto.LoginDto
 	err := ctx.Bind(&request)
 	if err != nil {
-		response.Response(ctx, http.StatusBadRequest, 4000, nil, "请求错误")
+		response.Fail(ctx, nil, response.RequestError)
 		return
 	}
 	email := request.Email
@@ -71,11 +70,11 @@ func Login(ctx *gin.Context) {
 
 	//数据验证
 	if !util.VerifyEmailFormat(email) {
-		response.CheckFail(ctx, nil, "邮箱格式有误哦")
+		response.CheckFail(ctx, nil, response.EmailFormatCheck)
 		return
 	}
 	if len(password) < 6 {
-		response.CheckFail(ctx, nil, "密码不要少于六位")
+		response.CheckFail(ctx, nil, response.PasswordCheck)
 		return
 	}
 	res := service.LoginService(request, ctx.ClientIP())
@@ -92,7 +91,7 @@ func EmailLogin(ctx *gin.Context) {
 	var request dto.EmailLoginDto
 	err := ctx.Bind(&request)
 	if err != nil {
-		response.Response(ctx, http.StatusBadRequest, 4000, nil, "请求错误")
+		response.Fail(ctx, nil, response.RequestError)
 		return
 	}
 	email := request.Email
@@ -100,16 +99,13 @@ func EmailLogin(ctx *gin.Context) {
 
 	//数据验证
 	if !util.VerifyEmailFormat(email) {
-		response.CheckFail(ctx, nil, "邮箱格式有误哦")
+		response.CheckFail(ctx, nil, response.EmailFormatCheck)
 		return
 	}
-	if len(code) == 0 {
-		response.CheckFail(ctx, nil, "验证码不能为空")
-		return
-	}
+
 	//验证验证码是否正确
 	if !VerificationCode(util.LoginCodeKey(email), code) {
-		response.CheckFail(ctx, nil, "验证码有误")
+		response.CheckFail(ctx, nil, response.VerificationCodeError)
 		return
 	}
 
@@ -123,7 +119,7 @@ func EmailLogin(ctx *gin.Context) {
 **********************************************************/
 func UserInfo(ctx *gin.Context) {
 	user, _ := ctx.Get("user")
-	response.Success(ctx, gin.H{"data": vo.ToUserVo(user.(model.User))}, "ok")
+	response.Success(ctx, gin.H{"data": vo.ToUserVo(user.(model.User))}, response.OK)
 }
 
 /*********************************************************
@@ -131,24 +127,23 @@ func UserInfo(ctx *gin.Context) {
 ** 日    期:2021/7/10
 **********************************************************/
 func ModifyInfo(ctx *gin.Context) {
-	//获取参数
 	var request dto.ModifyUserDto
 	err := ctx.Bind(&request)
 	if err != nil {
-		response.Fail(ctx, nil, "请求错误")
+		response.Fail(ctx, nil, response.RequestError)
 		return
 	}
 	name := request.Name
 	birthday := request.Birthday
 
 	if len(name) == 0 {
-		response.CheckFail(ctx, nil, "昵称不能为空哦")
+		response.CheckFail(ctx, nil, response.NickCheck)
 		return
 	}
 	//判断日期
 	tBirthday, err := time.Parse("2006-01-02", birthday)
 	if err != nil {
-		response.CheckFail(ctx, nil, "请输入正确的出生日期哦")
+		response.CheckFail(ctx, nil, response.BirthdayFormatCheck)
 		return
 	}
 
@@ -168,7 +163,7 @@ func ModifyPassword(ctx *gin.Context) {
 	var passModify dto.ModifyPasswordDto
 	err := ctx.Bind(&passModify)
 	if err != nil {
-		response.Fail(ctx, nil, "请求错误")
+		response.Fail(ctx, nil, response.RequestError)
 		return
 	}
 	password := passModify.Password
@@ -176,7 +171,7 @@ func ModifyPassword(ctx *gin.Context) {
 
 	//数据验证
 	if len(password) < 6 {
-		response.CheckFail(ctx, nil, "密码不要少于六位")
+		response.CheckFail(ctx, nil, response.PasswordCheck)
 		return
 	}
 	//从上下文中获取用户信息
@@ -184,16 +179,16 @@ func ModifyPassword(ctx *gin.Context) {
 	modelUser := user.(model.User)
 	//验证验证码是否正确
 	if !VerificationCode(util.CodeKey(modelUser.Email), code) {
-		response.CheckFail(ctx, nil, "验证码有误")
+		response.CheckFail(ctx, nil, response.VerificationCodeError)
 		return
 	}
 
 	//加密密码
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
-		response.CheckFail(ctx, nil, "服务器出错了")
+		response.CheckFail(ctx, nil, response.SystemError)
 		//记录日志
-		util.Logfile("[Error]", " hashed password "+err.Error())
+		util.Logfile(util.ErrorLog, " hashed password "+err.Error())
 		return
 	}
 

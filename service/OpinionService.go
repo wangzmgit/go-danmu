@@ -28,7 +28,7 @@ func CreateOpinionOnSiteService(desc string, uid uint) response.ResponseStruct {
 		HttpStatus: http.StatusOK,
 		Code:       response.SuccessCode,
 		Data:       nil,
-		Msg:        "ok",
+		Msg:        response.OK,
 	}
 }
 
@@ -52,7 +52,7 @@ func CreateOpinionService(opinion dto.OpinionDto) response.ResponseStruct {
 		HttpStatus: http.StatusOK,
 		Code:       response.SuccessCode,
 		Data:       nil,
-		Msg:        "ok",
+		Msg:        response.OK,
 	}
 }
 
@@ -71,6 +71,6 @@ func GetOpinionListService(page int, pageSize int) response.ResponseStruct {
 		HttpStatus: http.StatusOK,
 		Code:       response.SuccessCode,
 		Data:       gin.H{"count": total, "opinions": opinions},
-		Msg:        "ok",
+		Msg:        response.OK,
 	}
 }

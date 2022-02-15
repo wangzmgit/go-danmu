@@ -22,7 +22,7 @@ func AdminLogin(ctx *gin.Context) {
 	var requestAdmin dto.AdminLoginDto
 	requestErr := ctx.Bind(&requestAdmin)
 	if requestErr != nil {
-		response.Fail(ctx, nil, "请求错误")
+		response.Fail(ctx, nil, response.RequestError)
 		return
 	}
 	email := requestAdmin.Email
@@ -30,7 +30,7 @@ func AdminLogin(ctx *gin.Context) {
 
 	//数据验证
 	if len(email) == 0 || len(password) == 0 {
-		response.CheckFail(ctx, nil, "请输入用户名或密码")
+		response.CheckFail(ctx, nil, response.LoginCheck)
 		return
 	}
 	//默认管理员
@@ -39,12 +39,12 @@ func AdminLogin(ctx *gin.Context) {
 		var adminInfo vo.AdminVo
 		token, err := common.ReleaseAdminToken(0)
 		if err != nil {
-			response.ServerError(ctx, nil, "系统异常")
+			response.ServerError(ctx, nil, response.SystemError)
 			return
 		}
 		adminInfo.Name = "管理员"
 		adminInfo.Authority = util.SuperAdmin
-		response.Success(ctx, gin.H{"token": token, "info": adminInfo}, "ok")
+		response.Success(ctx, gin.H{"token": token, "info": adminInfo}, response.OK)
 	} else {
 		//查询管理员表
 		res := service.AdminLoginService(email, password)
@@ -61,7 +61,7 @@ func AddAdmin(ctx *gin.Context) {
 	var request dto.AddAdminDto
 	err := ctx.Bind(&request)
 	if err != nil {
-		response.Fail(ctx, nil, "请求错误")
+		response.Fail(ctx, nil, response.RequestError)
 		return
 	}
 	name := request.Name
@@ -71,19 +71,19 @@ func AddAdmin(ctx *gin.Context) {
 
 	//数据验证
 	if len(name) == 0 {
-		response.CheckFail(ctx, nil, "管理员名称不能为空")
+		response.CheckFail(ctx, nil, response.NameCheck)
 		return
 	}
 	if !util.VerifyEmailFormat(email) {
-		response.CheckFail(ctx, nil, "邮箱格式有误")
+		response.CheckFail(ctx, nil, response.EmailFormatCheck)
 		return
 	}
 	if len(password) < 6 {
-		response.CheckFail(ctx, nil, "密码不要少于六位")
+		response.CheckFail(ctx, nil, response.PasswordCheck)
 		return
 	}
 	if authority != util.Admin && authority != util.Auditor {
-		response.CheckFail(ctx, nil, "权限选择有误")
+		response.CheckFail(ctx, nil, response.AuthorityCheck)
 		return
 	}
 
@@ -99,12 +99,12 @@ func DeleteAdmin(ctx *gin.Context) {
 	//获取参数
 	var request dto.AdminIdDto
 	if err := ctx.Bind(&request); err != nil {
-		response.Fail(ctx, nil, "请求错误")
+		response.Fail(ctx, nil, response.RequestError)
 		return
 	}
 	id := request.ID
 	if id == 0 {
-		response.CheckFail(ctx, nil, "该管理员账号不存在")
+		response.CheckFail(ctx, nil, response.UserNotExist)
 		return
 	}
 	res := service.DeleteAdminService(id)
@@ -120,7 +120,7 @@ func GetAdminList(ctx *gin.Context) {
 	page, _ := strconv.Atoi(ctx.Query("page"))
 	pageSize, _ := strconv.Atoi(ctx.Query("page_size"))
 	if page <= 0 || pageSize <= 0 {
-		response.CheckFail(ctx, nil, "页码或数量有误")
+		response.CheckFail(ctx, nil, response.PageOrSizeError)
 		return
 	}
 

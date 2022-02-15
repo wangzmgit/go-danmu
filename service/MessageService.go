@@ -24,7 +24,7 @@ func SendMessageService(uid uint, fid uint, content string) response.ResponseStr
 		HttpStatus: http.StatusOK,
 		Code:       response.SuccessCode,
 		Data:       nil,
-		Msg:        "ok",
+		Msg:        response.OK,
 	}
 }
 
@@ -43,7 +43,7 @@ func GetMessageListService(uid interface{}) response.ResponseStruct {
 		HttpStatus: http.StatusOK,
 		Code:       response.SuccessCode,
 		Data:       gin.H{"messages": messageList},
-		Msg:        "ok",
+		Msg:        response.OK,
 	}
 }
 
@@ -64,6 +64,6 @@ func GetMessageDetailsService(uid interface{}, fid int) response.ResponseStruct 
 		HttpStatus: http.StatusOK,
 		Code:       response.SuccessCode,
 		Data:       gin.H{"avatar": userInfo.Avatar, "name": userInfo.Name, "messages": messageDetails},
-		Msg:        "ok",
+		Msg:        response.OK,
 	}
 }

@@ -18,7 +18,7 @@ func AdminGetVideoList(ctx *gin.Context) {
 	pageSize, _ := strconv.Atoi(ctx.Query("page_size"))
 	videoFrom := ctx.DefaultQuery("video_from", "user")
 	if page <= 0 || pageSize <= 0 {
-		response.CheckFail(ctx, nil, "页码或数量有误")
+		response.CheckFail(ctx, nil, response.PageOrSizeError)
 		return
 	}
 
@@ -33,7 +33,7 @@ func AdminGetVideoList(ctx *gin.Context) {
 func AdminDeleteVideo(ctx *gin.Context) {
 	var request dto.AdminIdDto
 	if err := ctx.Bind(&request); err != nil {
-		response.Fail(ctx, nil, "请求错误")
+		response.Fail(ctx, nil, response.RequestError)
 		return
 	}
 	id := request.ID
@@ -55,7 +55,7 @@ func ImportVideo(ctx *gin.Context) {
 	var video dto.ImportVideo
 	err := ctx.Bind(&video)
 	if err != nil {
-		response.Fail(ctx, nil, "请求错误")
+		response.Fail(ctx, nil, response.RequestError)
 		return
 	}
 	title := video.Title
@@ -87,16 +87,16 @@ func ImportResource(ctx *gin.Context) {
 	var video dto.ImportResourceDto
 	err := ctx.Bind(&video)
 	if err != nil {
-		response.Fail(ctx, nil, "请求错误")
+		response.Fail(ctx, nil, response.RequestError)
 		return
 	}
 
 	if video.Vid == 0 {
-		response.CheckFail(ctx, nil, "视频不存在")
+		response.CheckFail(ctx, nil, response.VideoNotExist)
 		return
 	}
 	if len(video.Original) == 0 && len(video.Res360) == 0 {
-		response.CheckFail(ctx, nil, "视频链接不存在")
+		response.CheckFail(ctx, nil, response.ResourceNotExist)
 		return
 	}
 
@@ -111,7 +111,7 @@ func ImportResource(ctx *gin.Context) {
 func GetResourceList(ctx *gin.Context) {
 	vid, _ := strconv.Atoi(ctx.Query("vid"))
 	if vid <= 0 {
-		response.CheckFail(ctx, nil, "视频不存在")
+		response.CheckFail(ctx, nil, response.VideoNotExist)
 		return
 	}
 
@@ -127,7 +127,7 @@ func DeleteResource(ctx *gin.Context) {
 	var id dto.UUID
 	err := ctx.Bind(&id)
 	if err != nil {
-		response.Fail(ctx, nil, "请求错误")
+		response.Fail(ctx, nil, response.RequestError)
 		return
 	}
 

@@ -14,19 +14,19 @@ func UploadOSS(localFileName string, objectName string) bool {
 	//储存到阿里云OSS
 	client, err := oss.New(viper.GetString("aliyunoss.endpoint"), viper.GetString("aliyunoss.accesskey_id"), viper.GetString("aliyunoss.accesskey_secret"))
 	if err != nil {
-		util.Logfile("[Error]", " OSS请求错误 "+err.Error())
+		util.Logfile(util.ErrorLog, " OSS请求错误 "+err.Error())
 		return false
 	}
 	// 获取存储空间
 	bucket, err := client.Bucket(viper.GetString("aliyunoss.bucket"))
 	if err != nil {
-		util.Logfile("[Error]", " OSS请求错误 "+err.Error())
+		util.Logfile(util.ErrorLog, " OSS请求错误 "+err.Error())
 		return false
 	}
 
 	err = bucket.PutObjectFromFile(objectName, localFileName)
 	if err != nil {
-		util.Logfile("[Error]", " OSS上传失败 "+err.Error())
+		util.Logfile(util.ErrorLog, " OSS上传失败 "+err.Error())
 		return false
 	}
 
@@ -37,19 +37,19 @@ func UploadVideoToOSS(localFileName string, objectName string, vid int) {
 	//储存到阿里云OSS
 	client, err := oss.New(viper.GetString("aliyunoss.endpoint"), viper.GetString("aliyunoss.accesskey_id"), viper.GetString("aliyunoss.accesskey_secret"))
 	if err != nil {
-		util.Logfile("[Error]", " OSS请求错误 "+err.Error())
+		util.Logfile(util.ErrorLog, " OSS请求错误 "+err.Error())
 		return
 	}
 	// 获取存储空间
 	bucket, err := client.Bucket(viper.GetString("aliyunoss.bucket"))
 	if err != nil {
-		util.Logfile("[Error]", " OSS请求错误 "+err.Error())
+		util.Logfile(util.ErrorLog, " OSS请求错误 "+err.Error())
 		return
 	}
 
 	err = bucket.PutObjectFromFile(objectName, localFileName)
 	if err != nil {
-		util.Logfile("[Error]", " OSS上传失败 "+err.Error())
+		util.Logfile(util.ErrorLog, " OSS上传失败 "+err.Error())
 		return
 	}
 	//完成上传

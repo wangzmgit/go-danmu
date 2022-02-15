@@ -27,7 +27,7 @@ func RegisterService(user dto.RegisterDto) response.ResponseStruct {
 		HttpStatus: http.StatusOK,
 		Code:       response.SuccessCode,
 		Data:       nil,
-		Msg:        "ok",
+		Msg:        response.OK,
 	}
 
 	//邮箱是否存在
@@ -35,7 +35,7 @@ func RegisterService(user dto.RegisterDto) response.ResponseStruct {
 	if IsEmailExist(DB, user.Email) {
 		res.HttpStatus = http.StatusUnprocessableEntity
 		res.Code = response.CheckFailCode
-		res.Msg = "该邮箱已经被注册了"
+		res.Msg = response.EmailRegistered
 		return res
 	}
 
@@ -44,9 +44,9 @@ func RegisterService(user dto.RegisterDto) response.ResponseStruct {
 	if err != nil {
 		res.HttpStatus = http.StatusInternalServerError
 		res.Code = response.ServerErrorCode
-		res.Msg = "服务器出错了"
+		res.Msg = response.SystemError
 		//记录日志
-		util.Logfile("[Error]", " hashed password "+err.Error())
+		util.Logfile(util.ErrorLog, " hashed password "+err.Error())
 		return res
 	}
 
@@ -68,7 +68,7 @@ func LoginService(login dto.LoginDto, userIP string) response.ResponseStruct {
 		HttpStatus: http.StatusOK,
 		Code:       response.SuccessCode,
 		Data:       nil,
-		Msg:        "ok",
+		Msg:        response.OK,
 	}
 
 	//判断邮箱是否存在
@@ -78,14 +78,14 @@ func LoginService(login dto.LoginDto, userIP string) response.ResponseStruct {
 	if user.ID == 0 {
 		res.HttpStatus = http.StatusBadRequest
 		res.Code = response.FailCode
-		res.Msg = "用户不存在"
+		res.Msg = response.UserNotExist
 		return res
 	}
 	//判断密码
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(login.Password)); err != nil {
 		res.HttpStatus = http.StatusUnprocessableEntity
 		res.Code = response.CheckFailCode
-		res.Msg = "用户名或密码错误"
+		res.Msg = response.NameOrPasswordError
 		return res
 	}
 	//发放token
@@ -93,11 +93,11 @@ func LoginService(login dto.LoginDto, userIP string) response.ResponseStruct {
 	if err != nil {
 		res.HttpStatus = http.StatusInternalServerError
 		res.Code = response.ServerErrorCode
-		res.Msg = "系统异常"
-		util.Logfile("[Error]", " token generate error  "+err.Error())
+		res.Msg = response.SystemError
+		util.Logfile(util.ErrorLog, " token generate error  "+err.Error())
 		return res
 	}
-	util.Logfile("[Info]", " Token issued successfully uid "+strconv.Itoa(int(user.ID))+" | "+userIP)
+	util.Logfile(util.InfoLog, " Token issued successfully uid "+strconv.Itoa(int(user.ID))+" | "+userIP)
 	//返回数据
 	res.Data = gin.H{"token": token, "user": vo.ToUserVo(user)}
 	return res
@@ -112,7 +112,7 @@ func EmailLoginService(login dto.EmailLoginDto, userIP string) response.Response
 		HttpStatus: http.StatusOK,
 		Code:       response.SuccessCode,
 		Data:       nil,
-		Msg:        "ok",
+		Msg:        response.OK,
 	}
 
 	//判断邮箱是否存在
@@ -122,7 +122,7 @@ func EmailLoginService(login dto.EmailLoginDto, userIP string) response.Response
 	if user.ID == 0 {
 		res.HttpStatus = http.StatusBadRequest
 		res.Code = response.FailCode
-		res.Msg = "用户不存在"
+		res.Msg = response.UserNotExist
 		return res
 	}
 
@@ -131,11 +131,11 @@ func EmailLoginService(login dto.EmailLoginDto, userIP string) response.Response
 	if err != nil {
 		res.HttpStatus = http.StatusInternalServerError
 		res.Code = response.ServerErrorCode
-		res.Msg = "系统异常"
-		util.Logfile("[Error]", " token generate error  "+err.Error())
+		res.Msg = response.SystemError
+		util.Logfile(util.ErrorLog, " token generate error  "+err.Error())
 		return res
 	}
-	util.Logfile("[Info]", " Token issued successfully uid "+strconv.Itoa(int(user.ID))+" | "+userIP)
+	util.Logfile(util.InfoLog, " Token issued successfully uid "+strconv.Itoa(int(user.ID))+" | "+userIP)
 	//返回数据
 	res.Data = gin.H{"token": token, "user": vo.ToUserVo(user)}
 	return res
@@ -150,7 +150,7 @@ func UserModifyService(modify dto.ModifyUserDto, uid interface{}, tBirthday time
 		HttpStatus: http.StatusOK,
 		Code:       response.SuccessCode,
 		Data:       nil,
-		Msg:        "ok",
+		Msg:        response.OK,
 	}
 
 	DB := common.GetDB()
@@ -160,7 +160,7 @@ func UserModifyService(modify dto.ModifyUserDto, uid interface{}, tBirthday time
 	if err != nil {
 		res.HttpStatus = http.StatusBadRequest
 		res.Code = response.FailCode
-		res.Msg = "修改失败"
+		res.Msg = response.ModifyFail
 		return res
 	}
 	return res
@@ -175,7 +175,7 @@ func ModifyPasswordService(password string, user model.User) response.ResponseSt
 		HttpStatus: http.StatusOK,
 		Code:       response.SuccessCode,
 		Data:       nil,
-		Msg:        "ok",
+		Msg:        response.OK,
 	}
 	DB := common.GetDB()
 
@@ -184,7 +184,7 @@ func ModifyPasswordService(password string, user model.User) response.ResponseSt
 	if err != nil {
 		res.HttpStatus = http.StatusBadRequest
 		res.Code = response.FailCode
-		res.Msg = "修改失败"
+		res.Msg = response.ModifyFail
 		return res
 	}
 
@@ -203,7 +203,7 @@ func GetUserInfoByIDService(uid interface{}) response.ResponseStruct {
 		HttpStatus: http.StatusOK,
 		Code:       response.SuccessCode,
 		Data:       gin.H{"user": vo.ToUserVo(user)},
-		Msg:        "ok",
+		Msg:        response.OK,
 	}
 }
 
@@ -224,7 +224,7 @@ func GetUserListService(page int, pageSize int) response.ResponseStruct {
 		HttpStatus: http.StatusOK,
 		Code:       response.SuccessCode,
 		Data:       gin.H{"count": total, "users": users},
-		Msg:        "ok",
+		Msg:        response.OK,
 	}
 }
 
@@ -237,7 +237,7 @@ func AdminModifyUserService(newInfo dto.AdminModifyUserDto) response.ResponseStr
 		HttpStatus: http.StatusOK,
 		Code:       response.SuccessCode,
 		Data:       nil,
-		Msg:        "ok",
+		Msg:        response.OK,
 	}
 	var user model.User
 	DB := common.GetDB()
@@ -246,7 +246,7 @@ func AdminModifyUserService(newInfo dto.AdminModifyUserDto) response.ResponseStr
 	if user.ID != 0 && user.ID != newInfo.ID {
 		res.HttpStatus = http.StatusUnprocessableEntity
 		res.Code = response.CheckFailCode
-		res.Msg = "邮箱已存在"
+		res.Msg = response.EmailRegistered
 		return res
 	}
 	DB.Model(&model.User{}).Where("id = ?", newInfo.ID).Updates(
@@ -271,7 +271,7 @@ func AdminDeleteUserService(id uint) response.ResponseStruct {
 		HttpStatus: http.StatusOK,
 		Code:       response.SuccessCode,
 		Data:       nil,
-		Msg:        "ok",
+		Msg:        response.OK,
 	}
 }
 
