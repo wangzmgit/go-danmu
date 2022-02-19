@@ -7,6 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
 	"kuukaa.fun/danmu-v4/common"
+	"kuukaa.fun/danmu-v4/dto"
 	"kuukaa.fun/danmu-v4/model"
 	"kuukaa.fun/danmu-v4/response"
 	"kuukaa.fun/danmu-v4/util"
@@ -68,7 +69,7 @@ func UploadCoverService(localFileName string, objectName string) response.Respon
 ** 函数功能: 上传视频
 ** 日    期: 2021年11月11日17:38:07
 **********************************************************/
-func UploadVideoService(urls map[string]string, vid int, uid uint) response.ResponseStruct {
+func UploadVideoService(urls dto.ResDto, vid int, uid uint) response.ResponseStruct {
 	res := response.ResponseStruct{
 		HttpStatus: http.StatusOK,
 		Code:       response.SuccessCode,
@@ -93,15 +94,15 @@ func UploadVideoService(urls map[string]string, vid int, uid uint) response.Resp
 	var newResource model.Resource
 	if viper.GetString("transcoding.coding") == "hls" {
 		newResource.Vid = uint(vid)
-		newResource.Res360 = urls["res360"]
-		newResource.Res480 = urls["res480"]
-		newResource.Res720 = urls["res720"]
-		newResource.Res1080 = urls["res1080"]
-		newResource.Original = urls["original"]
+		newResource.Res360 = urls.Res360
+		newResource.Res480 = urls.Res480
+		newResource.Res720 = urls.Res720
+		newResource.Res1080 = urls.Res1080
+		newResource.Original = urls.Original
 	} else {
 		//视频类型为mp4,不进行转码，分辨率为原始分辨率
 		newResource.Vid = uint(vid)
-		newResource.Original = urls["original"]
+		newResource.Original = urls.Original
 	}
 	if err = tx.Model(&model.Resource{}).Create(&newResource).Error; err != nil {
 		util.Logfile(util.ErrorLog, " upload video error "+err.Error())
@@ -183,37 +184,27 @@ func GetUrl() string {
 ** 函数功能: 获取不同分辨率URL
 ** 日    期: 2022年2月13日18:01:35
 **********************************************************/
-func GetUrlDifferentRes(videoName, localFileName string, vid int, oss bool) (map[string]string, int) {
-	urls := map[string]string{
-		"res360":   "",
-		"res480":   "",
-		"res720":   "",
-		"res1080":  "",
-		"original": "",
-	}
-	ossDir := "video"
-	if !oss {
-		ossDir = "output"
-	}
+func GetUrlDifferentRes(videoName, localFileName string, vid int, oss bool) (dto.ResDto, int) {
+	var urls dto.ResDto
+	ossDir := GetUploadOssDir(oss)
 	maxRes, err := PreTreatmentVideo(localFileName)
 	maxRes = util.Min(maxRes, viper.GetInt("transcoding.max_res"))
 	if err != nil {
-		//调用审核失败
-		VideoReviewFail(vid, "视频处理出现错误")
-		return nil, 0
+		VideoReviewFail(vid, "视频处理出现错误") //调用审核失败
+		return dto.ResDto{}, 0
 	}
 	switch maxRes {
 	case 1080:
-		urls["res1080"] = GetUrl() + ossDir + "/" + videoName + "/1080p/" + "index.m3u8"
+		urls.Res1080 = GetUrl() + ossDir + "/" + videoName + "/1080p/" + "index.m3u8"
 		fallthrough
 	case 720:
-		urls["res720"] = GetUrl() + ossDir + "/" + videoName + "/720p/" + "index.m3u8"
+		urls.Res720 = GetUrl() + ossDir + "/" + videoName + "/720p/" + "index.m3u8"
 		fallthrough
 	case 480:
-		urls["res480"] = GetUrl() + ossDir + "/" + videoName + "/480p/" + "index.m3u8"
+		urls.Res480 = GetUrl() + ossDir + "/" + videoName + "/480p/" + "index.m3u8"
 		fallthrough
 	case 360:
-		urls["res360"] = GetUrl() + ossDir + "/" + videoName + "/360p/" + "index.m3u8"
+		urls.Res360 = GetUrl() + ossDir + "/" + videoName + "/360p/" + "index.m3u8"
 	}
 	return urls, maxRes
 }
@@ -265,4 +256,15 @@ func DeleteTempFile(maxRes int, dirName string) {
 			os.Remove("./file/output/" + dirName + "/temp_360p.mp4")
 		}
 	}
+}
+
+/*********************************************************
+** 函数功能: 获取上传OSS目录
+** 日    期: 2022年2月16日17:00:44
+**********************************************************/
+func GetUploadOssDir(oss bool) string {
+	if oss {
+		return "video"
+	}
+	return "output"
 }

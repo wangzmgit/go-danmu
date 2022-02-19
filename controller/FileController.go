@@ -8,6 +8,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
+	"kuukaa.fun/danmu-v4/dto"
 	"kuukaa.fun/danmu-v4/response"
 	"kuukaa.fun/danmu-v4/service"
 	"kuukaa.fun/danmu-v4/util"
@@ -97,13 +98,6 @@ func UploadCover(ctx *gin.Context) {
 ** 日    期:2021/7/14
 **********************************************************/
 func UploadVideo(ctx *gin.Context) {
-	urls := map[string]string{
-		"res360":   "",
-		"res480":   "",
-		"res720":   "",
-		"res1080":  "",
-		"original": "",
-	}
 	maxRes := 0 //最大分辨率
 	vid, _ := strconv.Atoi(ctx.PostForm("vid"))
 	if vid <= 0 {
@@ -139,24 +133,7 @@ func UploadVideo(ctx *gin.Context) {
 	// 拼接上传图片的路径信息
 	localFileName := "./file/video/" + video.Filename
 	objectName := "video/" + video.Filename
-	//获取url
-	if viper.GetString("transcoding.coding") == "hls" {
-		if viper.GetBool("aliyunoss.storage") {
-			if viper.GetInt("transcoding.max_res") == 0 {
-				urls["original"] = service.GetUrl() + "video/" + videoName + "/" + "index.m3u8"
-			} else {
-				urls, maxRes = service.GetUrlDifferentRes(videoName, localFileName, vid, true)
-			}
-		} else {
-			if viper.GetInt("transcoding.max_res") == 0 {
-				urls["original"] = service.GetUrl() + "output/" + videoName + "/" + "index.m3u8"
-			} else {
-				urls, maxRes = service.GetUrlDifferentRes(videoName, localFileName, vid, false)
-			}
-		}
-	} else {
-		urls["original"] = service.GetUrl() + objectName
-	}
+	urls := GetUploadVideoUrls(videoName, localFileName, objectName, vid, maxRes)
 	//记录日志
 	util.Logfile(util.InfoLog, " User "+strconv.Itoa(int(uid.(uint)))+" | "+ctx.ClientIP()+" | "+objectName)
 	res := service.UploadVideoService(urls, vid, uid.(uint))
@@ -172,4 +149,30 @@ func UploadVideo(ctx *gin.Context) {
 	}
 
 	response.HandleResponse(ctx, res)
+}
+
+/*********************************************************
+** 函数功能: 获取上传视频文件的url
+** 日    期: 2022年2月16日17:11:08
+**********************************************************/
+func GetUploadVideoUrls(videoName, localFileName, objectName string, vid, maxRes int) dto.ResDto {
+	var urls dto.ResDto
+	if viper.GetString("transcoding.coding") == "hls" {
+		if viper.GetBool("aliyunoss.storage") {
+			if viper.GetInt("transcoding.max_res") == 0 {
+				urls.Original = service.GetUrl() + "video/" + videoName + "/" + "index.m3u8"
+			} else {
+				urls, maxRes = service.GetUrlDifferentRes(videoName, localFileName, vid, true)
+			}
+		} else {
+			if viper.GetInt("transcoding.max_res") == 0 {
+				urls.Original = service.GetUrl() + "output/" + videoName + "/" + "index.m3u8"
+			} else {
+				urls, maxRes = service.GetUrlDifferentRes(videoName, localFileName, vid, false)
+			}
+		}
+	} else {
+		urls.Original = service.GetUrl() + objectName
+	}
+	return urls
 }

@@ -1,5 +1,13 @@
 package dto
 
+type ResDto struct {
+	Res360   string
+	Res480   string
+	Res720   string
+	Res1080  string
+	Original string
+}
+
 type VideoInfoData struct {
 	Stream []Streams `json:"streams"`
 	Format Format    `json:"format"`
