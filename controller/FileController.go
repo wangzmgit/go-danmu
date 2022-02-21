@@ -133,7 +133,7 @@ func UploadVideo(ctx *gin.Context) {
 	// 拼接上传图片的路径信息
 	localFileName := "./file/video/" + video.Filename
 	objectName := "video/" + video.Filename
-	urls := GetUploadVideoUrls(videoName, localFileName, objectName, vid, maxRes)
+	urls, maxRes := GetUploadVideoUrls(videoName, localFileName, objectName, vid)
 	//记录日志
 	util.Logfile(util.InfoLog, " User "+strconv.Itoa(int(uid.(uint)))+" | "+ctx.ClientIP()+" | "+objectName)
 	res := service.UploadVideoService(urls, vid, uid.(uint))
@@ -155,7 +155,8 @@ func UploadVideo(ctx *gin.Context) {
 ** 函数功能: 获取上传视频文件的url
 ** 日    期: 2022年2月16日17:11:08
 **********************************************************/
-func GetUploadVideoUrls(videoName, localFileName, objectName string, vid, maxRes int) dto.ResDto {
+func GetUploadVideoUrls(videoName, localFileName, objectName string, vid int) (dto.ResDto, int) {
+	var maxRes int
 	var urls dto.ResDto
 	if viper.GetString("transcoding.coding") == "hls" {
 		if viper.GetBool("aliyunoss.storage") {
@@ -174,5 +175,5 @@ func GetUploadVideoUrls(videoName, localFileName, objectName string, vid, maxRes
 	} else {
 		urls.Original = service.GetUrl() + objectName
 	}
-	return urls
+	return urls, maxRes
 }
