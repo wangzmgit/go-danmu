@@ -7,6 +7,10 @@ import (
 	"kuukaa.fun/danmu-v4/response"
 )
 
+/*********************************************************
+** 函数功能: 获取oss配置信息
+** 日    期: 2022年2月24日16:11:27
+**********************************************************/
 func GetOssConfig(ctx *gin.Context) {
 	response.Success(ctx, gin.H{
 		"storage":         viper.GetBool("aliyunoss.storage"),
@@ -18,6 +22,10 @@ func GetOssConfig(ctx *gin.Context) {
 	}, response.OK)
 }
 
+/*********************************************************
+** 函数功能: 获取邮箱配置信息
+** 日    期:
+**********************************************************/
 func GetEmailConfig(ctx *gin.Context) {
 	response.Success(ctx, gin.H{
 		"name":     viper.GetString("email.name"),
@@ -28,6 +36,10 @@ func GetEmailConfig(ctx *gin.Context) {
 	}, response.OK)
 }
 
+/*********************************************************
+** 函数功能: 配置oss
+** 日    期:
+**********************************************************/
 func SetOssConfig(ctx *gin.Context) {
 	var oss dto.OssConfigDto
 	err := ctx.Bind(&oss)
@@ -47,6 +59,10 @@ func SetOssConfig(ctx *gin.Context) {
 	response.Success(ctx, nil, response.OK)
 }
 
+/*********************************************************
+** 函数功能: 配置邮箱
+** 日    期:
+**********************************************************/
 func SetEmailConfig(ctx *gin.Context) {
 	var email dto.EmailConfigDto
 	err := ctx.Bind(&email)
@@ -65,6 +81,10 @@ func SetEmailConfig(ctx *gin.Context) {
 	response.Success(ctx, nil, response.OK)
 }
 
+/*********************************************************
+** 函数功能: 设置管理员账号
+** 日    期:
+**********************************************************/
 func SetAdminConfig(ctx *gin.Context) {
 	var admin dto.AdminConfigDto
 	err := ctx.Bind(&admin)
@@ -75,6 +95,38 @@ func SetAdminConfig(ctx *gin.Context) {
 
 	viper.Set("admin.email", admin.Email)
 	viper.Set("admin.password", admin.Password)
+
+	viper.WriteConfig()
+	response.Success(ctx, nil, response.OK)
+}
+
+/*********************************************************
+** 函数功能: 获取其他配置信息
+** 日    期: 2022年2月24日16:11:27
+**********************************************************/
+func GetOtherConfig(ctx *gin.Context) {
+	response.Success(ctx, gin.H{
+		"coding":     viper.GetString("transcoding.coding"),
+		"max_res":    viper.GetInt("transcoding.max_res"),
+		"video_user": viper.GetInt("user.video"),
+	}, response.OK)
+}
+
+/*********************************************************
+** 函数功能: 设置其他配置信息
+** 日    期: 2022年2月24日16:27:14
+**********************************************************/
+func SetOtherConfig(ctx *gin.Context) {
+	var other dto.OtherConfigDto
+	err := ctx.Bind(&other)
+	if err != nil {
+		response.Fail(ctx, nil, response.RequestError)
+		return
+	}
+
+	viper.Set("transcoding.coding", other.Coding)
+	viper.Set("transcoding.max_res", other.MaxRes)
+	viper.Set("user.video", other.VideoUser)
 
 	viper.WriteConfig()
 	response.Success(ctx, nil, response.OK)

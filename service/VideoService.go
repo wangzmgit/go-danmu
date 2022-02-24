@@ -421,7 +421,7 @@ func ImportVideoService(video dto.ImportVideo) response.ResponseStruct {
 		Cover:     video.Cover,
 		Desc:      video.Desc,
 		Copyright: true,
-		Uid:       0,
+		Uid:       uint(viper.GetInt("user.video")),
 		VideoType: video.Type,
 		Review:    true,
 	}

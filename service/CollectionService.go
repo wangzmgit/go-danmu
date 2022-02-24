@@ -273,3 +273,19 @@ func GetCollectionListService(page int, pageSize int) response.ResponseStruct {
 		Msg:        response.OK,
 	}
 }
+
+/*********************************************************
+** 函数功能: 管理员删除合集
+** 日    期: 2022年2月24日15:16:37
+**********************************************************/
+func AdminDeleteCollectionService(id uint) response.ResponseStruct {
+	DB := common.GetDB()
+	DB.Where("id = ?", id).Delete(model.Collection{})
+
+	return response.ResponseStruct{
+		HttpStatus: http.StatusOK,
+		Code:       response.SuccessCode,
+		Data:       nil,
+		Msg:        response.OK,
+	}
+}

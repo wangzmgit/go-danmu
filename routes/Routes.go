@@ -156,9 +156,11 @@ func CollectRoute(r *gin.Engine) *gin.Engine {
 				{
 					config.GET("/oss/get", manage.GetOssConfig)
 					config.GET("/email/get", manage.GetEmailConfig)
+					config.GET("/other/get", manage.GetOtherConfig)
 					config.POST("/oss/set", manage.SetOssConfig)
 					config.POST("/email/set", manage.SetEmailConfig)
 					config.POST("/admin/set", manage.SetAdminConfig)
+					config.POST("/other/set", manage.SetOtherConfig)
 				}
 			}
 			adminAuth := admin.Group("")
@@ -182,6 +184,7 @@ func CollectRoute(r *gin.Engine) *gin.Engine {
 				adminAuth.POST("/carousel/upload/img", manage.UploadCarousel)
 				adminAuth.POST("/carousel/upload/info", manage.UploadCarouselInfo)
 				adminAuth.POST("/carousel/delete", manage.DeleteCarousel)
+				adminAuth.POST("/collection/delete", manage.AdminDeleteCollection)
 			}
 
 			auditorAuth := admin.Group("")

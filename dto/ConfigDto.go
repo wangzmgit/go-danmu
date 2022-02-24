@@ -21,3 +21,9 @@ type AdminConfigDto struct {
 	Email    string
 	Password string
 }
+
+type OtherConfigDto struct {
+	Coding    string
+	MaxRes    int
+	VideoUser int
+}

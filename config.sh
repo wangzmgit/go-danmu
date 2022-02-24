@@ -40,6 +40,8 @@ admin:
 transcoding:
   coding: ${coding}
   max_res: 0
+user:
+  video: 0
 EOF
 }
 

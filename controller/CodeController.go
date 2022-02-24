@@ -147,7 +147,7 @@ func SendLoginCode(ctx *gin.Context) {
 	var requestUser dto.SendCodeDto
 	err := ctx.Bind(&requestUser)
 	if err != nil {
-		response.Response(ctx, http.StatusBadRequest, 4000, nil, response.RequestError)
+		response.Fail(ctx, nil, response.RequestError)
 		return
 	}
 	email := requestUser.Email
