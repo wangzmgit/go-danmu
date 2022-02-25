@@ -98,6 +98,7 @@ func CollectRoute(r *gin.Engine) *gin.Engine {
 		}
 
 		message := v1.Group("/message")
+		message.GET("/ws", controller.GetMsgConnect)
 		message.Use(middleware.AuthMiddleware())
 		{
 			message.GET("/announce", controller.GetAnnounce)

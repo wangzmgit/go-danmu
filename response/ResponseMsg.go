@@ -59,4 +59,5 @@ const (
 	CantSendYourself      = "不能发送给自己"
 	EmailRegistered       = "该邮箱已经被注册了"
 	VerificationCodeError = "验证码错误"
+	PleaseLoginFirst      = "请先登录"
 )

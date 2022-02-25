@@ -1,7 +1,9 @@
 package service
 
 import (
+	"encoding/json"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"kuukaa.fun/danmu-v4/common"
@@ -17,8 +19,15 @@ import (
 func SendMessageService(uid uint, fid uint, content string) response.ResponseStruct {
 	DB := common.GetDB()
 	DB.Create(&model.Message{Uid: uid, Fid: fid, FromId: uid, ToId: fid, Content: content})
-	//切换消息归属人
+	// //切换消息归属人
 	DB.Create(&model.Message{Uid: fid, Fid: uid, FromId: uid, ToId: fid, Content: content})
+
+	//推送消息给接收者
+	data, _ := json.Marshal(&vo.MessageVo{
+		Fid:     uid,
+		Content: content,
+	})
+	common.SendMsgToUser(strconv.Itoa(int(fid)), data)
 
 	return response.ResponseStruct{
 		HttpStatus: http.StatusOK,

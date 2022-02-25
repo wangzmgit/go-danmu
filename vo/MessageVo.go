@@ -16,3 +16,9 @@ type MessageDetailsVo struct {
 	Content   string    `json:"content"`
 	CreatedAt time.Time `json:"created_at"`
 }
+
+//单个消息
+type MessageVo struct {
+	Fid     uint   `json:"fid"`
+	Content string `json:"content"`
+}

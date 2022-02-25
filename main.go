@@ -3,6 +3,7 @@ package main
 import (
 	"io"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -10,7 +11,6 @@ import (
 	"github.com/spf13/viper"
 	"kuukaa.fun/danmu-v4/common"
 	"kuukaa.fun/danmu-v4/routes"
-	"kuukaa.fun/danmu-v4/util"
 )
 
 const (
@@ -62,7 +62,7 @@ func InitConfig() {
 }
 
 func InitGinLog() *os.File {
-	filenames := "./file/logs/gin_" + util.RandomString(3) + time.Now().Format("20060102") + ".log"
+	filenames := "./file/logs/gin_" + strconv.FormatInt(time.Now().UnixNano(), 10) + ".log"
 	file, err := os.Create(filenames)
 	if err != nil {
 		return nil
