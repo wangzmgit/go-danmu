@@ -204,6 +204,12 @@ func CollectRoute(r *gin.Engine) *gin.Engine {
 			//评论回复
 			v2.GET("/comment/get", controller.GetCommentsV2)
 			v2.GET("/comment/reply", controller.GetReplyDetailsV2)
+
+			messageV2 := v2.Group("/message")
+			messageV2.Use(middleware.AuthMiddleware())
+			{
+				messageV2.GET("/details", controller.GetMessageDetailsV2) //v2获取私信内容
+			}
 		}
 
 		//静态文件

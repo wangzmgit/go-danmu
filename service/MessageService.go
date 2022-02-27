@@ -44,8 +44,9 @@ func SendMessageService(uid uint, fid uint, content string) response.ResponseStr
 func GetMessageListService(uid interface{}) response.ResponseStruct {
 	DB := common.GetDB()
 	var messageList []vo.MessagesListVo
-	var sql = "select messages.id,messages.created_at,users.id as uid,users.name,users.avatar from messages,users "
-	sql += "where messages.id in (select Max(id) from messages where deleted_at is null group by fid) and messages.fid = users.id and uid = ?"
+	sql := "select messages.id,messages.created_at,users.id as uid,users.name,users.avatar from messages,users "
+	sql += "where messages.id in (select Max(id) from messages where deleted_at is null group by fid)"
+	sql += " and messages.fid = users.id and uid = ?"
 	DB.Raw(sql, uid).Scan(&messageList)
 
 	return response.ResponseStruct{
@@ -64,7 +65,8 @@ func GetMessageDetailsService(uid interface{}, fid int) response.ResponseStruct 
 	var messageDetails []vo.MessageDetailsVo
 
 	DB := common.GetDB()
-	DB.Model(&model.Message{}).Select("fid,from_id,content,created_at").Where("uid = ? AND fid = ?", uid.(uint), fid).Scan(&messageDetails)
+	DB.Model(&model.Message{}).Select("fid,from_id,content,created_at").
+		Where("uid = ? AND fid = ?", uid.(uint), fid).Scan(&messageDetails)
 	//查询用户信息
 	var userInfo model.User
 	DB.First(&userInfo, fid)
@@ -73,6 +75,34 @@ func GetMessageDetailsService(uid interface{}, fid int) response.ResponseStruct 
 		HttpStatus: http.StatusOK,
 		Code:       response.SuccessCode,
 		Data:       gin.H{"avatar": userInfo.Avatar, "name": userInfo.Name, "messages": messageDetails},
+		Msg:        response.OK,
+	}
+}
+
+/*********************************************************
+** 函数功能: 获取消息详细信息V2
+** 日    期: 2022年2月26日17:47:01
+**********************************************************/
+func GetMessageDetailsServiceV2(uid interface{}, fid, page, pageSize int) response.ResponseStruct {
+	var userInfo model.User
+	var messages []vo.MessageDetailsVo
+
+	DB := common.GetDB()
+	DB = DB.Limit(pageSize).Offset((page - 1) * pageSize).Order("id desc")
+	DB.Model(&model.Message{}).Select("fid,from_id,content,created_at").Where("uid = ? AND fid = ?", uid.(uint), fid).Scan(&messages)
+	// 此时查询到的消息为为倒叙，需要进行反转
+	for i, j := 0, len(messages)-1; i < j; i, j = i+1, j-1 {
+		messages[i], messages[j] = messages[j], messages[i]
+	}
+	//仅在获取第一页时查询用户信息
+	if page == 1 {
+		DB.First(&userInfo, fid)
+	}
+
+	return response.ResponseStruct{
+		HttpStatus: http.StatusOK,
+		Code:       response.SuccessCode,
+		Data:       gin.H{"avatar": userInfo.Avatar, "name": userInfo.Name, "messages": messages},
 		Msg:        response.OK,
 	}
 }

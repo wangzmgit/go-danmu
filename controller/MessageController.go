@@ -64,3 +64,31 @@ func GetMessageDetails(ctx *gin.Context) {
 	res := service.GetMessageDetailsService(uid, fid)
 	response.HandleResponse(ctx, res)
 }
+
+/*********************************************************
+** 函数功能: 获取消息详细信息V2
+** 日    期: 2022年2月26日17:45:382
+**********************************************************/
+func GetMessageDetailsV2(ctx *gin.Context) {
+	uid, _ := ctx.Get("id")
+	fid, _ := strconv.Atoi(ctx.Query("fid"))
+	page, _ := strconv.Atoi(ctx.Query("page"))
+	pageSize, _ := strconv.Atoi(ctx.Query("page_size"))
+
+	if fid == 0 {
+		response.Fail(ctx, nil, response.MessageNotExist)
+		return
+	}
+	if page <= 0 || pageSize <= 0 {
+		response.CheckFail(ctx, nil, response.PageOrSizeError)
+		return
+	}
+
+	if pageSize >= 30 {
+		response.CheckFail(ctx, nil, response.TooManyRequests)
+		return
+	}
+
+	res := service.GetMessageDetailsServiceV2(uid, fid, page, pageSize)
+	response.HandleResponse(ctx, res)
+}
