@@ -11,6 +11,7 @@ import (
 	"github.com/spf13/viper"
 	"kuukaa.fun/danmu-v4/common"
 	"kuukaa.fun/danmu-v4/routes"
+	"kuukaa.fun/danmu-v4/util"
 )
 
 const (
@@ -41,6 +42,8 @@ func main() {
 	gin.DefaultWriter = io.MultiWriter(file)
 	// 设置模式
 	gin.SetMode(ReleaseMode)
+	// 检测文件夹是否存在
+	CheckFolder()
 	r := gin.Default()
 	r = routes.CollectRoute(r)
 	port := viper.GetString("server.port")
@@ -68,4 +71,13 @@ func InitGinLog() *os.File {
 		return nil
 	}
 	return file
+}
+
+func CheckFolder() {
+	var folderNames = [...]string{"avatar", "carousel", "cover", "logs", "output", "video"}
+	for _, item := range folderNames {
+		if exist, _ := util.PathExists("./file/" + item); !exist {
+			os.Mkdir("./file/"+item, os.ModePerm)
+		}
+	}
 }
