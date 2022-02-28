@@ -8,7 +8,6 @@ import (
 )
 
 // token加密秘钥
-var adminJwtKey = []byte(viper.GetString("server.admin_jwt_secret"))
 
 type AdminClaims struct {
 	AdminID uint
@@ -20,6 +19,7 @@ type AdminClaims struct {
 ** 日    期:2021/8/1
 **********************************************************/
 func ReleaseAdminToken(AdminID uint) (string, error) {
+	adminJwtKey := []byte(viper.GetString("server.admin_jwt_secret"))
 	//token过期时间
 	expirationTime := time.Now().Add(24 * time.Hour)
 	claims := &AdminClaims{
@@ -28,7 +28,7 @@ func ReleaseAdminToken(AdminID uint) (string, error) {
 			//发放时间等
 			ExpiresAt: expirationTime.Unix(),
 			IssuedAt:  time.Now().Unix(),
-			Issuer:    "danmu3.0",
+			Issuer:    "danmu_admin",
 			Subject:   "admin_token",
 		},
 	}
@@ -46,6 +46,7 @@ func ReleaseAdminToken(AdminID uint) (string, error) {
 ** 日    期:2021/8/1
 **********************************************************/
 func ParseAdminToken(tokenString string) (*jwt.Token, *AdminClaims, error) {
+	adminJwtKey := []byte(viper.GetString("server.admin_jwt_secret"))
 	claims := &AdminClaims{}
 	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (i interface{}, e error) {
 		return adminJwtKey, nil

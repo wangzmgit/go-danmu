@@ -9,8 +9,6 @@ import (
 	"github.com/dgrijalva/jwt-go"
 )
 
-var jwtKey = []byte(viper.GetString("server.jwt_secret"))
-
 type Claims struct {
 	UserId uint
 	jwt.StandardClaims
@@ -21,6 +19,7 @@ type Claims struct {
 ** 日    期: 2021/7/10
 **********************************************************/
 func ReleaseToken(user model.User) (string, error) {
+	jwtKey := []byte(viper.GetString("server.jwt_secret"))
 	//token过期时间
 	expirationTime := time.Now().Add(14 * 24 * time.Hour)
 	claims := &Claims{
@@ -29,7 +28,7 @@ func ReleaseToken(user model.User) (string, error) {
 			//发放时间等
 			ExpiresAt: expirationTime.Unix(),
 			IssuedAt:  time.Now().Unix(),
-			Issuer:    "danmu3.0",
+			Issuer:    "danmu",
 			Subject:   "token",
 		},
 	}
@@ -47,6 +46,7 @@ func ReleaseToken(user model.User) (string, error) {
 ** 日    期:2021/7/10
 **********************************************************/
 func ParseUserToken(tokenString string) (*jwt.Token, *Claims, error) {
+	jwtKey := []byte(viper.GetString("server.jwt_secret"))
 	claims := &Claims{}
 	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (i interface{}, e error) {
 		return jwtKey, nil
