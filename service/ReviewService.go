@@ -17,18 +17,22 @@ import (
 **********************************************************/
 func GetReviewVideoListService(page int, pageSize int) response.ResponseStruct {
 	var total int //记录总数
-	var videos []model.Video
+	var videos []vo.ReviewVideoListVo
 
 	DB := common.GetDB()
 	DB = DB.Limit(pageSize).Offset((page - 1) * pageSize)
 	//统计数量
 	DB.Model(&model.Review{}).Where("status = 1000").Count(&total)
-	DB.Raw("select * from videos where deleted_at is null and id in (select vid from reviews where deleted_at is null and status = 1000)").Scan(&videos)
+	sql := "select videos.id,videos.created_at,title,cover,video_type,`desc`,uid,copyright,`partitions`.content as `partition` "
+	sql += "from videos,`partitions` where videos.deleted_at is null and `partitions`.id = videos.partition_id "
+	sql += "and videos.id in (select vid from reviews where deleted_at is null and status = 1000)"
+
+	DB.Raw(sql).Scan(&videos)
 
 	return response.ResponseStruct{
 		HttpStatus: http.StatusOK,
 		Code:       response.SuccessCode,
-		Data:       gin.H{"count": total, "videos": vo.ToAdminVideoListVo(videos)},
+		Data:       gin.H{"count": total, "videos": videos},
 		Msg:        response.OK,
 	}
 }

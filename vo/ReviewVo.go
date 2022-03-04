@@ -20,3 +20,15 @@ type AdminVideoVo struct {
 	Copyright bool      `json:"copyright"`
 	Uid       uint      `json:"uid"`
 }
+
+type ReviewVideoListVo struct {
+	ID        uint      `json:"vid"`
+	CreateAt  time.Time `json:"create_at"`
+	Title     string    `json:"title"`
+	Cover     string    `json:"cover"`
+	VideoType string    `json:"video_type"`
+	Desc      string    `json:"desc"`
+	Uid       uint      `json:"uid"`
+	Copyright bool      `json:"copyright"`
+	Partition string    `json:"partition"`
+}
