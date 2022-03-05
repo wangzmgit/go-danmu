@@ -8,6 +8,7 @@ type MessagesListVo struct {
 	Uid       uint      `json:"uid"`
 	Name      string    `json:"name"`
 	Avatar    string    `json:"avatar"`
+	Status    bool      `json:"status"` //已读状态
 }
 
 type MessageDetailsVo struct {

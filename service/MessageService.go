@@ -44,9 +44,9 @@ func SendMessageService(uid uint, fid uint, content string) response.ResponseStr
 func GetMessageListService(uid interface{}) response.ResponseStruct {
 	DB := common.GetDB()
 	var messageList []vo.MessagesListVo
-	sql := "select messages.id,messages.created_at,users.id as uid,users.name,users.avatar from messages,users "
+	sql := "select messages.id,messages.created_at,`status`,users.id as uid,users.name,users.avatar from messages,users "
 	sql += "where messages.id in (select Max(id) from messages where deleted_at is null group by fid)"
-	sql += " and messages.fid = users.id and uid = ?"
+	sql += " and messages.fid = users.id and uid = ? order by id desc"
 	DB.Raw(sql, uid).Scan(&messageList)
 
 	return response.ResponseStruct{
@@ -105,4 +105,27 @@ func GetMessageDetailsServiceV2(uid interface{}, fid, page, pageSize int) respon
 		Data:       gin.H{"avatar": userInfo.Avatar, "name": userInfo.Name, "messages": messages},
 		Msg:        response.OK,
 	}
+}
+
+/*********************************************************
+** 函数功能: 已读消息
+** 日    期: 2022年3月3日19:40:20
+**********************************************************/
+func ReadMessageService(uid interface{}, fid uint) response.ResponseStruct {
+	res := response.ResponseStruct{
+		HttpStatus: http.StatusOK,
+		Code:       response.SuccessCode,
+		Data:       nil,
+		Msg:        response.OK,
+	}
+	DB := common.GetDB()
+	if err := DB.Model(&model.Message{}).
+		Where("uid = ? and fid = ?", uid, fid).Update("status", 1).Error; err != nil {
+		res.HttpStatus = http.StatusBadRequest
+		res.Code = response.FailCode
+		res.Msg = response.UpdateStatusFail
+		return res
+	}
+
+	return res
 }

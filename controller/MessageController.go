@@ -92,3 +92,30 @@ func GetMessageDetailsV2(ctx *gin.Context) {
 	res := service.GetMessageDetailsServiceV2(uid, fid, page, pageSize)
 	response.HandleResponse(ctx, res)
 }
+
+/*********************************************************
+** 函数功能: 已读消息
+** 日    期: 2022年3月3日19:38:30
+**********************************************************/
+func ReadMessageService(ctx *gin.Context) {
+	var requestID dto.FID
+	err := ctx.Bind(&requestID)
+	if err != nil {
+		response.Fail(ctx, nil, response.RequestError)
+		return
+	}
+	fid := requestID.FID
+	uid, _ := ctx.Get("id")
+	//验证数据
+	if fid == 0 {
+		response.CheckFail(ctx, nil, response.SendFail)
+		return
+	}
+	if fid == uid.(uint) {
+		response.CheckFail(ctx, nil, response.CantSendYourself)
+		return
+	}
+
+	res := service.ReadMessageService(uid, fid)
+	response.HandleResponse(ctx, res)
+}

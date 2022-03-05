@@ -105,6 +105,7 @@ func CollectRoute(r *gin.Engine) *gin.Engine {
 			message.GET("/list", controller.GetMessageList)
 			message.GET("/details", controller.GetMessageDetails)
 			message.POST("/send", controller.SendMessage)
+			message.POST("/read", controller.ReadMessageService)
 		}
 
 		danmaku := v1.Group("/danmaku")
