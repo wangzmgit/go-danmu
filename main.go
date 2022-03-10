@@ -74,7 +74,7 @@ func InitGinLog() *os.File {
 }
 
 func CheckFolder() {
-	var folderNames = [...]string{"avatar", "carousel", "cover", "logs", "output", "video"}
+	var folderNames = [...]string{"avatar", "carousel", "cover", "logs", "output", "video", "skins"}
 	for _, item := range folderNames {
 		if exist, _ := util.PathExists("./file/" + item); !exist {
 			os.Mkdir("./file/"+item, os.ModePerm)

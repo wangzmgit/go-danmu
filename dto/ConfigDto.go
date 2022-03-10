@@ -27,3 +27,7 @@ type OtherConfigDto struct {
 	MaxRes    int
 	VideoUser int
 }
+
+type SkinDto struct {
+	FileName string
+}

@@ -33,6 +33,7 @@ const (
 	TelephoneFormatCheck = "联系方式格式有误"
 	BirthdayFormatCheck  = "请输入正确的出生日期"
 
+	ReadFail          = "读取失败"
 	FileUploadFail    = "文件上传失败"
 	FileSaveFail      = "文件保存失败"
 	FileCheckFail     = "文件不符合要求"
@@ -48,6 +49,7 @@ const (
 	CollectionNotExist        = "合集不存在"
 	ParentPartitionNotExist   = "所属分区不存在"
 	CollectionOrVideoNotExist = "合集或视频不存在"
+	SkinNotExist              = "主题不存在或已被删除"
 	CommentNotExist           = "评论不存在或已被删除"
 
 	IsCollect             = "已经收藏过了"
@@ -60,4 +62,5 @@ const (
 	EmailRegistered       = "该邮箱已经被注册了"
 	VerificationCodeError = "验证码错误"
 	PleaseLoginFirst      = "请先登录"
+	SystemNotSupported    = "暂不支持当前系统"
 )

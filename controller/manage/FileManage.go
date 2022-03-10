@@ -130,3 +130,33 @@ func AdminUploadCover(ctx *gin.Context) {
 	res := service.UploadCoverService(localFileName, objectName)
 	response.HandleResponse(ctx, res)
 }
+
+/*********************************************************
+** 函数功能: 上传主题皮肤
+** 日    期: 2022年3月10日13:03:05
+**********************************************************/
+func UploadSkin(ctx *gin.Context) {
+	skin, err := ctx.FormFile("skin")
+	if err != nil {
+		response.Fail(ctx, nil, response.FileUploadFail)
+		return
+	}
+	suffix := path.Ext(skin.Filename)
+	if suffix != ".zip" {
+		response.CheckFail(ctx, nil, response.FileCheckFail)
+		return
+	}
+
+	skinFileName := "skin_" + util.RandomCode(6)
+
+	skin.Filename = skinFileName + suffix
+	errSave := ctx.SaveUploadedFile(skin, "./file/skins/"+skin.Filename)
+	if errSave != nil {
+		response.Fail(ctx, nil, response.FileSaveFail)
+		return
+	}
+	localFileName := "./file/skins/" + skin.Filename
+	//解压缩文件
+	util.Unzip(localFileName, "./file/skins/"+skinFileName)
+	response.Success(ctx, nil, response.OK)
+}

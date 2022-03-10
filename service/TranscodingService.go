@@ -50,15 +50,15 @@ func Transcoding(completeName string, vid int, maxRes int) {
 	}
 	//判断当前系统
 	sysType := runtime.GOOS
-	if sysType == "linux" {
-		// LINUX系统
-		inputDir = "./file/video/"
-		outputDir = "./file/output/" + fileName + "/"
-	} else if sysType == "windows" {
+	if sysType == "windows" {
 		// windows系统
 		currentPath, _ := os.Getwd()
 		inputDir = currentPath + "\\file\\video\\"
 		outputDir = currentPath + "\\file\\output\\" + fileName + "\\"
+	} else {
+		// LINUX系统
+		inputDir = "./file/video/"
+		outputDir = "./file/output/" + fileName + "/"
 	}
 
 	if maxRes == 0 {
