@@ -21,6 +21,7 @@ func GetAdminRoutes(route *gin.RouterGroup) {
 			superAdminAuth.POST("/user/delete", manage.AdminDeleteUser)
 			superAdminAuth.POST("/partition/add", manage.AddPartition)
 			superAdminAuth.POST("/partition/delete", manage.DeletePartition)
+			superAdminAuth.GET("/update/get", manage.CheckUpdate) //检查更新
 			config := superAdminAuth.Group("/config")
 			{
 				config.GET("/oss/get", manage.GetOssConfig)

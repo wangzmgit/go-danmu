@@ -14,6 +14,9 @@ const (
 	ModifyFail             = "修改失败"
 	DeleteFail             = "删除失败"
 	UploadFail             = "上传失败"
+	CheckUpdateFail        = "检查更新失败"
+	PullFail               = "获取源码失败"
+	UpdateFail             = "更新失败"
 	UpdateStatusFail       = "视频状态更新失败"
 
 	NickCheck            = "昵称不能为空"
@@ -52,6 +55,7 @@ const (
 	SkinNotExist              = "主题不存在或已被删除"
 	CommentNotExist           = "评论不存在或已被删除"
 
+	VideoTypeError        = "视频类型错误"
 	IsCollect             = "已经收藏过了"
 	IsLike                = "已经点过赞了"
 	NotCollect            = "还没有收藏"

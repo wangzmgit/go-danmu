@@ -21,6 +21,10 @@ type SkinInfo struct {
 	Desc     string `json:"desc"`
 }
 
+/*********************************************************
+** 函数功能: 获取主题
+** 日    期: 2022/3/10
+**********************************************************/
 func GetSkinInfoList(ctx *gin.Context) {
 	var skins []SkinInfo
 	//读取主题文件夹下所有目录
@@ -50,6 +54,10 @@ func GetSkinInfoList(ctx *gin.Context) {
 	response.Success(ctx, gin.H{"skins": skins}, response.OK)
 }
 
+/*********************************************************
+** 函数功能: 应用主题
+** 日    期: 2022/3/10
+**********************************************************/
 func ApplySkin(ctx *gin.Context) {
 	var request dto.SkinDto
 	requestErr := ctx.Bind(&request)
@@ -78,6 +86,10 @@ func ApplySkin(ctx *gin.Context) {
 	response.Success(ctx, nil, response.OK)
 }
 
+/*********************************************************
+** 函数功能: 删除主题
+** 日    期: 2022/3/10
+**********************************************************/
 func DeleteSkin(ctx *gin.Context) {
 	var request dto.SkinDto
 	requestErr := ctx.Bind(&request)

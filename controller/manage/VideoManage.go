@@ -39,7 +39,7 @@ func AdminDeleteVideo(ctx *gin.Context) {
 	id := request.ID
 
 	if id == 0 {
-		response.CheckFail(ctx, nil, "视频不存在")
+		response.CheckFail(ctx, nil, response.VideoNotExist)
 		return
 	}
 
@@ -63,15 +63,15 @@ func ImportVideo(ctx *gin.Context) {
 
 	//验证数据
 	if video.Type != "mp4" && video.Type != "hls" {
-		response.CheckFail(ctx, nil, "视频类型错误")
+		response.CheckFail(ctx, nil, response.VideoTypeError)
 		return
 	}
 	if len(title) == 0 {
-		response.CheckFail(ctx, nil, "标题不能为空")
+		response.CheckFail(ctx, nil, response.TitleCheck)
 		return
 	}
 	if len(cover) == 0 {
-		response.CheckFail(ctx, nil, "封面图不能为空")
+		response.CheckFail(ctx, nil, response.CoverCheck)
 		return
 	}
 
