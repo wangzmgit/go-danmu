@@ -18,7 +18,7 @@ import (
 **********************************************************/
 func SendMessageService(uid uint, fid uint, content string) response.ResponseStruct {
 	DB := common.GetDB()
-	DB.Create(&model.Message{Uid: uid, Fid: fid, FromId: uid, ToId: fid, Content: content})
+	DB.Create(&model.Message{Uid: uid, Fid: fid, FromId: uid, ToId: fid, Content: content, Status: 1})
 	// //切换消息归属人
 	DB.Create(&model.Message{Uid: fid, Fid: uid, FromId: uid, ToId: fid, Content: content})
 
