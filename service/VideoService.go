@@ -320,7 +320,7 @@ func GetVideoListService(query dto.GetVideoListDto) response.ResponseStruct {
 	} else {
 		//获取该分区下的子分区
 		list := getSubpartitionList(DB, uint(query.Partition))
-		Pagination.Debug().Model(&model.Video{}).Select("id,title,cover").
+		Pagination.Model(&model.Video{}).Select("id,title,cover").
 			Where("review = 1 and partition_id in (?)", list).Scan(&videos).Count(&total)
 	}
 
@@ -369,20 +369,27 @@ func GetVideoListByUserIDService(uid int, page int, pageSize int) response.Respo
 **********************************************************/
 func AdminGetVideoListService(page int, pageSize int, videoFrom string) response.ResponseStruct {
 	var total int //记录总数
-	var videos []model.Video
+	var videos []vo.AdminVideoListVo
 
 	DB := common.GetDB()
 	DB = DB.Limit(pageSize).Offset((page - 1) * pageSize)
 	if videoFrom == "admin" {
-		DB.Where("review = 1 and uid = 0").Find(&videos).Count(&total)
+		DB.Model(model.Video{}).Where("review = 1 and uid = 0").Scan(&videos).Count(&total)
 	} else {
-		DB.Where("review = 1 and uid != 0").Find(&videos).Count(&total)
+		DB.Model(model.Video{}).Where("review = 1 and uid != 0").Scan(&videos).Count(&total)
+	}
+
+	//为了兼容早期版本，分区可能会出现分区id=0的情况
+	//此时分区名称应为未分区，直接使用SQL语句查询的话
+	//会出现没有分区的视频无法查询到的问题
+	for i := 0; i < len(videos); i++ {
+		videos[i].Partition = getPartitionName(DB, videos[i].PartitionID)
 	}
 
 	return response.ResponseStruct{
 		HttpStatus: http.StatusOK,
 		Code:       response.SuccessCode,
-		Data:       gin.H{"count": total, "videos": vo.ToAdminVideoListVo(videos)},
+		Data:       gin.H{"count": total, "videos": videos},
 		Msg:        response.OK,
 	}
 }

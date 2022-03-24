@@ -73,14 +73,16 @@ type CollectionVideoVo struct {
 
 //管理员视频列表
 type AdminVideoListVo struct {
-	ID        uint      `json:"vid"`
-	Title     string    `json:"title"`
-	Cover     string    `json:"cover"`
-	Desc      string    `json:"desc"`
-	CreatedAt time.Time `json:"created_at"`
-	Copyright bool      `json:"copyright"`
-	Uid       uint      `json:"uid"`
-	VideoType string    `json:"video_type"`
+	ID          uint      `json:"vid"`
+	Title       string    `json:"title"`
+	Cover       string    `json:"cover"`
+	Desc        string    `json:"desc"`
+	CreatedAt   time.Time `json:"created_at"`
+	Copyright   bool      `json:"copyright"`
+	Uid         uint      `json:"uid"`
+	VideoType   string    `json:"video_type"`
+	Partition   string    `json:"partition"` //分区
+	PartitionID uint      `json:"-"`
 }
 
 func ToUploadVideoVo(videos []model.Video) []UploadVideoVo {
@@ -142,22 +144,6 @@ func ToCollectVideoVo(videos []model.Interactive) []CollectVideoVo {
 		} else {
 			newVideos[i].ID = videos[i].Video.ID
 		}
-	}
-	return newVideos
-}
-
-func ToAdminVideoListVo(videos []model.Video) []AdminVideoListVo {
-	length := len(videos)
-	newVideos := make([]AdminVideoListVo, length)
-	for i := 0; i < length; i++ {
-		newVideos[i].ID = videos[i].ID
-		newVideos[i].Title = videos[i].Title
-		newVideos[i].Cover = videos[i].Cover
-		newVideos[i].Desc = videos[i].Desc
-		newVideos[i].CreatedAt = videos[i].CreatedAt
-		newVideos[i].Copyright = videos[i].Copyright
-		newVideos[i].Uid = videos[i].Uid
-		newVideos[i].VideoType = videos[i].VideoType
 	}
 	return newVideos
 }
