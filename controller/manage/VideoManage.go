@@ -134,3 +134,25 @@ func DeleteResource(ctx *gin.Context) {
 	res := service.DeleteResourceService(id.UUID)
 	response.HandleResponse(ctx, res)
 }
+
+/*********************************************************
+** 函数功能: 管理员搜索视频
+** 日    期: 2022年3月24日19:30:51
+**********************************************************/
+func AdminSearchUser(ctx *gin.Context) {
+	keyword := ctx.Query("keyword")
+	page, _ := strconv.Atoi(ctx.Query("page"))
+	pageSize, _ := strconv.Atoi(ctx.Query("page_size"))
+
+	if len(keyword) == 0 {
+		response.Fail(ctx, nil, response.VideoNotExist)
+		return
+	}
+	if page <= 0 || pageSize <= 0 {
+		response.CheckFail(ctx, nil, response.PageOrSizeError)
+		return
+	}
+
+	res := service.AdminSearchUserService(page, pageSize, keyword)
+	response.HandleResponse(ctx, res)
+}

@@ -42,10 +42,12 @@ func GetAdminRoutes(route *gin.RouterGroup) {
 		{
 			adminAuth.GET("/data", manage.GetRecentWebsiteData)
 			adminAuth.GET("/data/total", manage.GetTotalWebsiteData)
-			adminAuth.GET("/user/list", manage.GetUserList)
 			adminAuth.GET("/opinion/list", manage.GetOpinionList) //获取反馈列表
+			adminAuth.GET("/user/search", manage.AdminSearchUser) //管理员搜索用户
+			adminAuth.GET("/user/list", manage.GetUserList)
 			adminAuth.POST("/user/modify", manage.AdminModifyUser)
 			adminAuth.POST("/video/cover/upload", manage.AdminUploadCover) //管理员上传封面
+			adminAuth.GET("/video/search", manage.AdminSearchVideo)        //管理员搜索视频
 			adminAuth.GET("/video/list", manage.AdminGetVideoList)
 			adminAuth.POST("/video/import", manage.ImportVideo)
 			adminAuth.GET("/video/resource/list", manage.GetResourceList)

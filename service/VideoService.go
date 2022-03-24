@@ -496,6 +496,35 @@ func GetResourceListService(vid int) response.ResponseStruct {
 }
 
 /*********************************************************
+** 函数功能: 管理员搜索视频
+** 日    期: 2022年3月24日19:32:17
+**********************************************************/
+func AdminSearchVideoService(page int, pageSize int, keyword string) response.ResponseStruct {
+	var total int //记录总数
+	var videos []vo.AdminVideoListVo
+
+	DB := common.GetDB()
+	DB = DB.Limit(pageSize).Offset((page - 1) * pageSize)
+
+	keyword = "%" + keyword + "%"
+	DB.Model(model.Video{}).Where("review = 1 and (title like ? or id like ?)", keyword, keyword).Scan(&videos).Count(&total)
+
+	//为了兼容早期版本，分区可能会出现分区id=0的情况
+	//此时分区名称应为未分区，直接使用SQL语句查询的话
+	//会出现没有分区的视频无法查询到的问题
+	for i := 0; i < len(videos); i++ {
+		videos[i].Partition = getPartitionName(DB, videos[i].PartitionID)
+	}
+
+	return response.ResponseStruct{
+		HttpStatus: http.StatusOK,
+		Code:       response.SuccessCode,
+		Data:       gin.H{"count": total, "videos": videos},
+		Msg:        response.OK,
+	}
+}
+
+/*********************************************************
 ** 函数功能: 管理员删除视频资源
 ** 日    期: 2022年1月14日12:11:37
 **********************************************************/

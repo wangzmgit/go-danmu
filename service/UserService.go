@@ -260,6 +260,28 @@ func AdminModifyUserService(newInfo dto.AdminModifyUserDto) response.ResponseStr
 }
 
 /*********************************************************
+** 函数功能: 管理员搜索用户
+** 日    期: 2022年3月24日19:35:28
+**********************************************************/
+func AdminSearchUserService(page int, pageSize int, keyword string) response.ResponseStruct {
+	var total int //记录总数
+	var users []vo.AdminUserVo
+
+	DB := common.GetDB()
+	DB = DB.Limit(pageSize).Offset((page - 1) * pageSize)
+
+	keyword = "%" + keyword + "%"
+	DB.Model(model.User{}).Where("name like ? or id like ? or email like ?", keyword, keyword, keyword).Scan(&users).Count(&total)
+
+	return response.ResponseStruct{
+		HttpStatus: http.StatusOK,
+		Code:       response.SuccessCode,
+		Data:       gin.H{"count": total, "users": users},
+		Msg:        response.OK,
+	}
+}
+
+/*********************************************************
 ** 函数功能: 管理员删除用户
 ** 日    期: 2021年11月12日15:26:42
 **********************************************************/
