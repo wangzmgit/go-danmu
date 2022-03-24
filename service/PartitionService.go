@@ -43,7 +43,7 @@ func AddPartitionService(partition dto.PartitionDto) response.ResponseStruct {
 	}
 	DB := common.GetDB()
 
-	if partition.Fid != 0 && !IsParentPartitionExist(DB, partition.Fid) {
+	if partition.Fid != 0 && !isParentPartitionExist(DB, partition.Fid) {
 		res.HttpStatus = http.StatusBadRequest
 		res.Code = response.FailCode
 		res.Msg = response.ParentPartitionNotExist
@@ -106,7 +106,7 @@ func GetAllPartitionService() response.ResponseStruct {
 ** 函数功能: 所属分区是否存在
 ** 日    期: 2021年12月9日
 **********************************************************/
-func IsParentPartitionExist(db *gorm.DB, id uint) bool {
+func isParentPartitionExist(db *gorm.DB, id uint) bool {
 	var partition model.Partition
 	db.First(&partition, id)
 	if partition.ID != 0 && partition.Fid == 0 {
@@ -119,7 +119,7 @@ func IsParentPartitionExist(db *gorm.DB, id uint) bool {
 ** 函数功能: 是否为子分区
 ** 日    期: 2021年12月12日
 **********************************************************/
-func IsSubpartition(db *gorm.DB, id uint) bool {
+func isSubpartition(db *gorm.DB, id uint) bool {
 	var partition model.Partition
 	db.First(&partition, id)
 	if partition.ID != 0 && partition.Fid != 0 {
@@ -132,7 +132,7 @@ func IsSubpartition(db *gorm.DB, id uint) bool {
 ** 函数功能: 获取分区名
 ** 日    期: 2021年12月9日
 **********************************************************/
-func GetPartitionName(db *gorm.DB, id uint) string {
+func getPartitionName(db *gorm.DB, id uint) string {
 	var partition model.Partition
 	var subpartition model.Partition
 	db.First(&subpartition, id)
@@ -148,7 +148,7 @@ func GetPartitionName(db *gorm.DB, id uint) string {
 ** 日    期: 2021年12月11日
 ** 返    回: 子分区ID的切片
 **********************************************************/
-func GetSubpartitionList(db *gorm.DB, fid uint) []uint {
+func getSubpartitionList(db *gorm.DB, fid uint) []uint {
 	var id []uint
 	db.Model(&model.Partition{}).Where("fid = ?", fid).Pluck("id", &id)
 	return id

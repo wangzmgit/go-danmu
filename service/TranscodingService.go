@@ -63,53 +63,53 @@ func Transcoding(completeName string, vid int, maxRes int) {
 
 	if maxRes == 0 {
 		//调整码率
-		ToBitRate(inputDir+completeName, outputDir, 0)
+		toBitRate(inputDir+completeName, outputDir, 0)
 		//只转码原始分辨率
-		ToHls(url, outputDir+"temp_"+resName[0]+".ts", outputDir, fileName, vid)
+		toHls(url, outputDir+"temp_"+resName[0]+".ts", outputDir, fileName, vid)
 	} else {
 		var wg sync.WaitGroup
-		CreateResDir(maxRes, fileName) //创建不同分辨率文件夹
+		createResDir(maxRes, fileName) //创建不同分辨率文件夹
 		switch maxRes {
 		case 1080:
 			wg.Add(1)
 			go func() {
-				file1080, _ := ToTargetRes(inputDir+completeName, outputDir, 1080)
-				ToBitRate(file1080, outputDir, 1080)
-				ToHlsDifferentRes(url, outputDir+"temp_"+resName[1080]+".ts", outputDir, fileName, vid, 1080)
+				file1080, _ := toTargetRes(inputDir+completeName, outputDir, 1080)
+				toBitRate(file1080, outputDir, 1080)
+				toHlsDifferentRes(url, outputDir+"temp_"+resName[1080]+".ts", outputDir, fileName, vid, 1080)
 				wg.Done()
 			}()
 			fallthrough
 		case 720:
 			wg.Add(1)
 			go func() {
-				file720, _ := ToTargetRes(inputDir+completeName, outputDir, 720)
-				ToBitRate(file720, outputDir, 720)
-				ToHlsDifferentRes(url, outputDir+"temp_"+resName[720]+".ts", outputDir, fileName, vid, 720)
+				file720, _ := toTargetRes(inputDir+completeName, outputDir, 720)
+				toBitRate(file720, outputDir, 720)
+				toHlsDifferentRes(url, outputDir+"temp_"+resName[720]+".ts", outputDir, fileName, vid, 720)
 				wg.Done()
 			}()
 			fallthrough
 		case 480:
 			wg.Add(1)
 			go func() {
-				file480, _ := ToTargetRes(inputDir+completeName, outputDir, 480)
-				ToBitRate(file480, outputDir, 480)
-				ToHlsDifferentRes(url, outputDir+"temp_"+resName[480]+".ts", outputDir, fileName, vid, 480)
+				file480, _ := toTargetRes(inputDir+completeName, outputDir, 480)
+				toBitRate(file480, outputDir, 480)
+				toHlsDifferentRes(url, outputDir+"temp_"+resName[480]+".ts", outputDir, fileName, vid, 480)
 				wg.Done()
 			}()
 			fallthrough
 		case 360:
 			wg.Add(1)
 			go func() {
-				file360, _ := ToTargetRes(inputDir+completeName, outputDir, 360)
-				ToBitRate(file360, outputDir, 360)
-				ToHlsDifferentRes(url, outputDir+"temp_"+resName[360]+".ts", outputDir, fileName, vid, 360)
+				file360, _ := toTargetRes(inputDir+completeName, outputDir, 360)
+				toBitRate(file360, outputDir, 360)
+				toHlsDifferentRes(url, outputDir+"temp_"+resName[360]+".ts", outputDir, fileName, vid, 360)
 				wg.Done()
 			}()
 		}
 		wg.Wait()
 		CompleteUpload(vid)
 	}
-	DeleteTempFile(maxRes, fileName) //删除临时文件
+	deleteTempFile(maxRes, fileName) //删除临时文件
 }
 
 /*********************************************************
@@ -117,10 +117,10 @@ func Transcoding(completeName string, vid int, maxRes int) {
 ** 日    期: 2022年2月13日11:06:35
 ** 参    数: 最大分辨率
 **********************************************************/
-func PreTreatmentVideo(input string) (int, error) {
+func preTreatmentVideo(input string) (int, error) {
 	var err error
 	var videoData dto.VideoInfoData
-	videoData, err = GetVideoInfo(input)
+	videoData, err = getVideoInfo(input)
 	if err != nil {
 		return 0, err
 	}
@@ -131,7 +131,7 @@ func PreTreatmentVideo(input string) (int, error) {
 	//计算最大分辨率
 	width := videoData.Stream[0].Width
 	height := videoData.Stream[0].Height
-	maxRes := util.Min(GetWidthRes(width), GetHeigthRes(height))
+	maxRes := util.Min(getWidthRes(width), getHeigthRes(height))
 
 	return maxRes, nil
 }
@@ -140,10 +140,9 @@ func PreTreatmentVideo(input string) (int, error) {
 ** 函数功能: 获取视频信息
 ** 日    期: 2022年1月4日17:23:40
 **********************************************************/
-func GetVideoInfo(input string) (dto.VideoInfoData, error) {
+func getVideoInfo(input string) (dto.VideoInfoData, error) {
 	var err error
 	var videoData dto.VideoInfoData
-	// input = "./file/video/" + input + ".mp4"
 	cmd := exec.Command("ffprobe", "-v", "quiet", "-print_format", "json", "-show_format", "-show_streams", input)
 	// 执行命令，返回命令是否执行成功
 	var stdout, stderr bytes.Buffer
@@ -168,7 +167,7 @@ func GetVideoInfo(input string) (dto.VideoInfoData, error) {
 ** 日    期: 2022年1月5日9:28:36
 ** 参    数: 视频宽度
 **********************************************************/
-func GetWidthRes(width int) int {
+func getWidthRes(width int) int {
 	//1920*1080
 	if width >= 1920 {
 		return 1080
@@ -189,7 +188,7 @@ func GetWidthRes(width int) int {
 ** 日    期: 2022年1月5日9:30:05
 ** 参    数: 视频高度
 **********************************************************/
-func GetHeigthRes(height int) int {
+func getHeigthRes(height int) int {
 	//1920*1080
 	if height >= 1080 {
 		return 1080
@@ -210,7 +209,7 @@ func GetHeigthRes(height int) int {
 ** 日    期: 2022年1月5日12:54:38
 ** 参    数: 输入文件，输出目录，分辨率
 **********************************************************/
-func ToBitRate(inputFile string, outputDir string, res int) error {
+func toBitRate(inputFile string, outputDir string, res int) error {
 	outputFile := outputDir + "temp_" + resName[res] + ".ts"
 	cmd := exec.Command("ffmpeg", "-y", "-i", inputFile,
 		"-vcodec", "copy", "-acodec", "copy",
@@ -235,7 +234,7 @@ func ToBitRate(inputFile string, outputDir string, res int) error {
 ** 日    期:
 ** 参    数: 文件域名,输入文件,输出目录,视频ID
 **********************************************************/
-func ToHls(url string, inputFile string, outputDir string, fileName string, vid int) {
+func toHls(url string, inputFile string, outputDir string, fileName string, vid int) {
 	output := outputDir + "temp.m3u8"
 	outputTs := outputDir + "output%03d.ts"
 	cmd := exec.Command("ffmpeg", "-i", inputFile, "-c",
@@ -253,7 +252,7 @@ func ToHls(url string, inputFile string, outputDir string, fileName string, vid 
 		fmt.Println(fmt.Sprint(err) + ": " + stderr.String())
 		return
 	}
-	RewriteM3U8(url, output, fileName, vid)
+	rewriteM3U8(url, output, fileName, vid)
 }
 
 /*********************************************************
@@ -261,7 +260,7 @@ func ToHls(url string, inputFile string, outputDir string, fileName string, vid 
 ** 日    期:
 ** 参    数: 文件域名,输入文件,输出目录,视频ID
 **********************************************************/
-func ToHlsDifferentRes(url string, inputFile string, outputDir string, fileName string, vid int, res int) {
+func toHlsDifferentRes(url string, inputFile string, outputDir string, fileName string, vid int, res int) {
 	output := outputDir + strconv.Itoa(res) + "p/temp.m3u8"
 	outputTs := outputDir + strconv.Itoa(res) + "p/output%03d.ts"
 	cmd := exec.Command("ffmpeg", "-i", inputFile, "-c", "copy",
@@ -279,11 +278,11 @@ func ToHlsDifferentRes(url string, inputFile string, outputDir string, fileName 
 		fmt.Println(fmt.Sprint(err) + ": " + stderr.String())
 		return
 	}
-	RewriteDifferentRes(url, output, fileName, vid, res)
+	rewriteDifferentRes(url, output, fileName, vid, res)
 }
 
 //重写m3u8文件
-func RewriteM3U8(url string, output string, fileName string, vid int) {
+func rewriteM3U8(url string, output string, fileName string, vid int) {
 	file, err := os.OpenFile(output, os.O_RDONLY, 0666)
 	if err != nil {
 		fmt.Println("open file filed.", err)
@@ -324,7 +323,7 @@ func RewriteM3U8(url string, output string, fileName string, vid int) {
 		success := UploadFolderToOSS(fileName, fileList)
 		if !success {
 			//上传失败，调用未通过审核
-			VideoReviewFail(vid, "视频处理失败")
+			videoReviewFail(vid, "视频处理失败")
 			return
 		}
 	}
@@ -336,7 +335,7 @@ func RewriteM3U8(url string, output string, fileName string, vid int) {
 ** 日    期: 2022年2月13日11:56:53
 ** 参    数: 文件域名,输入文件,输出目录,视频ID,分辨率
 **********************************************************/
-func RewriteDifferentRes(url string, output string, fileName string, vid int, res int) {
+func rewriteDifferentRes(url string, output string, fileName string, vid int, res int) {
 	newUrl := url + strconv.Itoa(res) + "p/"
 	file, err := os.OpenFile(output, os.O_RDONLY, 0666)
 	if err != nil {
@@ -378,7 +377,7 @@ func RewriteDifferentRes(url string, output string, fileName string, vid int, re
 		success := UploadFolderToOSS(fileName, fileList)
 		if !success {
 			//上传失败，调用未通过审核
-			VideoReviewFail(vid, "视频上传失败")
+			videoReviewFail(vid, "视频上传失败")
 			return
 		}
 	}
@@ -389,7 +388,7 @@ func RewriteDifferentRes(url string, output string, fileName string, vid int, re
 ** 日    期: 2022年2月13日17:46:59
 ** 参    数: 输入文件,输出目录,分辨率
 **********************************************************/
-func ToTargetRes(inputFile string, outputDir string, res int) (string, error) {
+func toTargetRes(inputFile string, outputDir string, res int) (string, error) {
 	outputFile := outputDir + "temp_" + resName[res] + ".mp4"
 	cmd := exec.Command("ffmpeg", "-i", inputFile,
 		"-vf", "scale="+resInfo[res], outputFile,

@@ -49,7 +49,7 @@ func ModifyCollectionService(collection dto.ModifyCollectionDto, uid interface{}
 
 	DB := common.GetDB()
 
-	if !IsUserOwnsCollection(DB, collection.ID, uid.(uint)) {
+	if !isUserOwnsCollection(DB, collection.ID, uid.(uint)) {
 		res.HttpStatus = http.StatusUnprocessableEntity
 		res.Code = response.CheckFailCode
 		res.Msg = response.CollectionNotExist
@@ -182,14 +182,14 @@ func AddVideoToCollectionService(vid uint, cid uint, uid interface{}) response.R
 	}
 
 	DB := common.GetDB()
-	if !IsUserOwnsVideo(DB, vid, uid.(uint)) {
+	if !isUserOwnsVideo(DB, vid, uid.(uint)) {
 		res.HttpStatus = http.StatusUnprocessableEntity
 		res.Code = response.CheckFailCode
 		res.Msg = response.VideoNotExist
 		return res
 	}
 
-	if !IsUserOwnsCollection(DB, cid, uid.(uint)) {
+	if !isUserOwnsCollection(DB, cid, uid.(uint)) {
 		res.HttpStatus = http.StatusUnprocessableEntity
 		res.Code = response.CheckFailCode
 		res.Msg = response.PartitionNotExist
@@ -219,14 +219,14 @@ func DeleteCollectionVideoService(vid uint, cid uint, uid interface{}) response.
 	}
 
 	DB := common.GetDB()
-	if !IsUserOwnsVideo(DB, vid, uid.(uint)) {
+	if !isUserOwnsVideo(DB, vid, uid.(uint)) {
 		res.HttpStatus = http.StatusUnprocessableEntity
 		res.Code = response.CheckFailCode
 		res.Msg = response.VideoNotExist
 		return res
 	}
 
-	if !IsUserOwnsCollection(DB, cid, uid.(uint)) {
+	if !isUserOwnsCollection(DB, cid, uid.(uint)) {
 		res.HttpStatus = http.StatusUnprocessableEntity
 		res.Code = response.CheckFailCode
 		res.Msg = response.PartitionNotExist
@@ -240,19 +240,6 @@ func DeleteCollectionVideoService(vid uint, cid uint, uid interface{}) response.
 		return res
 	}
 	return res
-}
-
-/*********************************************************
-** 函数功能: 合集是否属于用户
-** 日    期: 2021/11/21
-**********************************************************/
-func IsUserOwnsCollection(db *gorm.DB, cid uint, uid uint) bool {
-	var collection model.Collection
-	db.Where("id = ? and uid = ?", cid, uid).First(&collection)
-	if collection.ID != 0 {
-		return true
-	}
-	return false
 }
 
 /*********************************************************
@@ -288,4 +275,17 @@ func AdminDeleteCollectionService(id uint) response.ResponseStruct {
 		Data:       nil,
 		Msg:        response.OK,
 	}
+}
+
+/*********************************************************
+** 函数功能: 合集是否属于用户
+** 日    期: 2021/11/21
+**********************************************************/
+func isUserOwnsCollection(db *gorm.DB, cid uint, uid uint) bool {
+	var collection model.Collection
+	db.Where("id = ? and uid = ?", cid, uid).First(&collection)
+	if collection.ID != 0 {
+		return true
+	}
+	return false
 }

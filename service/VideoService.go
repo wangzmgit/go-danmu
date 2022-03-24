@@ -35,7 +35,7 @@ func UploadVideoInfoService(video dto.UploadVideoDto, uid interface{}) response.
 	}
 
 	DB := common.GetDB()
-	if !IsSubpartition(DB, video.Partition) {
+	if !isSubpartition(DB, video.Partition) {
 		res.HttpStatus = http.StatusUnprocessableEntity
 		res.Code = response.CheckFailCode
 		res.Msg = response.PartitionNotExist
@@ -94,7 +94,7 @@ func GetVideoStatusService(vid int, uid interface{}) response.ResponseStruct {
 		return res
 	}
 	//通过子分区获取父分区
-	partition := GetPartitionName(DB, review.Video.PartitionID)
+	partition := getPartitionName(DB, review.Video.PartitionID)
 	var video = vo.ReviewVideoVo{
 		Title:     review.Video.Title,
 		Cover:     review.Video.Cover,
@@ -165,7 +165,7 @@ func DeleteVideoService(vid uint, uid interface{}) response.ResponseStruct {
 	}
 
 	DB := common.GetDB()
-	if !IsUserOwnsVideo(DB, vid, uid.(uint)) {
+	if !isUserOwnsVideo(DB, vid, uid.(uint)) {
 		//该视频不属于这个用户
 		res.HttpStatus = http.StatusBadRequest
 		res.Code = response.FailCode
@@ -228,7 +228,7 @@ func GetVideoByIDService(vid int, ip string, uid interface{}) response.ResponseS
 	//获取视频资源
 	resource := GetVideoResource(DB, uint(vid))
 	//获取视频交互数据
-	like, collect := CollectAndLikeCount(DB, uint(vid))
+	like, collect := collectAndLikeCount(DB, uint(vid))
 	//增加播放量(一个ip在同一个视频下，每30分钟可重新增加1播放量)
 	if redis := common.RedisClient; redis != nil {
 		clicksLimit, _ := redis.Get(util.VideoClicksLimitKey(vid, ip)).Result()
@@ -312,14 +312,14 @@ func GetVideoListService(query dto.GetVideoListDto) response.ResponseStruct {
 	if query.Partition == 0 {
 		//不传分区参数默认查询全部
 		Pagination.Model(&model.Video{}).Select("id,title,cover").Where("review = 1").Scan(&videos).Count(&total)
-	} else if IsSubpartition(DB, uint(query.Partition)) {
+	} else if isSubpartition(DB, uint(query.Partition)) {
 		//判断是否为子分区
 		Pagination.Model(&model.Video{}).Select("id,title,cover").Where(
 			map[string]interface{}{"review": 1, "partition_id": query.Partition},
 		).Scan(&videos).Count(&total)
 	} else {
 		//获取该分区下的子分区
-		list := GetSubpartitionList(DB, uint(query.Partition))
+		list := getSubpartitionList(DB, uint(query.Partition))
 		Pagination.Debug().Model(&model.Video{}).Select("id,title,cover").
 			Where("review = 1 and partition_id in (?)", list).Scan(&videos).Count(&total)
 	}
@@ -349,7 +349,7 @@ func GetVideoListByUserIDService(uid int, page int, pageSize int) response.Respo
 	var videos []vo.SearchVideoVo
 
 	DB := common.GetDB()
-	if !IsUserExist(DB, uint(uid)) {
+	if !isUserExist(DB, uint(uid)) {
 		res.HttpStatus = http.StatusUnprocessableEntity
 		res.Code = response.CheckFailCode
 		res.Msg = response.UserNotExist
@@ -505,32 +505,6 @@ func DeleteResourceService(uuid uuid.UUID) response.ResponseStruct {
 }
 
 /*********************************************************
-** 函数功能: 视频是否属于自己
-** 日    期:2021/11/6
-**********************************************************/
-func IsUserOwnsVideo(db *gorm.DB, vid uint, uid uint) bool {
-	var video model.Video
-	db.Where("id = ? and uid = ?", vid, uid).First(&video)
-	if video.ID != 0 {
-		return true
-	}
-	return false
-}
-
-/*********************************************************
-** 函数功能: 视频是否存在
-** 日    期:2021/7/22
-**********************************************************/
-func IsVideoExist(db *gorm.DB, vid uint) bool {
-	var video model.Video
-	db.First(&video, vid)
-	if video.ID != 0 {
-		return true
-	}
-	return false
-}
-
-/*********************************************************
 ** 函数功能: 获取视频资源
 ** 日    期: 2022年1月6日10:33:53
 **********************************************************/
@@ -549,12 +523,38 @@ func GetVideoInteractiveData(db *gorm.DB, vid int, uid uint) vo.InteractiveVo {
 	//获取作者id
 	db.First(&video, vid)
 
-	like, collect := IsCollectAndLike(db, uid, uint(vid))
-	follow := IsFollow(db, uid, video.Uid)
+	like, collect := isCollectAndLike(db, uid, uint(vid))
+	follow := isFollow(db, uid, video.Uid)
 
 	return vo.InteractiveVo{
 		Collect: collect,
 		Like:    like,
 		Follow:  follow,
 	}
+}
+
+/*********************************************************
+** 函数功能: 视频是否存在
+** 日    期:2021/7/22
+**********************************************************/
+func isVideoExist(db *gorm.DB, vid uint) bool {
+	var video model.Video
+	db.First(&video, vid)
+	if video.ID != 0 {
+		return true
+	}
+	return false
+}
+
+/*********************************************************
+** 函数功能: 视频是否属于自己
+** 日    期:2021/11/6
+**********************************************************/
+func isUserOwnsVideo(db *gorm.DB, vid uint, uid uint) bool {
+	var video model.Video
+	db.Where("id = ? and uid = ?", vid, uid).First(&video)
+	if video.ID != 0 {
+		return true
+	}
+	return false
 }

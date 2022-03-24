@@ -25,14 +25,14 @@ func CollectService(vid uint, uid interface{}) response.ResponseStruct {
 	}
 	//验证视频是否存在
 	DB := common.GetDB()
-	if !IsVideoExist(DB, vid) {
+	if !isVideoExist(DB, vid) {
 		res.HttpStatus = http.StatusUnprocessableEntity
 		res.Code = response.CheckFailCode
 		res.Msg = response.VideoNotExist
 		return res
 	}
 	//验证是否已经收藏
-	status := IsCollect(DB, uid.(uint), vid)
+	status := isCollect(DB, uid.(uint), vid)
 	if status == 0 {
 		res.HttpStatus = http.StatusUnprocessableEntity
 		res.Code = response.CheckFailCode
@@ -73,7 +73,7 @@ func CancelCollectService(vid uint, uid interface{}) response.ResponseStruct {
 	}
 	//验证收藏是否存在
 	DB := common.GetDB()
-	status := IsCollect(DB, uid.(uint), vid)
+	status := isCollect(DB, uid.(uint), vid)
 	if status != 0 {
 		res.HttpStatus = http.StatusUnprocessableEntity
 		res.Code = response.CheckFailCode
@@ -106,14 +106,14 @@ func LikeService(vid uint, uid interface{}) response.ResponseStruct {
 	}
 	//验证视频是否存在
 	DB := common.GetDB()
-	if !IsVideoExist(DB, vid) {
+	if !isVideoExist(DB, vid) {
 		res.HttpStatus = http.StatusUnprocessableEntity
 		res.Code = response.CheckFailCode
 		res.Msg = response.VideoNotExist
 		return res
 	}
 	//验证是否已经点赞
-	status := IsLike(DB, uid.(uint), vid)
+	status := isLike(DB, uid.(uint), vid)
 	if status == 0 {
 		res.HttpStatus = http.StatusUnprocessableEntity
 		res.Code = response.CheckFailCode
@@ -154,7 +154,7 @@ func DislikeService(vid uint, uid interface{}) response.ResponseStruct {
 	}
 	//验证点赞是否存在
 	DB := common.GetDB()
-	status := IsLike(DB, uid.(uint), vid)
+	status := isLike(DB, uid.(uint), vid)
 	if status == 0 {
 		DB.Model(&model.Interactive{}).Where("uid = ? AND vid = ?", uid, vid).Update("like", false)
 		intVid := int(vid)
@@ -178,7 +178,7 @@ func DislikeService(vid uint, uid interface{}) response.ResponseStruct {
 ** 函数功能: 是否已经收藏
 ** 日    期: 2021/7/22
 **********************************************************/
-func IsCollect(db *gorm.DB, uid uint, vid uint) int {
+func isCollect(db *gorm.DB, uid uint, vid uint) int {
 	//不存在返回-1，存在但是没有收藏返回1，已经收藏返回0
 	var favorites = model.Interactive{}
 	db.Where("uid = ? AND vid = ?", uid, vid).First(&favorites)
@@ -194,7 +194,7 @@ func IsCollect(db *gorm.DB, uid uint, vid uint) int {
 ** 函数功能: 是否已经点赞
 ** 日    期: 2021/7/22
 **********************************************************/
-func IsLike(db *gorm.DB, uid uint, vid uint) int {
+func isLike(db *gorm.DB, uid uint, vid uint) int {
 	//不存在返回-1，存在但是没有点赞返回1，已经点赞返回0
 	var like = model.Interactive{}
 	db.Where("uid = ? AND vid = ?", uid, vid).First(&like)
@@ -211,7 +211,7 @@ func IsLike(db *gorm.DB, uid uint, vid uint) int {
 ** 日    期:2021/7/22
 ** 返 回 值:是否点赞，是否收藏
 **********************************************************/
-func IsCollectAndLike(db *gorm.DB, uid uint, vid uint) (bool, bool) {
+func isCollectAndLike(db *gorm.DB, uid uint, vid uint) (bool, bool) {
 	var data = model.Interactive{}
 	db.Where("uid = ? AND vid = ?", uid, vid).First(&data)
 	if data.ID != 0 {
@@ -229,7 +229,7 @@ func IsCollectAndLike(db *gorm.DB, uid uint, vid uint) (bool, bool) {
 ** 版    本: 3.3.0
 ** 修改内容: 如果redis出现问题,返回的点赞和收藏数都为0
 **********************************************************/
-func CollectAndLikeCount(db *gorm.DB, vid uint) (int, int) {
+func collectAndLikeCount(db *gorm.DB, vid uint) (int, int) {
 	var like int
 	var collect int
 	intVid := int(vid)

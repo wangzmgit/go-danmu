@@ -2,10 +2,8 @@ package controller
 
 import (
 	"net/http"
-	"time"
 
 	"github.com/gin-gonic/gin"
-	"kuukaa.fun/danmu-v4/common"
 	"kuukaa.fun/danmu-v4/dto"
 	"kuukaa.fun/danmu-v4/response"
 	"kuukaa.fun/danmu-v4/service"
@@ -13,8 +11,8 @@ import (
 )
 
 /*********************************************************
-** 函数功能: 发送验证码
-** 日    期:2021/7/23
+** 函数功能: 发送注册验证码
+** 日    期: 2021/7/23
 **********************************************************/
 func SendCode(ctx *gin.Context) {
 	var requestUser dto.SendCodeDto
@@ -30,60 +28,9 @@ func SendCode(ctx *gin.Context) {
 		response.CheckFail(ctx, nil, response.EmailFormatCheck)
 		return
 	}
-	//邮箱是否存在
-	if service.IsEmailRegistered(email) {
-		response.CheckFail(ctx, nil, response.EmailRegistered)
-		return
-	}
-	//存储code到redis
-	Redis := common.RedisClient
-	if Redis == nil {
-		response.ServerError(ctx, nil, response.SystemError)
-		return
-	}
-	code, _ := Redis.Get(util.CodeKey(email)).Result()
-	if code != "" {
-		//如果时间小于一分钟则不能重新发送
-		duration, _ := Redis.TTL(util.CodeKey(email)).Result()
-		if duration >= 240000000000 {
-			response.Fail(ctx, nil, response.OperationTooFrequently)
-			return
-		}
-	}
-	randomCode := util.RandomCode(6)
-	err = Redis.Set(util.CodeKey(email), randomCode, time.Second*300).Err()
-	if err != nil {
-		response.ServerError(ctx, nil, response.SendFail)
-		return
-	}
-	send := util.SendEmail(email, randomCode, util.RegisterCode)
-	if send {
-		response.Success(ctx, nil, response.OK)
-	} else {
-		Redis.Del(util.CodeKey(email))
-		response.Fail(ctx, nil, response.SendFail)
-	}
-}
 
-/*********************************************************
-** 函数功能: 验证验证码
-** 日    期:2021/7/24
-**********************************************************/
-func VerificationCode(emailKey string, code string) bool {
-	if len(code) == 0 {
-		return false
-	}
-	Redis := common.RedisClient
-	if Redis == nil {
-		util.Logfile(util.ErrorLog, "Verification code redis error")
-		return false
-	}
-	dbCode, _ := Redis.Get(emailKey).Result()
-	if dbCode == "" || dbCode != code {
-		return false
-	}
-	Redis.Del(emailKey)
-	return true
+	res := service.SendRegisterCodeService(email)
+	response.HandleResponse(ctx, res)
 }
 
 /*********************************************************
@@ -103,40 +50,10 @@ func SendCodeToMyself(ctx *gin.Context) {
 		response.CheckFail(ctx, nil, response.EmailFormatCheck)
 		return
 	}
-	//邮箱是否属于当前用户
+
 	uid, _ := ctx.Get("id")
-	if !service.IsEmailBelongsToCurrentUser(email, uid) {
-		response.CheckFail(ctx, nil, response.VerificationFail)
-		return
-	}
-	//存储code到redis
-	Redis := common.RedisClient
-	if Redis == nil {
-		response.ServerError(ctx, nil, response.SystemError)
-		return
-	}
-	code, _ := Redis.Get(util.CodeKey(email)).Result()
-	if code != "" {
-		//如果时间小于一分钟则不能重新发送
-		duration, _ := Redis.TTL(util.CodeKey(email)).Result()
-		if duration >= 240000000000 {
-			response.Fail(ctx, nil, response.OperationTooFrequently)
-			return
-		}
-	}
-	randomCode := util.RandomCode(6)
-	err = Redis.Set(util.CodeKey(email), randomCode, time.Second*300).Err()
-	if err != nil {
-		response.ServerError(ctx, nil, response.SendFail)
-		return
-	}
-	send := util.SendEmail(email, randomCode, util.ModifyPasswordCode)
-	if send {
-		response.Success(ctx, nil, response.OK)
-	} else {
-		Redis.Del(util.CodeKey(email))
-		response.Fail(ctx, nil, response.SendFail)
-	}
+	res := service.SendCodeToMyselfService(email, uid)
+	response.HandleResponse(ctx, res)
 }
 
 /*********************************************************
@@ -155,32 +72,7 @@ func SendLoginCode(ctx *gin.Context) {
 		response.CheckFail(ctx, nil, response.EmailFormatCheck)
 		return
 	}
-	//存储code到redis
-	Redis := common.RedisClient
-	if Redis == nil {
-		response.ServerError(ctx, nil, response.SystemError)
-		return
-	}
-	code, _ := Redis.Get(util.LoginCodeKey(email)).Result()
-	if code != "" {
-		//如果时间小于一分钟则不能重新发送
-		duration, _ := Redis.TTL(util.LoginCodeKey(email)).Result()
-		if duration >= 240000000000 {
-			response.Fail(ctx, nil, response.OperationTooFrequently)
-			return
-		}
-	}
-	randomCode := util.RandomCode(6)
-	err = Redis.Set(util.LoginCodeKey(email), randomCode, time.Second*300).Err()
-	if err != nil {
-		response.ServerError(ctx, nil, response.SendFail)
-		return
-	}
-	send := util.SendEmail(email, randomCode, util.LoginCode)
-	if send {
-		response.Success(ctx, nil, response.OK)
-	} else {
-		Redis.Del(util.LoginCodeKey(email))
-		response.Fail(ctx, nil, response.SendFail)
-	}
+
+	res := service.SendLoginCodeService(email)
+	response.HandleResponse(ctx, res)
 }

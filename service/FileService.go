@@ -161,6 +161,33 @@ func CompleteUpload(vid int) {
 }
 
 /*********************************************************
+** 函数功能: 获取上传视频文件的url
+** 日    期: 2022年2月16日17:11:08
+**********************************************************/
+func GetUploadVideoUrls(videoName, localFileName, objectName string, vid int) (dto.ResDto, int) {
+	var maxRes int
+	var urls dto.ResDto
+	if viper.GetString("transcoding.coding") == "hls" {
+		if viper.GetBool("aliyunoss.storage") {
+			if viper.GetInt("transcoding.max_res") == 0 {
+				urls.Original = GetUrl() + "video/" + videoName + "/" + "index.m3u8"
+			} else {
+				urls, maxRes = getUrlDifferentRes(videoName, localFileName, vid, true)
+			}
+		} else {
+			if viper.GetInt("transcoding.max_res") == 0 {
+				urls.Original = GetUrl() + "output/" + videoName + "/" + "index.m3u8"
+			} else {
+				urls, maxRes = getUrlDifferentRes(videoName, localFileName, vid, false)
+			}
+		}
+	} else {
+		urls.Original = GetUrl() + objectName
+	}
+	return urls, maxRes
+}
+
+/*********************************************************
 ** 函数功能: 获取文件的URL
 ** 日    期: 2022年1月5日16:49:02
 **********************************************************/
@@ -184,13 +211,13 @@ func GetUrl() string {
 ** 函数功能: 获取不同分辨率URL
 ** 日    期: 2022年2月13日18:01:35
 **********************************************************/
-func GetUrlDifferentRes(videoName, localFileName string, vid int, oss bool) (dto.ResDto, int) {
+func getUrlDifferentRes(videoName, localFileName string, vid int, oss bool) (dto.ResDto, int) {
 	var urls dto.ResDto
-	ossDir := GetUploadOssDir(oss)
-	maxRes, err := PreTreatmentVideo(localFileName)
+	ossDir := getUploadOssDir(oss)
+	maxRes, err := preTreatmentVideo(localFileName)
 	maxRes = util.Min(maxRes, viper.GetInt("transcoding.max_res"))
 	if err != nil {
-		VideoReviewFail(vid, "视频处理出现错误") //调用审核失败
+		videoReviewFail(vid, "视频处理出现错误") //调用审核失败
 		return dto.ResDto{}, 0
 	}
 	switch maxRes {
@@ -213,7 +240,7 @@ func GetUrlDifferentRes(videoName, localFileName string, vid int, oss bool) (dto
 ** 函数功能: 创建不同分辨率文件夹
 ** 日    期: 2022年2月13日18:47:04
 **********************************************************/
-func CreateResDir(maxRes int, dirName string) {
+func createResDir(maxRes int, dirName string) {
 	switch maxRes {
 	case 1080:
 		os.Mkdir("./file/output/"+dirName+"/1080p", os.ModePerm)
@@ -233,7 +260,7 @@ func CreateResDir(maxRes int, dirName string) {
 ** 函数功能: 删除临时文件
 ** 日    期: 2022年2月13日19:00:44
 **********************************************************/
-func DeleteTempFile(maxRes int, dirName string) {
+func deleteTempFile(maxRes int, dirName string) {
 	if maxRes == 0 {
 		os.Remove("./file/output/" + dirName + "/temp.m3u8")
 		os.Remove("./file/output/" + dirName + "/temp_original.ts")
@@ -262,7 +289,7 @@ func DeleteTempFile(maxRes int, dirName string) {
 ** 函数功能: 获取上传OSS目录
 ** 日    期: 2022年2月16日17:00:44
 **********************************************************/
-func GetUploadOssDir(oss bool) string {
+func getUploadOssDir(oss bool) string {
 	if oss {
 		return "video"
 	}

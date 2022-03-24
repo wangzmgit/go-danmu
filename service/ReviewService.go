@@ -100,7 +100,7 @@ func ReviewVideoService(review dto.ReviewDto, isReview bool) response.ResponseSt
 ** 函数功能: 视频处理失败未通过审核
 ** 日    期: 2022年1月5日17:12:27
 **********************************************************/
-func VideoReviewFail(vid int, msg string) response.ResponseStruct {
+func videoReviewFail(vid int, msg string) response.ResponseStruct {
 	res := response.ResponseStruct{
 		HttpStatus: http.StatusOK,
 		Code:       response.SuccessCode,

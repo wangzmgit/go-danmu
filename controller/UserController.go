@@ -40,7 +40,7 @@ func Register(ctx *gin.Context) {
 		response.CheckFail(ctx, nil, response.PasswordCheck)
 		return
 	}
-	if !VerificationCode(util.CodeKey(email), code) {
+	if !service.VerificationCode(util.CodeKey(email), code) {
 		response.CheckFail(ctx, nil, response.VerificationCodeError)
 		return
 	}
@@ -104,7 +104,7 @@ func EmailLogin(ctx *gin.Context) {
 	}
 
 	//验证验证码是否正确
-	if !VerificationCode(util.LoginCodeKey(email), code) {
+	if !service.VerificationCode(util.LoginCodeKey(email), code) {
 		response.CheckFail(ctx, nil, response.VerificationCodeError)
 		return
 	}
@@ -178,7 +178,7 @@ func ModifyPassword(ctx *gin.Context) {
 	user, _ := ctx.Get("user")
 	modelUser := user.(model.User)
 	//验证验证码是否正确
-	if !VerificationCode(util.CodeKey(modelUser.Email), code) {
+	if !service.VerificationCode(util.CodeKey(modelUser.Email), code) {
 		response.CheckFail(ctx, nil, response.VerificationCodeError)
 		return
 	}

@@ -41,6 +41,6 @@ func SendDanmaku(ctx *gin.Context) {
 		return
 	}
 
-	res := service.SendDanmaku(danmaku, uid)
+	res := service.SendDanmakuService(danmaku, uid)
 	response.HandleResponse(ctx, res)
 }

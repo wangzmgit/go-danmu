@@ -32,7 +32,7 @@ func RegisterService(user dto.RegisterDto) response.ResponseStruct {
 
 	//邮箱是否存在
 	DB := common.GetDB()
-	if IsEmailExist(DB, user.Email) {
+	if isEmailExist(DB, user.Email) {
 		res.HttpStatus = http.StatusUnprocessableEntity
 		res.Code = response.CheckFailCode
 		res.Msg = response.EmailRegistered
@@ -279,16 +279,16 @@ func AdminDeleteUserService(id uint) response.ResponseStruct {
 ** 函数功能: 邮箱是否被注册
 ** 日    期: 2021年11月12日11:03:55
 **********************************************************/
-func IsEmailRegistered(email string) bool {
+func isEmailRegistered(email string) bool {
 	DB := common.GetDB()
-	return IsEmailExist(DB, email)
+	return isEmailExist(DB, email)
 }
 
 /*********************************************************
 ** 函数功能: 邮箱是否属于当前用户
 ** 日    期: 2021年11月12日11:10:23
 **********************************************************/
-func IsEmailBelongsToCurrentUser(email string, uid interface{}) bool {
+func isEmailBelongsToCurrentUser(email string, uid interface{}) bool {
 	var user model.User
 	DB := common.GetDB()
 	DB.First(&user, uid)
@@ -302,7 +302,7 @@ func IsEmailBelongsToCurrentUser(email string, uid interface{}) bool {
 ** 函数功能: 邮箱是否存在
 ** 日    期: 2021/7/10
 **********************************************************/
-func IsEmailExist(db *gorm.DB, email string) bool {
+func isEmailExist(db *gorm.DB, email string) bool {
 	var user model.User
 	db.Where("email = ?", email).First(&user)
 	if user.ID != 0 {
@@ -315,7 +315,7 @@ func IsEmailExist(db *gorm.DB, email string) bool {
 ** 函数功能: 用户是否存在
 ** 日    期: 2021/7/10
 **********************************************************/
-func IsUserExist(db *gorm.DB, id uint) bool {
+func isUserExist(db *gorm.DB, id uint) bool {
 	var user model.User
 	db.First(&user, id)
 	if user.ID != 0 {

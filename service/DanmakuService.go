@@ -21,7 +21,7 @@ func GetDanmakuService(vid int) response.ResponseStruct {
 
 	var danmakuList []vo.DanmakuVo
 	DB := common.GetDB()
-	if !IsVideoExist(DB, uint(vid)) {
+	if !isVideoExist(DB, uint(vid)) {
 		res.HttpStatus = http.StatusUnprocessableEntity
 		res.Code = response.CheckFailCode
 		res.Msg = response.VideoNotExist
@@ -32,7 +32,7 @@ func GetDanmakuService(vid int) response.ResponseStruct {
 	return res
 }
 
-func SendDanmaku(danmaku dto.DanmakuDto, uid interface{}) response.ResponseStruct {
+func SendDanmakuService(danmaku dto.DanmakuDto, uid interface{}) response.ResponseStruct {
 	DB := common.GetDB()
 	newDanmaku := model.Danmaku{
 		Vid:   danmaku.Vid,

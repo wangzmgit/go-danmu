@@ -24,7 +24,7 @@ func FollowingService(fid uint, uid interface{}) response.ResponseStruct {
 	}
 	//验证关注的人是否存在
 	DB := common.GetDB()
-	if !IsUserExist(DB, fid) {
+	if !isUserExist(DB, fid) {
 		res.HttpStatus = http.StatusUnprocessableEntity
 		res.Code = response.CheckFailCode
 		res.Msg = response.UserNotExist
@@ -57,7 +57,7 @@ func UnFollowService(fid uint, uid interface{}) response.ResponseStruct {
 **********************************************************/
 func GetFollowStatusService(uid uint, fid uint) response.ResponseStruct {
 	DB := common.GetDB()
-	follow := IsFollow(DB, uid, fid)
+	follow := isFollow(DB, uid, fid)
 	return response.ResponseStruct{
 		HttpStatus: http.StatusOK,
 		Code:       response.SuccessCode,
@@ -122,7 +122,7 @@ func GetFollowCountService(uid int) response.ResponseStruct {
 ** 函数功能: 是否关注
 ** 日    期:2021/7/24
 **********************************************************/
-func IsFollow(db *gorm.DB, uid uint, fid uint) bool {
+func isFollow(db *gorm.DB, uid uint, fid uint) bool {
 	var follow model.Follow
 	db.Where("uid = ? and fid = ?", uid, fid).First(&follow)
 	if follow.ID != 0 {

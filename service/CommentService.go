@@ -29,7 +29,7 @@ func GetCommentsService(page int, pageSize int, vid int) response.ResponseStruct
 	sqlComment := "select comments.id,comments.created_at,content,uid,users.name,users.avatar from comments,users where comments.deleted_at is null and comments.uid = users.id and vid = ? limit ? offset ?"
 	sqlReply := "select replies.id,replies.created_at,content,uid,users.name,users.avatar,reply_uid,reply_name from replies,users where replies.deleted_at is null and replies.uid = users.id and cid = ?"
 	DB := common.GetDB()
-	if !IsVideoExist(DB, uint(vid)) {
+	if !isVideoExist(DB, uint(vid)) {
 		res.HttpStatus = http.StatusBadRequest
 		res.Code = response.FailCode
 		res.Msg = response.VideoNotExist
@@ -67,7 +67,7 @@ func GetCommentsV2Service(page int, pageSize int, vid int) response.ResponseStru
 
 	DB := common.GetDB()
 
-	if !IsVideoExist(DB, uint(vid)) {
+	if !isVideoExist(DB, uint(vid)) {
 		res.HttpStatus = http.StatusBadRequest
 		res.Code = response.FailCode
 		res.Msg = response.VideoNotExist
@@ -100,7 +100,7 @@ func GetReplyDetailsV2Service(cid int, page int, pageSize int) response.Response
 	sql := "select replies.id,replies.created_at,content,uid,users.name,users.avatar,reply_uid,reply_name " +
 		"from replies,users where replies.deleted_at is null and replies.uid = users.id and cid = ?"
 	DB := common.GetDB()
-	if !IsCommentExist(DB, uint(cid)) {
+	if !isCommentExist(DB, uint(cid)) {
 		res.HttpStatus = http.StatusBadRequest
 		res.Code = response.FailCode
 		res.Msg = response.CommentNotExist
@@ -156,7 +156,7 @@ func CommentService(comment dto.CommentDto, uid interface{}) response.ResponseSt
 	}
 
 	DB := common.GetDB()
-	if !IsVideoExist(DB, comment.Vid) {
+	if !isVideoExist(DB, comment.Vid) {
 		res.HttpStatus = http.StatusBadRequest
 		res.Code = response.FailCode
 		res.Msg = response.VideoNotExist
@@ -180,7 +180,7 @@ func ReplyService(reply dto.ReplyDto, uid interface{}) response.ResponseStruct {
 	}
 
 	DB := common.GetDB()
-	if !IsCommentExist(DB, reply.Cid) {
+	if !isCommentExist(DB, reply.Cid) {
 		res.HttpStatus = http.StatusBadRequest
 		res.Code = response.FailCode
 		res.Msg = response.CommentNotExist
@@ -203,7 +203,7 @@ func ReplyService(reply dto.ReplyDto, uid interface{}) response.ResponseStruct {
 ** 函数功能: 评论是否存在
 ** 日    期:2021/7/27
 **********************************************************/
-func IsCommentExist(db *gorm.DB, cid uint) bool {
+func isCommentExist(db *gorm.DB, cid uint) bool {
 	var comment model.Comment
 	db.Where("id = ?", cid).First(&comment)
 	if comment.ID != 0 {
