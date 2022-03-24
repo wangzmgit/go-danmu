@@ -13,7 +13,7 @@ type UploadVideoVo struct {
 	Cover     string    `json:"cover"`
 	Review    bool      `json:"review"`
 	Clicks    int       `json:"clicks"`
-	CreateAt  time.Time `json:"create_at"`
+	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
@@ -23,7 +23,7 @@ type VideoVo struct {
 	Cover        string       `json:"cover"`
 	VideoType    string       `json:"video_type"`
 	Desc         string       `json:"desc"`
-	CreateAt     time.Time    `json:"create_at"`
+	CreatedAt    time.Time    `json:"created_at"`
 	Copyright    bool         `json:"copyright"`
 	Author       UserVo       `json:"author"`
 	Resource     []ResourceVo `json:"resource"`
@@ -91,7 +91,7 @@ func ToUploadVideoVo(videos []model.Video) []UploadVideoVo {
 		newVideos[i].Title = videos[i].Title
 		newVideos[i].Cover = videos[i].Cover
 		newVideos[i].Review = videos[i].Review
-		newVideos[i].CreateAt = videos[i].CreatedAt
+		newVideos[i].CreatedAt = videos[i].CreatedAt
 		newVideos[i].UpdatedAt = videos[i].UpdatedAt
 		newVideos[i].Clicks = videos[i].Clicks
 	}
@@ -116,7 +116,7 @@ func ToVideoVo(video model.Video, like, collect int, resource []model.Resource) 
 		Cover:     video.Cover,
 		VideoType: video.VideoType,
 		Desc:      video.Desc,
-		CreateAt:  video.CreatedAt,
+		CreatedAt: video.CreatedAt,
 		Copyright: video.Copyright,
 		Author: UserVo{
 			ID:     video.Author.ID,
