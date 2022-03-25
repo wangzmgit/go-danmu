@@ -372,11 +372,11 @@ func AdminGetVideoListService(page int, pageSize int, videoFrom string) response
 	var videos []vo.AdminVideoListVo
 
 	DB := common.GetDB()
-	DB = DB.Limit(pageSize).Offset((page - 1) * pageSize)
+	Pagination := DB.Limit(pageSize).Offset((page - 1) * pageSize)
 	if videoFrom == "admin" {
-		DB.Model(model.Video{}).Where("review = 1 and uid = 0").Scan(&videos).Count(&total)
+		Pagination.Model(model.Video{}).Where("review = 1 and uid = 0").Scan(&videos).Count(&total)
 	} else {
-		DB.Model(model.Video{}).Where("review = 1 and uid != 0").Scan(&videos).Count(&total)
+		Pagination.Debug().Model(model.Video{}).Where("review = 1 and uid != 0").Scan(&videos).Count(&total)
 	}
 
 	//为了兼容早期版本，分区可能会出现分区id=0的情况
