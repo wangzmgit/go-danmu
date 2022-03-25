@@ -376,7 +376,7 @@ func AdminGetVideoListService(page int, pageSize int, videoFrom string) response
 	if videoFrom == "admin" {
 		Pagination.Model(model.Video{}).Where("review = 1 and uid = 0").Scan(&videos).Count(&total)
 	} else {
-		Pagination.Debug().Model(model.Video{}).Where("review = 1 and uid != 0").Scan(&videos).Count(&total)
+		Pagination.Model(model.Video{}).Where("review = 1 and uid != 0").Scan(&videos).Count(&total)
 	}
 
 	//为了兼容早期版本，分区可能会出现分区id=0的情况
