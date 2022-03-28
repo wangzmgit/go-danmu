@@ -64,8 +64,9 @@ func GetOpinionListService(page int, pageSize int) response.ResponseStruct {
 	var total int //记录总数
 	var opinions []vo.OpinionVo
 	DB := common.GetDB()
+	DB.Model(&model.Opinion{}).Count(&total)
 	DB = DB.Limit(pageSize).Offset((page - 1) * pageSize)
-	DB.Model(&model.Opinion{}).Select("id,name,email,telephone,gender,`desc`,uid,created_at").Scan(&opinions).Count(&total)
+	DB.Model(&model.Opinion{}).Select("id,name,email,telephone,gender,`desc`,uid,created_at").Scan(&opinions)
 
 	return response.ResponseStruct{
 		HttpStatus: http.StatusOK,

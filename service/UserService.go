@@ -216,9 +216,9 @@ func GetUserListService(page int, pageSize int) response.ResponseStruct {
 	DB := common.GetDB()
 	//记录总数
 	var total int
+	DB.Model(&model.User{}).Count(&total)
 	DB = DB.Limit(pageSize).Offset((page - 1) * pageSize)
-	//评论
-	DB.Model(&model.User{}).Select("id,name,created_at,email,avatar,sign,gender").Scan(&users).Count(&total)
+	DB.Model(&model.User{}).Select("id,name,created_at,email,avatar,sign,gender").Scan(&users)
 
 	return response.ResponseStruct{
 		HttpStatus: http.StatusOK,

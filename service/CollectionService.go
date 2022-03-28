@@ -76,9 +76,9 @@ func GetCreateCollectionListService(page int, pageSize int, uid interface{}) res
 	var count int
 	var collections []vo.CollectionVo
 	DB := common.GetDB()
+	DB.Model(&model.Collection{}).Where("uid = ?", uid).Count(&count)
 	DB = DB.Limit(pageSize).Offset((page - 1) * pageSize)
 	DB.Raw("select id,title,cover,`desc`,created_at from collections where deleted_at is null and uid = ?", uid).Scan(&collections)
-	DB.Model(&model.Collection{}).Where("uid = ?", uid).Count(&count)
 	return response.ResponseStruct{
 		HttpStatus: http.StatusOK,
 		Code:       response.SuccessCode,
@@ -95,10 +95,10 @@ func GetCollectionContentService(cid int, page int, pageSize int) response.Respo
 	var count int
 	var videos []vo.CollectionVideoVo
 	DB := common.GetDB()
+	DB.Model(&model.VideoCollection{}).Where("collection_id = ?", cid).Count(&count) //获取已添加数量
 	DB = DB.Limit(pageSize).Offset((page - 1) * pageSize)
 	sqlID := "(select vid from video_collections where deleted_at is null and collection_id = ?)"
 	DB.Raw("select id,title,cover,created_at,`desc` from videos where deleted_at is null and review = 1 and id in "+sqlID, cid).Scan(&videos)
-	DB.Model(&model.VideoCollection{}).Where("collection_id = ?", cid).Count(&count) //获取已添加数量
 
 	return response.ResponseStruct{
 		HttpStatus: http.StatusOK,
@@ -153,13 +153,13 @@ func GetCanAddVideoService(id int, uid interface{}, page int, pageSize int) resp
 	var videos []vo.CollectionVideoVo
 
 	DB := common.GetDB()
+	DB.Model(&model.Video{}).Where("review = 1 and uid = ?", uid).Count(&count)          //获取视频总数
+	DB.Model(&model.VideoCollection{}).Where("collection_id = ?", id).Count(&addedCount) //获取已添加数量
 	DB = DB.Limit(pageSize).Offset((page - 1) * pageSize)
 	sql := "select id,title,cover from videos where deleted_at is null and uid = ? and review = 1 and id not in "
 	sqlVid := "(select vid from video_collections where deleted_at is null and collection_id = ?)"
 
-	DB.Raw(sql+sqlVid, uid, id).Scan(&videos)                                            //查询可添加视频列表
-	DB.Model(&model.Video{}).Where("review = 1 and uid = ?", uid).Count(&count)          //获取视频总数
-	DB.Model(&model.VideoCollection{}).Where("collection_id = ?", id).Count(&addedCount) //获取已添加数量
+	DB.Raw(sql+sqlVid, uid, id).Scan(&videos) //查询可添加视频列表
 
 	return response.ResponseStruct{
 		HttpStatus: http.StatusOK,
@@ -250,9 +250,10 @@ func GetCollectionListService(page int, pageSize int) response.ResponseStruct {
 	var count int
 	var collections []vo.CollectionVo
 	DB := common.GetDB()
+	DB.Model(&model.Collection{}).Count(&count)
 	DB = DB.Limit(pageSize).Offset((page - 1) * pageSize)
 	DB.Raw("select id,title,cover,`desc`,created_at from collections where deleted_at is null").Scan(&collections)
-	DB.Model(&model.Collection{}).Count(&count)
+
 	return response.ResponseStruct{
 		HttpStatus: http.StatusOK,
 		Code:       response.SuccessCode,

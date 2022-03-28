@@ -122,8 +122,9 @@ func GetAdminListService(page int, pageSize int) response.ResponseStruct {
 	var admins []vo.AdminListVo
 
 	DB := common.GetDB()
+	DB.Model(&model.Admin{}).Count(&total)
 	DB = DB.Limit(pageSize).Offset((page - 1) * pageSize)
-	DB.Model(&model.Admin{}).Select("id,name,email,authority").Scan(&admins).Count(&total)
+	DB.Model(&model.Admin{}).Select("id,name,email,authority").Scan(&admins)
 
 	return response.ResponseStruct{
 		HttpStatus: http.StatusOK,

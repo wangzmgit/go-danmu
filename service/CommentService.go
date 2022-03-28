@@ -73,8 +73,8 @@ func GetCommentsV2Service(page int, pageSize int, vid int) response.ResponseStru
 		res.Msg = response.VideoNotExist
 		return res
 	}
-	DB = DB.Limit(pageSize).Offset((page - 1) * pageSize)
 	DB.Model(&model.Comment{}).Where("vid = ?", vid).Count(&count)
+	DB = DB.Limit(pageSize).Offset((page - 1) * pageSize)
 	DB.Raw(sqlComment, vid).Scan(&comments)
 	for i := 0; i < len(comments); i++ {
 		//查询回复

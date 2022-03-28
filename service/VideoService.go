@@ -191,8 +191,9 @@ func GetMyUploadVideoService(page int, pageSize int, uid interface{}) response.R
 	var totalSize int
 	//分页查询
 	var videos []model.Video
+	DB.Where("uid = ?", uid).Count(&totalSize)
 	DB = DB.Limit(pageSize).Offset((page - 1) * pageSize)
-	DB.Where("uid = ?", uid).Find(&videos).Count(&totalSize)
+	DB.Where("uid = ?", uid).Find(&videos)
 	return response.ResponseStruct{
 		HttpStatus: http.StatusOK,
 		Code:       response.SuccessCode,
@@ -260,8 +261,9 @@ func GetCollectVideoService(uid interface{}, page int, pageSize int) response.Re
 	var favorites []model.Interactive
 
 	DB := common.GetDB()
+	DB.Where("uid = ? AND collect = true", uid).Count(&count)
 	DB = DB.Limit(pageSize).Offset((page - 1) * pageSize)
-	DB.Where("uid = ? AND collect = true", uid).Preload("Video").Find(&favorites).Count(&count)
+	DB.Where("uid = ? AND collect = true", uid).Preload("Video").Find(&favorites)
 
 	return response.ResponseStruct{
 		HttpStatus: http.StatusOK,
@@ -357,8 +359,9 @@ func GetVideoListByUserIDService(uid int, page int, pageSize int) response.Respo
 	}
 	//记录总数
 	var total int
+	DB.Model(&model.Video{}).Where("review = 1 and uid = ?", uid).Count(&total)
 	DB = DB.Limit(pageSize).Offset((page - 1) * pageSize)
-	DB.Model(&model.Video{}).Select("id,title,cover").Where("review = 1 and uid = ?", uid).Scan(&videos).Count(&total)
+	DB.Model(&model.Video{}).Select("id,title,cover").Where("review = 1 and uid = ?", uid).Scan(&videos)
 	res.Data = gin.H{"count": total, "videos": videos}
 	return res
 }
@@ -374,9 +377,11 @@ func AdminGetVideoListService(page int, pageSize int, videoFrom string) response
 	DB := common.GetDB()
 	Pagination := DB.Limit(pageSize).Offset((page - 1) * pageSize)
 	if videoFrom == "admin" {
-		Pagination.Model(model.Video{}).Where("review = 1 and uid = 0").Scan(&videos).Count(&total)
+		DB.Model(model.Video{}).Where("review = 1 and uid = 0").Count(&total)
+		Pagination.Model(model.Video{}).Where("review = 1 and uid = 0").Scan(&videos)
 	} else {
-		Pagination.Model(model.Video{}).Where("review = 1 and uid != 0").Scan(&videos).Count(&total)
+		DB.Model(model.Video{}).Where("review = 1 and uid != 0").Count(&total)
+		Pagination.Model(model.Video{}).Where("review = 1 and uid != 0").Scan(&videos)
 	}
 
 	//为了兼容早期版本，分区可能会出现分区id=0的情况
