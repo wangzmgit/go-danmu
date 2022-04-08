@@ -18,7 +18,7 @@ func SearchService(keywords string) response.ResponseStruct {
 	var videos []vo.SearchVideoVo
 	DB := common.GetDB()
 	DB = DB.Limit(50)
-	DB.Model(model.Video{}).Select("id,title,cover").Where("title like ?", keywords).Scan(&videos)
+	DB.Model(model.Video{}).Select("id,title,cover").Where("title like ? and review = 1", keywords).Scan(&videos)
 	return response.ResponseStruct{
 		HttpStatus: http.StatusOK,
 		Code:       response.SuccessCode,
