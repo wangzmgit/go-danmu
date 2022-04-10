@@ -170,18 +170,23 @@ func GetUploadVideoUrls(videoName, localFileName, objectName string, vid int) (d
 	if viper.GetString("transcoding.coding") == "hls" {
 		if viper.GetBool("aliyunoss.storage") {
 			if viper.GetInt("transcoding.max_res") == 0 {
+				// hls-oss-不处理分辨率
 				urls.Original = GetUrl() + "video/" + videoName + "/" + "index.m3u8"
 			} else {
+				// hls-oss-处理分辨率
 				urls, maxRes = getUrlDifferentRes(videoName, localFileName, vid, true)
 			}
 		} else {
 			if viper.GetInt("transcoding.max_res") == 0 {
+				// hls-本地-不处理分辨率
 				urls.Original = GetUrl() + "output/" + videoName + "/" + "index.m3u8"
 			} else {
+				// hls-oss-处理分辨率
 				urls, maxRes = getUrlDifferentRes(videoName, localFileName, vid, false)
 			}
 		}
 	} else {
+		// mp4-本地/oss-不处理分辨率
 		urls.Original = GetUrl() + objectName
 	}
 	return urls, maxRes

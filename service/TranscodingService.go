@@ -343,7 +343,8 @@ func rewriteDifferentRes(url string, output string, fileName string, vid int, re
 		return
 	}
 	//创建目标文件
-	filename := "./file/output/" + fileName + "/" + strconv.Itoa(res) + "p/index.m3u8"
+	dir := fileName + "/" + strconv.Itoa(res) + "p"
+	filename := "./file/output/" + dir + "/index.m3u8"
 	newFile, _ := os.OpenFile(filename, os.O_CREATE|os.O_APPEND|os.O_RDWR, 0660)
 	//文件列表
 	fileList := list.New()
@@ -374,7 +375,7 @@ func rewriteDifferentRes(url string, output string, fileName string, vid int, re
 
 	if viper.GetBool("aliyunoss.storage") {
 		//将文件上传到oss
-		success := UploadFolderToOSS(fileName, fileList)
+		success := UploadFolderToOSS(dir, fileList)
 		if !success {
 			//上传失败，调用未通过审核
 			videoReviewFail(vid, "视频上传失败")

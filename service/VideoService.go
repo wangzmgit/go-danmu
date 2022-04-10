@@ -191,7 +191,7 @@ func GetMyUploadVideoService(page int, pageSize int, uid interface{}) response.R
 	var totalSize int
 	//分页查询
 	var videos []model.Video
-	DB.Where("uid = ?", uid).Count(&totalSize)
+	DB.Model(&model.Video{}).Where("uid = ?", uid).Count(&totalSize)
 	DB = DB.Limit(pageSize).Offset((page - 1) * pageSize)
 	DB.Where("uid = ?", uid).Find(&videos)
 	return response.ResponseStruct{
