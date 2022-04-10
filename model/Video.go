@@ -16,4 +16,5 @@ type Video struct {
 	Clicks      int        `gorm:"default:0"`     //点击量
 	Review      bool       `gorm:"default:false"` //是否审查通过
 	PartitionID uint       `gorm:"default:0"`     //分区ID
+	Import      bool       `gorm:"default:false"` //是否为管理员导入
 }

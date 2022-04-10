@@ -377,11 +377,11 @@ func AdminGetVideoListService(page int, pageSize int, videoFrom string) response
 	DB := common.GetDB()
 	Pagination := DB.Limit(pageSize).Offset((page - 1) * pageSize)
 	if videoFrom == "admin" {
-		DB.Model(model.Video{}).Where("review = 1 and uid = 0").Count(&total)
-		Pagination.Model(model.Video{}).Where("review = 1 and uid = 0").Scan(&videos)
+		DB.Model(model.Video{}).Where("review = 1 and import = 1").Count(&total)
+		Pagination.Model(model.Video{}).Where("review = 1 and import = 1").Scan(&videos)
 	} else {
-		DB.Model(model.Video{}).Where("review = 1 and uid != 0").Count(&total)
-		Pagination.Model(model.Video{}).Where("review = 1 and uid != 0").Scan(&videos)
+		DB.Model(model.Video{}).Where("review = 1 and import = 0").Count(&total)
+		Pagination.Model(model.Video{}).Where("review = 1 and import = 0").Scan(&videos)
 	}
 
 	//为了兼容早期版本，分区可能会出现分区id=0的情况
@@ -436,6 +436,7 @@ func ImportVideoService(video dto.ImportVideo) response.ResponseStruct {
 		Uid:       uint(viper.GetInt("user.video")),
 		VideoType: video.Type,
 		Review:    true,
+		Import:    true,
 	}
 
 	DB := common.GetDB()
