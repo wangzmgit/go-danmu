@@ -67,14 +67,14 @@ func GetReplyDetailsV2(ctx *gin.Context) {
 		response.CheckFail(ctx, nil, response.ParameterError)
 		return
 	}
-	if page <= 0 || pageSize <= 0 {
-		response.CheckFail(ctx, nil, response.PageOrSizeError)
-		return
-	}
-	if pageSize >= 30 {
-		response.CheckFail(ctx, nil, response.TooManyRequests)
-		return
-	}
+	// if page <= 0 || pageSize <= 0 {
+	// 	response.CheckFail(ctx, nil, response.PageOrSizeError)
+	// 	return
+	// }
+	// if pageSize >= 30 {
+	// 	response.CheckFail(ctx, nil, response.TooManyRequests)
+	// 	return
+	// }
 
 	res := service.GetReplyDetailsV2Service(cid, page, pageSize)
 	response.HandleResponse(ctx, res)

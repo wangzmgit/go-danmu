@@ -74,8 +74,8 @@ func GetCommentsV2Service(page int, pageSize int, vid int) response.ResponseStru
 		return res
 	}
 	DB.Model(&model.Comment{}).Where("vid = ?", vid).Count(&count)
-	DB = DB.Limit(pageSize).Offset((page - 1) * pageSize)
-	DB.Raw(sqlComment, vid).Scan(&comments)
+	Pagination := DB.Limit(pageSize).Offset((page - 1) * pageSize)
+	Pagination.Raw(sqlComment, vid).Scan(&comments)
 	for i := 0; i < len(comments); i++ {
 		//查询回复
 		DB.Raw(sqlReply, comments[i].ID).Scan(&comments[i].Reply)
@@ -106,8 +106,8 @@ func GetReplyDetailsV2Service(cid int, page int, pageSize int) response.Response
 		res.Msg = response.CommentNotExist
 		return res
 	}
-	DB = DB.Limit(pageSize).Offset((page - 1) * pageSize)
-	DB.Model(&model.Reply{}).Where("cid = ?", cid)
+	// DB = DB.Limit(pageSize).Offset((page - 1) * pageSize)
+	// DB.Model(&model.Reply{}).Where("cid = ?", cid)
 	DB.Raw(sql, cid).Scan(&replies)
 	res.Data = gin.H{"replies": replies}
 	return res
