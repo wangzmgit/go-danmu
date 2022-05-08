@@ -104,6 +104,17 @@ func UploadVideoService(urls dto.ResDto, vid int, uid uint) response.ResponseStr
 		newResource.Vid = uint(vid)
 		newResource.Original = urls.Original
 	}
+	//修改视频表审核状态
+	if err := tx.Model(&model.Video{}).Where("id = ?", vid).Updates(
+		map[string]interface{}{"review": false},
+	).Error; err != nil {
+		tx.Rollback()
+		res.HttpStatus = http.StatusBadRequest
+		res.Code = response.FailCode
+		res.Msg = response.UpdateStatusFail
+		return res
+	}
+	//创建新的资源
 	if err = tx.Model(&model.Resource{}).Create(&newResource).Error; err != nil {
 		util.Logfile(util.ErrorLog, " upload video error "+err.Error())
 		tx.Rollback()
@@ -113,7 +124,9 @@ func UploadVideoService(urls dto.ResDto, vid int, uid uint) response.ResponseStr
 		return res
 	}
 	//创建新的审核状态
-	if err = tx.Model(&model.Review{}).Where("vid = ?", vid).Updates(map[string]interface{}{"status": 800}).Error; err != nil {
+	if err = tx.Model(&model.Review{}).Where("vid = ?", vid).Updates(
+		map[string]interface{}{"status": 800},
+	).Error; err != nil {
 		tx.Rollback()
 		res.HttpStatus = http.StatusBadRequest
 		res.Code = response.FailCode

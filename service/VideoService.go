@@ -128,6 +128,7 @@ func ModifyVideoInfoService(video dto.ModifyVideoDto, uid interface{}) response.
 			"cover":     video.Cover,
 			"desc":      video.Desc,
 			"copyright": video.Copyright,
+			"review":    false,
 		},
 	).Error; err != nil {
 		tx.Rollback()
